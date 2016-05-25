@@ -1,9 +1,9 @@
-(defproject org.domaindrivenarchitecture/httpd "0.0.1-SNAPSHOT"
+(defproject org.domaindrivenarchitecture/dda-httpd-crate "0.0.1-SNAPSHOT"
   :description "new dda-httpd-crate"
   :dependencies [[org.clojure/clojure "1.7.0"]
                  [com.palletops/pallet "0.8.12"]
                  [prismatic/schema "1.1.1"]
-                 ;[metosin/schema-tools "0.10.0-SNAPSHOT"]
+                 [metosin/schema-tools "0.9.0"]
                  ]
   :repositories [["snapshots" :clojars]
                  ["releases" :clojars]]
