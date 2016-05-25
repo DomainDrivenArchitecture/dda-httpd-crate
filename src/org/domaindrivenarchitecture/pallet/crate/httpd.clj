@@ -32,7 +32,7 @@
         (s/optional-key :maintainance-page-content) [s/Str]})
    })
 
-; TODO: review jem: 2016_05_25: name should be default- ??
+; TODO: review jem: 2016_05_25: name should be default-sth 
 (def httpd-webserver-configuration
   {; Webserver Configuration
    :letsencrypt true
