@@ -17,9 +17,9 @@
 
 (def httpd-webserver-configuration
 {; Webserver Configuration
- :letsencrypt true
- :fqdn "localhost.localdomain"
- :app-port "8009"
- :maintainance-page-content ["<h1>Webserver Maintainance Mode</h1>"]})
+       :httpd {:letsencrypt true
+               :fqdn "localhost.localdomain"
+               :app-port "8009"
+               :maintainance-page-content ["<h1>Webserver Maintainance Mode</h1>"]}})
 
 
