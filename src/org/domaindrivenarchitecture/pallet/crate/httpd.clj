@@ -24,10 +24,7 @@
 
 (def HttpdConfig
   "defines a schema for a httpdConfig"
-  {:fqdn s/Str
-   :app-port s/Str
-   :maintainance-page-content [s/Str]
-   (s/optional-key :httpd)
+  {(s/optional-key :httpd)
    (s/conditional
        #(= (:letsencrypt %) true)
        {:letsencrypt (s/eq true) 
@@ -49,13 +46,12 @@
 
 
 (def default-httpd-webserver-configuration
-  {; Webserver Configuration
-   :letsencrypt true
-   :fqdn "localhost.localdomain"
-   :app-port "8009"
-   :maintainance-page-content ["<h1>Webserver Maintainance Mode</h1>"]})
+  {:httpd {; Webserver Configuration
+           :letsencrypt true
+           :fqdn "localhost.localdomain"
+           :app-port "8009"
+           :maintainance-page-content ["<h1>Webserver Maintainance Mode</h1>"]}})
 
-; TODO: review jem: 2016_05_25: we will need some merge-config function.
 (s/defn ^:always-validate merge-config :- HttpdConfig
   "merges the partial config with default config & ensures that resulting config is valid."
   [partial-config]
