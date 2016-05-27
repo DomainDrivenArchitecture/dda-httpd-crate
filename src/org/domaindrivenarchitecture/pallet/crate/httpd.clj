@@ -18,6 +18,7 @@
   (:require
     [schema.core :as s]
     [schema-tools.core :as st]
+    [org.domaindrivenarchitecture.pallet.core.dda-crate :as dda-crate]
     [org.domaindrivenarchitecture.config.commons.map-utils :as map-utils]
     [org.domaindrivenarchitecture.pallet.crate.httpd.server :as server]
     [org.domaindrivenarchitecture.pallet.crate.httpd.vhost :as vhost]))
@@ -47,6 +48,7 @@
 
 
 ;TODO: verify types
+; TODO: review jem 2016.05.27: I expect this to be quite the same as HttpConfig - but it will be good to refactor this out.
 (def VhostConfig
   "defindes a schema for a VhostConfig"
   {:listening-port s/Str 
@@ -61,7 +63,7 @@
    :maintainance-page-content [s/Str]
    })
 
-(def default-httpd-webserver-configuration
+(def default-config
   {:httpd {; Webserver Configuration
            :letsencrypt true
            :fqdn "localhost.localdomain"
@@ -73,14 +75,28 @@
   [partial-config]
   (map-utils/deep-merge default-httpd-webserver-configuration partial-config))
 
-(defn dda-install
-   []
-  (server/install))
+(s/defmethod dda-crate/dda-install :dda-httpd [dda-crate partial-effective-config]
+  ; TODO: review jem 2016.05.27: We should pull the merge-config to dda-pallet also ... in this case we get 
+  ; the full effectife config here
+  (let [config (merge-config partial-effective-config)]
+    (server/install)))
 
-(s/defn configure-webserver
-  [config :- VhostConfig]
-  (server/configure)
-  (vhost/configure))
+(s/defmethod dda-crate/dda-configure :dda-httpd 
+  [dda-crate :- ddaCrate/DdaCrate 
+   partial-effective-config]
+  (let [config (merge-config partial-effective-config)]
+    (server/configure)
+    (vhost/configure)))
+
+(def with-httpd
+  (let 
+    [init-crate (dda-crate/make-dda-crate
+                  :facility :dda-httpd
+                  :version [0 1 0]
+                  :config-default default-config
+                  :config-schema HttpdConfig)]
+    (dda-crate/create-server-spec init-crate)
+    ))
 
 
 
