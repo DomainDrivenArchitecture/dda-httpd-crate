@@ -35,10 +35,12 @@
 (s/defn vhost-head-wrapper
   "wrapper function for the vhost-head function in the httpd-crate"
   [config :- schema/HttpdConfig]
+  ; TODO: krj 2016.05.27: (st/get-in ..) will not work here and needs to be changed
   (vhost/vhost-head (st/get-in config [:listening-port :domain-name :server-admin-email])))
 
 (def vhost-tail-wrapper ["</VirtualHost>"])
 
+; TODO: krj 2016.05.27: needs testing and prob fixing
 (s/defn prefix-wrapper
   [config :- schema/HttpdConfig]
   (httpd-common/prefix
@@ -52,17 +54,17 @@
         (jk/vhost-jk-unmount :path "/quiz/*")
         [""]
         (google/vhost-ownership-verification 
-          (st/get-in config :google-id)
-          (st/get-in config :consider-jk)
+          (get-in config :google-id)
+          (get-in config :consider-jk)
         (maintainance/vhost-service-unavailable-error-page
-          (st/get-in config :consider-jk))
+          (get-in config :consider-jk))
         (vhost/vhost-log 
           :error-name "error.log"
           :log-name "ssl-access.log"
           :log-format "combined")
-        (if (st/get-in config :letsencrypt)
-          (gnutls/vhost-gnutls-letsencrypt (st/get-in config :domain-name))
-          (gnutls/vhost-gnutls (st/get-in config :domain-name)))
+        (if (get-in config :letsencrypt)
+          (gnutls/vhost-gnutls-letsencrypt (get-in config :domain-name))
+          (gnutls/vhost-gnutls (get-in config :domain-name)))
         )))))
 
 (s/defn liferay-vhost
@@ -77,22 +79,22 @@
     )
   )
 
-
+; TODO: krj 2016.05.27: needs testing and prob fixing
 (s/defn configure
   [config :- schema/HttpdConfig]  
-  (if-not (st/get-in config :letsencrypt)
+  (if-not (get-in config :letsencrypt)
 	  (gnutls/configure-gnutls-credentials
-	    (st/get-in config :domain-name)
-	    (st/get-in config :domain-cert) 
-	    (st/get-in config :domain-key) 
-	    (st/get-in config :ca-cert)))
+	    (get-in config :domain-name)
+	    (get-in config :domain-cert) 
+	    (get-in config :domain-key) 
+	    (get-in config :ca-cert)))
   (jk/configure-mod-jk-worker)
-  (google/configure-ownership-verification (st/get-in config :id))    
+  (google/configure-ownership-verification (get-in config :id))    
   (apache2/configure-and-enable-vhost
     "000-default"
     (vhost/vhost-conf-default-redirect-to-https-only
-      (st/get-in config :domain-name)
-      (st/get-in config :server-admin-email) (str "admin@" (st/get-in config :domain-name))))
+      (get-in config :domain-name)
+      (get-in config :server-admin-email) (str "admin@" (get-in config :domain-name))))
   (apache2/configure-and-enable-vhost
     "000-default-ssl"
     (liferay-vhost

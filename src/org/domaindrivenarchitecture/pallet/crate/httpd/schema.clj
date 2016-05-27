@@ -18,6 +18,8 @@
   (:require
     [schema.core :as s]))
 
+; TODO: krj 2016.05.27: should consider if/where :domain-name needs to be inserted
+;see vhost/prefix-wrapper and vhost/configure for details
 (def HttpdConfig
   "defines a schema for a httpdConfig"
   {:fqdn s/Str
