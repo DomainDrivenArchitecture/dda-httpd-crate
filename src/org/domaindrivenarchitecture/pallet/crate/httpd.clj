@@ -19,18 +19,8 @@
     [schema.core :as s]
     [schema-tools.core :as st]
     [org.domaindrivenarchitecture.config.commons.map-utils :as map-utils]
-    [httpd.crate.apache2 :as apache2]
-    [httpd.crate.vhost :as vhost]
-    [httpd.crate.config :as httpd-config]
-    [httpd.crate.basic-auth :as auth]
-    [httpd.crate.mod-gnutls :as gnutls]
-    [httpd.crate.mod-jk :as jk]
-    [httpd.crate.google-siteownership-verification :as google]
-    [httpd.crate.common :as httpd-common]
-    [httpd.crate.mod-rewrite :as rewrite]
-    [httpd.crate.webserver-maintainance :as maintainance]
-    [org.domaindrivenarchitecture.pallet.crate.liferay.web :as web]
-  ))
+    [org.domaindrivenarchitecture.pallet.crate.httpd.server :as server]
+    [org.domaindrivenarchitecture.pallet.crate.httpd.vhost :as vhost]))
 
 
 (def HttpdConfig
@@ -71,13 +61,6 @@
    :maintainance-page-content [s/Str]
    })
 
-
-
-(s/defn vhost-head-wrapper
-  "wrapper function for the vhost-head function in the httpd-crate"
-  [config :- VhostConfig]
-  (vhost/vhost-head (st/get-in config [:listening-port :domain-name :server-admin-email])))
-
 (def default-httpd-webserver-configuration
   {:httpd {; Webserver Configuration
            :letsencrypt true
@@ -90,72 +73,14 @@
   [partial-config]
   (map-utils/deep-merge default-httpd-webserver-configuration partial-config))
 
-(def vhost-tail-wrapper ["</VirtualHost>"])
-
-(s/defn prefix-wrapper
-  [config :- VhostConfig]
-  (httpd-common/prefix
-    "  " 
-    (into 
-      []
-      (concat
-        ["Alias /quiz/ \"/var/www/static/quiz/\""
-         ""]
-        (jk/vhost-jk-mount :path "/*")
-        (jk/vhost-jk-unmount :path "/quiz/*")
-        [""]
-        (google/vhost-ownership-verification 
-          (st/get-in config :google-id)
-          (st/get-in config :consider-jk)
-        (maintainance/vhost-service-unavailable-error-page
-          (st/get-in config :consider-jk))
-        (vhost/vhost-log 
-          :error-name "error.log"
-          :log-name "ssl-access.log"
-          :log-format "combined")
-        (if (st/get-in config :letsencrypt)
-          (gnutls/vhost-gnutls-letsencrypt (st/get-in config :domain-name))
-          (gnutls/vhost-gnutls (st/get-in config :domain-name)))
-        )))))
-
-(defn install-webserver
+(defn dda-install
    []
-  (apache2/install-apache2-action)
-  (apache2/install-apachetop-action)
-  (gnutls/install-mod-gnutls)
-  (jk/install-mod-jk)
-  (rewrite/install-mod-rewrite))
-
-
+  (server/install))
 
 (s/defn configure-webserver
   [config :- VhostConfig]
-  
-  (apache2/config-apache2-production-grade
-    :security 
-    httpd-config/security)
-  
-  (if-not (st/get-in config :letsencrypt)
-	  (gnutls/configure-gnutls-credentials
-	    (st/get-in config :domain-name)
-	    (st/get-in config :domain-cert) 
-	    (st/get-in config :domain-key) 
-	    (st/get-in config :ca-cert)))
-  (jk/configure-mod-jk-worker)
-  (google/configure-ownership-verification (st/get-in config :id))    
-  (apache2/configure-and-enable-vhost
-    "000-default"
-    (vhost/vhost-conf-default-redirect-to-https-only
-      (st/get-in config :domain-name)
-      (st/get-in config :server-admin-email) (str "admin@" (st/get-in config :domain-name))))
-  
-  (apache2/configure-and-enable-vhost
-    "000-default-ssl"
-    (web/liferay-vhost
-      config))
-  
-    (maintainance/write-maintainance-file :content (st/get-in config :maintainance-page-content))
-  )
+  (server/configure)
+  (vhost/configure))
 
 
 
