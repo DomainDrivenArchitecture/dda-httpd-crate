@@ -23,51 +23,30 @@
     [org.domaindrivenarchitecture.pallet.crate.httpd.server :as server]
     [org.domaindrivenarchitecture.pallet.crate.httpd.vhost :as vhost]))
 
-
 (def HttpdConfig
   "defines a schema for a httpdConfig"
-  {(s/conditional
-       #(= (:letsencrypt %) true)
-       {:letsencrypt (s/eq true) 
-        :letsencrypt-mail s/Str
-        :fqdn s/Str
-        (s/optional-key :app-port) s/Str
-        (s/optional-key :google-id) s/Str
-        (s/optional-key :maintainance-page-content) [s/Str]}
-       #(= (:letsencrypt %) false)
-       {:letsencrypt (s/eq false) 
-        :domain-cert s/Str 
-        :domain-key s/Str 
-        (s/optional-key :ca-cert) s/Str
-        :fqdn s/Str
-        (s/optional-key :app-port) s/Str
-        (s/optional-key :google-id) s/Str
-        (s/optional-key :maintainance-page-content) [s/Str]})
-   })
-
-
-;TODO: verify types
-; TODO: review jem 2016.05.27: I expect this to be quite the same as HttpConfig - but it will be good to refactor this out.
-(def VhostConfig
-  "defindes a schema for a VhostConfig"
-  {:listening-port s/Str 
-   :ca-cert s/Any
-   :domain-name s/Any
-   :domain-cert s/Any
-   :domain-key s/Any
+  {:fqdn s/Str
+   :listening-port s/Str 
    :server-admin-email s/Str
-   :google-id s/Str
+   (s/conditional
+     #(= (:letsencrypt %) true)
+     {:letsencrypt (s/eq true) 
+      :letsencrypt-mail s/Str}
+     #(= (:letsencrypt %) false)
+     {:letsencrypt (s/eq false) 
+      :domain-cert s/Str 
+      :domain-key s/Str 
+      (s/optional-key :ca-cert) s/Str})
    :consider-jk s/Bool
-   :letsencrypt s/Bool
-   :maintainance-page-content [s/Str]
-   })
+   (s/optional-key :maintainance-page-content) [s/Str]
+   (s/optional-key :app-port) s/Str
+   (s/optional-key :google-id) s/Str})
 
 (def default-config
-  {:httpd {; Webserver Configuration
-           :letsencrypt true
-           :fqdn "localhost.localdomain"
-           :app-port "8009"
-           :maintainance-page-content ["<h1>Webserver Maintainance Mode</h1>"]}})
+  {:letsencrypt true
+   :fqdn "localhost.localdomain"
+   :app-port "8009"
+   :maintainance-page-content ["<h1>Webserver Maintainance Mode</h1>"]})
 
 (s/defn ^:always-validate merge-config :- HttpdConfig
   "merges the partial config with default config & ensures that resulting config is valid."
