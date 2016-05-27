@@ -17,7 +17,6 @@
 (ns org.domaindrivenarchitecture.pallet.crate.httpd.server
   (:require
     [schema.core :as s]
-    [org.domaindrivenarchitecture.config.commons.map-utils :as map-utils]
     [httpd.crate.apache2 :as apache2]
     [httpd.crate.config :as httpd-config]
     [httpd.crate.basic-auth :as auth]
@@ -26,15 +25,18 @@
     [httpd.crate.google-siteownership-verification :as google]
     [httpd.crate.common :as httpd-common]
     [httpd.crate.mod-rewrite :as rewrite]
-    [httpd.crate.webserver-maintainance :as maintainance]))
+    [httpd.crate.webserver-maintainance :as maintainance]
+    [org.domaindrivenarchitecture.pallet.crate.httpd.schema :as schema]
+    [org.domaindrivenarchitecture.config.commons.map-utils :as map-utils]))
 
 
-(defn install
-   []
+(s/defn install
+   [config :- schema/HttpdConfig]
   (apache2/install-apache2-action)
   (apache2/install-apachetop-action)
   (gnutls/install-mod-gnutls)
-  (jk/install-mod-jk)
+  (when (get-in config [:consider-jk]) 
+    (jk/install-mod-jk))
   (rewrite/install-mod-rewrite))
 
 (s/defn configure

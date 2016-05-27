@@ -19,27 +19,11 @@
     [schema.core :as s]
     [org.domaindrivenarchitecture.pallet.core.dda-crate :as dda-crate]
     [org.domaindrivenarchitecture.config.commons.map-utils :as map-utils]
+    [org.domaindrivenarchitecture.pallet.crate.httpd.schema :as schema]
     [org.domaindrivenarchitecture.pallet.crate.httpd.server :as server]
     [org.domaindrivenarchitecture.pallet.crate.httpd.vhost :as vhost]))
 
-(def HttpdConfig
-  "defines a schema for a httpdConfig"
-  {:fqdn s/Str
-   :listening-port s/Str 
-   :server-admin-email s/Str
-   (s/conditional
-     #(= (:letsencrypt %) true)
-     {:letsencrypt (s/eq true) 
-      :letsencrypt-mail s/Str}
-     #(= (:letsencrypt %) false)
-     {:letsencrypt (s/eq false) 
-      :domain-cert s/Str 
-      :domain-key s/Str 
-      (s/optional-key :ca-cert) s/Str})
-   :consider-jk s/Bool
-   (s/optional-key :maintainance-page-content) [s/Str]
-   (s/optional-key :app-port) s/Str
-   (s/optional-key :google-id) s/Str})
+(def HttpdConfig schema/HttpdConfig)
 
 (def default-config
   {:letsencrypt true
@@ -56,7 +40,7 @@
   ; TODO: review jem 2016.05.27: We should pull the merge-config to dda-pallet also ... in this case we get 
   ; the full effectife config here
   (let [config (merge-config partial-effective-config)]
-    (server/install)))
+    (server/install config)))
 
 (s/defmethod dda-crate/dda-configure :dda-httpd 
   [dda-crate :- ddaCrate/DdaCrate 
