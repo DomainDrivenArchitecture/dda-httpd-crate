@@ -20,15 +20,11 @@
     [schema-tools.core :as st]
     [httpd.crate.apache2 :as apache2]
     [httpd.crate.config :as httpd-config]
-    [httpd.crate.basic-auth :as auth]
     [httpd.crate.mod-gnutls :as gnutls]
     [httpd.crate.mod-jk :as jk]
-    [httpd.crate.google-siteownership-verification :as google]
-    [httpd.crate.common :as httpd-common]
     [httpd.crate.mod-rewrite :as rewrite]
     [httpd.crate.webserver-maintainance :as maintainance]
-    [org.domaindrivenarchitecture.pallet.crate.httpd.schema :as schema]
-    [org.domaindrivenarchitecture.config.commons.map-utils :as map-utils]))
+    [org.domaindrivenarchitecture.pallet.crate.httpd.schema :as schema]))
 
 
 (s/defn install

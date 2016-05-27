@@ -24,10 +24,14 @@
   ))
 
 (def partial-config
-  {:httpd {; Webserver Configuration
+  {:fqdn "localhost.localdomain"
+   :listening-port "42"
+   :server-admin-email "max@masterman.com"
+   :httpd {; Webserver Configuration
            :letsencrypt true
            :letsencrypt-mail "new value"
-           :maintainance-page-content ["new value"]}})
+          }
+   :consider-jk false})
 
 (deftest merge-releaseapps
   (testing
@@ -35,4 +39,4 @@
     (is (s/validate sut/HttpdConfig (sut/merge-config partial-config)))))
 
 
-
+(run-tests)

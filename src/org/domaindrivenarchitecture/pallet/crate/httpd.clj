@@ -25,16 +25,21 @@
 
 (def HttpdConfig schema/HttpdConfig)
 
+; TODO: gec 2016.05.27: Complete default config. Still missing some required keys.
 (def default-config
-  {:letsencrypt true
-   :fqdn "localhost.localdomain"
+  {:fqdn "localhost.localdomain"
    :app-port "8009"
-   :maintainance-page-content ["<h1>Webserver Maintainance Mode</h1>"]})
+   :maintainance-page-content ["<h1>Webserver Maintainance Mode</h1>"]
+   :httpd {:letsencrypt true
+           ;:lestencrypt-mail
+          }
+   ;consider-jk
+   })
 
 (s/defn ^:always-validate merge-config :- HttpdConfig
   "merges the partial config with default config & ensures that resulting config is valid."
   [partial-config]
-  (map-utils/deep-merge vhost/default-httpd-webserver-configuration partial-config))
+  (map-utils/deep-merge default-config partial-config))
 
 (s/defmethod dda-crate/dda-install :dda-httpd [dda-crate partial-effective-config]
   ; TODO: review jem 2016.05.27: We should pull the merge-config to dda-pallet also ... in this case we get 
@@ -42,8 +47,9 @@
   (let [config (merge-config partial-effective-config)]
     (server/install config)))
 
-(s/defmethod dda-crate/dda-configure :dda-httpd 
-  [dda-crate :- dda-crate/DdaCrate ;TODO: check type
+; TODO: gec 2016.05.27: Check if schema is needed here
+(defmethod dda-crate/dda-configure :dda-httpd 
+  [dda-crate
    partial-effective-config]
   (let [config (merge-config partial-effective-config)]
     (server/configure)

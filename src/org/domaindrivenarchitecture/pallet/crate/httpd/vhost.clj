@@ -29,24 +29,18 @@
     [httpd.crate.common :as httpd-common]
     [httpd.crate.mod-rewrite :as rewrite]
     [httpd.crate.webserver-maintainance :as maintainance]
+    [org.domaindrivenarchitecture.pallet.crate.httpd.schema :as schema]
   ))
 
-(defn vhost-head-wrapper
+(s/defn vhost-head-wrapper
   "wrapper function for the vhost-head function in the httpd-crate"
-  [config]
+  [config :- schema/HttpdConfig]
   (vhost/vhost-head (st/get-in config [:listening-port :domain-name :server-admin-email])))
-
-(def default-httpd-webserver-configuration
-  {:httpd {; Webserver Configuration
-           :letsencrypt true
-           :fqdn "localhost.localdomain"
-           :app-port "8009"
-           :maintainance-page-content ["<h1>Webserver Maintainance Mode</h1>"]}})
 
 (def vhost-tail-wrapper ["</VirtualHost>"])
 
-(defn prefix-wrapper
-  [config]
+(s/defn prefix-wrapper
+  [config :- schema/HttpdConfig]
   (httpd-common/prefix
     "  " 
     (into 
@@ -71,8 +65,8 @@
           (gnutls/vhost-gnutls (st/get-in config :domain-name)))
         )))))
 
-(defn liferay-vhost
-  [config]
+(s/defn liferay-vhost
+  [config :- schema/HttpdConfig]
   (into 
     []
     (concat
@@ -85,7 +79,7 @@
 
 
 (s/defn configure
-  [config]  
+  [config :- schema/HttpdConfig]  
   (if-not (st/get-in config :letsencrypt)
 	  (gnutls/configure-gnutls-credentials
 	    (st/get-in config :domain-name)
