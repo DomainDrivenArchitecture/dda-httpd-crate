@@ -26,8 +26,7 @@
 
 (def HttpdConfig
   "defines a schema for a httpdConfig"
-  {(s/optional-key :httpd)
-   (s/conditional
+  {(s/conditional
        #(= (:letsencrypt %) true)
        {:letsencrypt (s/eq true) 
         :letsencrypt-mail s/Str
