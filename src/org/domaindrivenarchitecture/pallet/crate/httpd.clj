@@ -17,7 +17,6 @@
 (ns org.domaindrivenarchitecture.pallet.crate.httpd
   (:require
     [schema.core :as s]
-    [schema-tools.core :as st]
     [org.domaindrivenarchitecture.pallet.core.dda-crate :as dda-crate]
     [org.domaindrivenarchitecture.config.commons.map-utils :as map-utils]
     [org.domaindrivenarchitecture.pallet.crate.httpd.server :as server]
