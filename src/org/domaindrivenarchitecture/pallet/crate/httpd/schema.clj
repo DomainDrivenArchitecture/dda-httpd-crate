@@ -28,6 +28,7 @@
    ;:server-admin-email "" 
    ;:letsencrypt true 
    ;:letsencrypt-mail ...
+   :httpd
    (s/conditional
      #(= (:letsencrypt %) true)
      {:letsencrypt (s/eq true) 
@@ -41,3 +42,4 @@
    (s/optional-key :maintainance-page-content) [s/Str]
    (s/optional-key :app-port) s/Str
    (s/optional-key :google-id) s/Str})
+

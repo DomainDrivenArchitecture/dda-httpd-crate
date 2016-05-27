@@ -17,6 +17,7 @@
 (ns org.domaindrivenarchitecture.pallet.crate.httpd.server
   (:require
     [schema.core :as s]
+    [schema-tools.core :as st]
     [httpd.crate.apache2 :as apache2]
     [httpd.crate.config :as httpd-config]
     [httpd.crate.basic-auth :as auth]
@@ -40,7 +41,7 @@
   (rewrite/install-mod-rewrite))
 
 (s/defn configure
-  []
+  [config]
   (apache2/config-apache2-production-grade
     :security 
     httpd-config/security)

@@ -34,7 +34,7 @@
 (s/defn ^:always-validate merge-config :- HttpdConfig
   "merges the partial config with default config & ensures that resulting config is valid."
   [partial-config]
-  (map-utils/deep-merge default-httpd-webserver-configuration partial-config))
+  (map-utils/deep-merge vhost/default-httpd-webserver-configuration partial-config))
 
 (s/defmethod dda-crate/dda-install :dda-httpd [dda-crate partial-effective-config]
   ; TODO: review jem 2016.05.27: We should pull the merge-config to dda-pallet also ... in this case we get 
@@ -43,7 +43,7 @@
     (server/install config)))
 
 (s/defmethod dda-crate/dda-configure :dda-httpd 
-  [dda-crate :- ddaCrate/DdaCrate 
+  [dda-crate :- dda-crate/DdaCrate ;TODO: check type
    partial-effective-config]
   (let [config (merge-config partial-effective-config)]
     (server/configure)

@@ -29,12 +29,11 @@
     [httpd.crate.common :as httpd-common]
     [httpd.crate.mod-rewrite :as rewrite]
     [httpd.crate.webserver-maintainance :as maintainance]
-    [org.domaindrivenarchitecture.pallet.crate.liferay.web :as web]
   ))
 
-(s/defn vhost-head-wrapper
+(defn vhost-head-wrapper
   "wrapper function for the vhost-head function in the httpd-crate"
-  [config :- VhostConfig]
+  [config]
   (vhost/vhost-head (st/get-in config [:listening-port :domain-name :server-admin-email])))
 
 (def default-httpd-webserver-configuration
@@ -46,8 +45,8 @@
 
 (def vhost-tail-wrapper ["</VirtualHost>"])
 
-(s/defn prefix-wrapper
-  [config :- VhostConfig]
+(defn prefix-wrapper
+  [config]
   (httpd-common/prefix
     "  " 
     (into 
@@ -72,9 +71,21 @@
           (gnutls/vhost-gnutls (st/get-in config :domain-name)))
         )))))
 
+(defn liferay-vhost
+  [config]
+  (into 
+    []
+    (concat
+      (vhost-head-wrapper config)
+      (prefix-wrapper config)
+      vhost-tail-wrapper
+      )
+    )
+  )
+
 
 (s/defn configure
-  [config :- VhostConfig]  
+  [config]  
   (if-not (st/get-in config :letsencrypt)
 	  (gnutls/configure-gnutls-credentials
 	    (st/get-in config :domain-name)
@@ -90,6 +101,6 @@
       (st/get-in config :server-admin-email) (str "admin@" (st/get-in config :domain-name))))
   (apache2/configure-and-enable-vhost
     "000-default-ssl"
-    (web/liferay-vhost
+    (liferay-vhost
       config))
   )
