@@ -84,12 +84,12 @@
 	     (get-in config :domain-key) 
 	     (get-in config :ca-cert)))
   (jk/configure-mod-jk-worker)
-  (google/configure-ownership-verification (get-in config :id))    
+  (google/configure-ownership-verification (get-in config [:id]))    
   (apache2/configure-and-enable-vhost
     "000-default"
     (vhost/vhost-conf-default-redirect-to-https-only
       (get-in config :domain-name)
-      (get-in config :server-admin-email) (str "admin@" (get-in config :domain-name))))
+      (get-in config :server-admin-email) (str "admin@" (get-in config [:domain-name]))))
   (apache2/configure-and-enable-vhost
     "000-default-ssl" (vhost config))
   )
