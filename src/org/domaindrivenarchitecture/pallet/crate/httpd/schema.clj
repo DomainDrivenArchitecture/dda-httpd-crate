@@ -25,23 +25,14 @@
   {:fqdn s/Str
    :listening-port s/Str 
    :server-admin-email s/Str
-   ; TODO: not shure, wheter this works as expected - pls add test. Structure should be 
-   ; ... 
-   ;:server-admin-email "" 
-   ;:letsencrypt true 
-   ;:letsencrypt-mail ...
-   :httpd
-   (s/conditional
-     #(= (:letsencrypt %) true)
-     {:letsencrypt (s/eq true) 
-      :letsencrypt-mail s/Str}
-     #(= (:letsencrypt %) false)
-     {:letsencrypt (s/eq false) 
-      :domain-cert s/Str 
-      :domain-key s/Str 
-      (s/optional-key :ca-cert) s/Str})
-   :consider-jk s/Bool
+   ; either letsencrypt or manual certificates
+   (s/optional-key :cert-letsencrypt) {:letsencrypt-mail s/Str} 
+   (s/optional-key :cert-manual) {:domain-cert s/Str 
+                                  :domain-key s/Str 
+                                  (s/optional-key :ca-cert) s/Str}
+   ; mod_jk
+   :use-mod-jk {(s/optional-key :app-port) s/Str}
+   ; other stuff
    (s/optional-key :maintainance-page-content) [s/Str]
-   (s/optional-key :app-port) s/Str
    (s/optional-key :google-id) s/Str})
 

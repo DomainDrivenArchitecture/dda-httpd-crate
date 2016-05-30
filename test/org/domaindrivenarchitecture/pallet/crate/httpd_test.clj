@@ -16,27 +16,18 @@
 
 (ns org.domaindrivenarchitecture.pallet.crate.httpd-test
   (:require
-    [clojure.test :refer :all]    
-    [clojure.set :as cloj-set]
+    [clojure.test :refer :all]
     [schema.core :as s]
+    [org.domaindrivenarchitecture.pallet.core.dda-crate :as dda-crate]
     [org.domaindrivenarchitecture.pallet.crate.httpd :as sut]
-    
   ))
 
 (def partial-config
-  {:fqdn "localhost.localdomain"
-   :listening-port "42"
-   :server-admin-email "max@masterman.com"
-   :httpd {; Webserver Configuration
-           :letsencrypt true
-           :letsencrypt-mail "new value"
-          }
-   :consider-jk false})
+  {})
 
-(deftest merge-releaseapps
+(deftest merge-config
   (testing
     "default-httpd-webserver-configuration match schema?"
-    (is (s/validate sut/HttpdConfig (sut/merge-config partial-config)))))
-
-
-(run-tests)
+    (is 
+      (dda-crate/merge-config sut/dda-httpd-crate partial-config))
+    ))

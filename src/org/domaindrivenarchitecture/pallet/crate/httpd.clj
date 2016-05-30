@@ -28,42 +28,34 @@
 ; TODO: gec 2016.05.27: Complete default config. Still missing some required keys.
 (def default-config
   {:fqdn "localhost.localdomain"
-   :app-port "8009"
+   :listening-port "80"
+   :server-admin-email "admin@localdomain"
    :maintainance-page-content ["<h1>Webserver Maintainance Mode</h1>"]
-   :httpd {:letsencrypt true
-           ;:lestencrypt-mail
-          }
-   ;consider-jk
+   :use-mod-jk {:app-port "8009"}
    })
 
-(s/defn ^:always-validate merge-config :- HttpdConfig
-  "merges the partial config with default config & ensures that resulting config is valid."
-  [partial-config]
-  (map-utils/deep-merge default-config partial-config))
+(def dda-httpd-crate 
+  (dda-crate/make-dda-crate
+    :facility :dda-httpd
+    :version [0 1 0]
+    :config-schema HttpdConfig
+    :config-default default-config
+    ))
 
 (s/defmethod dda-crate/dda-install :dda-httpd [dda-crate partial-effective-config]
-  ; TODO: review jem 2016.05.27: We should pull the merge-config to dda-pallet also ... in this case we get 
-  ; the full effectife config here
-  (let [config (merge-config partial-effective-config)]
+  (let [config (dda-crate/merge-config dda-crate partial-effective-config)]
     (server/install config)))
 
 ; TODO: gec 2016.05.27: Check if schema is needed here
 (defmethod dda-crate/dda-configure :dda-httpd 
   [dda-crate
    partial-effective-config]
-  (let [config (merge-config partial-effective-config)]
+  (let [config (dda-crate/merge-config dda-crate partial-effective-config)]
     (server/configure)
     (vhost/configure)))
 
 (def with-httpd
-  (let 
-    [init-crate (dda-crate/make-dda-crate
-                  :facility :dda-httpd
-                  :version [0 1 0]
-                  :config-default default-config
-                  :config-schema HttpdConfig)]
-    (dda-crate/create-server-spec init-crate)
-    ))
+  (dda-crate/create-server-spec dda-httpd-crate))
 
 
 
