@@ -31,3 +31,9 @@
     (is 
       (dda-crate/merge-config sut/dda-httpd-crate partial-config))
     ))
+
+(deftest server-spec
+  (testing 
+    "test the server spec" 
+    (is sut/with-httpd)
+    ))

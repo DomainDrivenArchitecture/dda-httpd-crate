@@ -31,7 +31,7 @@
                                   :domain-key s/Str 
                                   (s/optional-key :ca-cert) s/Str}
    ; mod_jk
-   :use-mod-jk {(s/optional-key :app-port) s/Str}
+   (s/optional-key :mod-jk) {(s/optional-key :app-port) s/Str}
    ; other stuff
    (s/optional-key :maintainance-page-content) [s/Str]
    (s/optional-key :google-id) s/Str})

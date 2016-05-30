@@ -36,58 +36,53 @@
   "wrapper function for the vhost-head function in the httpd-crate"
   [config :- schema/HttpdConfig]
   ; TODO: krj 2016.05.27: (st/get-in ..) will not work here and needs to be changed
-  (vhost/vhost-head (st/get-in config [:listening-port :domain-name :server-admin-email])))
+  ; jem: Why should we use a wrapper here?
+  (vhost/vhost-head 
+    :listening-port (st/get-in config [:listening-port])
+    :domain-name  (st/get-in config [:fqdn])
+    :server-admin-email (st/get-in config [:server-admin-email])))
 
+; jem: Why should we use a wrapper here??!
 (def vhost-tail-wrapper ["</VirtualHost>"])
 
-; TODO: krj 2016.05.27: needs testing and prob fixing
-(s/defn prefix-wrapper
-  [config :- schema/HttpdConfig]
-  (httpd-common/prefix
-    "  " 
-    (into 
-      []
-      (concat
-        ["Alias /quiz/ \"/var/www/static/quiz/\""
-         ""]
-        (jk/vhost-jk-mount :path "/*")
-        (jk/vhost-jk-unmount :path "/quiz/*")
-        [""]
-        (google/vhost-ownership-verification 
-          (get-in config :google-id)
-          (get-in config :consider-jk)
-        (maintainance/vhost-service-unavailable-error-page
-          (get-in config :consider-jk))
-        (vhost/vhost-log 
-          :error-name "error.log"
-          :log-name "ssl-access.log"
-          :log-format "combined")
-        (if (get-in config :letsencrypt)
-          (gnutls/vhost-gnutls-letsencrypt (get-in config :domain-name))
-          (gnutls/vhost-gnutls (get-in config :domain-name)))
-        )))))
-
-(s/defn liferay-vhost
+(s/defn vhost
+  "defines a httpd servers vhost."
   [config :- schema/HttpdConfig]
   (into 
     []
-    (concat
-      (vhost-head-wrapper config)
-      (prefix-wrapper config)
-      vhost-tail-wrapper
-      )
-    )
-  )
+    (let [use-mod-jk (contains? config :mod-jk)]
+      (concat
+        (vhost/vhost-head 
+          :listening-port (st/get-in config [:listening-port])
+          :domain-name  (st/get-in config [:fqdn])
+          :server-admin-email (st/get-in config [:server-admin-email])
+          (when (contains? config :google-id)
+            (google/vhost-ownership-verification 
+              (get-in config [:google-id])
+              use-mod-jk))
+          (when (contains? config [:maintainance-page-content])
+            (maintainance/vhost-service-unavailable-error-page use-mod-jk))
+          (vhost/vhost-log 
+              :error-name "error.log"
+              :log-name "ssl-access.log"
+              :log-format "combined")
+          (when (contains? config [:cert-letsencrypt])
+            (gnutls/vhost-gnutls-letsencrypt (get-in config [:fqdn])))
+          (when (contains? config [:cert-manual])
+            (gnutls/vhost-gnutls (get-in config [:fqdn])))
+          vhost/vhost-tail
+        ))
+      )))
 
 ; TODO: krj 2016.05.27: needs testing and prob fixing
 (s/defn configure
   [config :- schema/HttpdConfig]  
-  (if-not (get-in config :letsencrypt)
-	  (gnutls/configure-gnutls-credentials
-	    (get-in config :domain-name)
-	    (get-in config :domain-cert) 
-	    (get-in config :domain-key) 
-	    (get-in config :ca-cert)))
+  (when (contains? config :cert-manual)
+    (gnutls/configure-gnutls-credentials
+	     (get-in config :domain-name)
+	     (get-in config :domain-cert) 
+	     (get-in config :domain-key) 
+	     (get-in config :ca-cert)))
   (jk/configure-mod-jk-worker)
   (google/configure-ownership-verification (get-in config :id))    
   (apache2/configure-and-enable-vhost
@@ -96,7 +91,5 @@
       (get-in config :domain-name)
       (get-in config :server-admin-email) (str "admin@" (get-in config :domain-name))))
   (apache2/configure-and-enable-vhost
-    "000-default-ssl"
-    (liferay-vhost
-      config))
+    "000-default-ssl" (vhost config))
   )

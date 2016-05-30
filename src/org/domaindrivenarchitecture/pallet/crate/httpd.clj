@@ -25,13 +25,12 @@
 
 (def HttpdConfig schema/HttpdConfig)
 
-; TODO: gec 2016.05.27: Complete default config. Still missing some required keys.
 (def default-config
   {:fqdn "localhost.localdomain"
-   :listening-port "80"
+   :listening-port "443"
    :server-admin-email "admin@localdomain"
    :maintainance-page-content ["<h1>Webserver Maintainance Mode</h1>"]
-   :use-mod-jk {:app-port "8009"}
+   :mod-jk {:app-port "8009"}
    })
 
 (def dda-httpd-crate 
@@ -42,16 +41,15 @@
     :config-default default-config
     ))
 
-(s/defmethod dda-crate/dda-install :dda-httpd [dda-crate partial-effective-config]
+(defmethod dda-crate/dda-install 
+  :dda-httpd [dda-crate partial-effective-config]
   (let [config (dda-crate/merge-config dda-crate partial-effective-config)]
     (server/install config)))
 
-; TODO: gec 2016.05.27: Check if schema is needed here
-(defmethod dda-crate/dda-configure :dda-httpd 
-  [dda-crate
-   partial-effective-config]
+(defmethod dda-crate/dda-configure 
+  :dda-httpd [dda-crate partial-effective-config]
   (let [config (dda-crate/merge-config dda-crate partial-effective-config)]
-    (server/configure)
+    (server/configure config)
     (vhost/configure)))
 
 (def with-httpd

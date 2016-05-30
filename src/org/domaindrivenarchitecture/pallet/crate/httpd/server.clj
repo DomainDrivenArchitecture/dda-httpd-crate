@@ -28,19 +28,18 @@
 
 
 (s/defn install
-   [config :- schema/HttpdConfig]
+  [config :- schema/HttpdConfig]
   (apache2/install-apache2-action)
   (apache2/install-apachetop-action)
   (gnutls/install-mod-gnutls)
-  (when (get-in config [:consider-jk]) 
+  (when (contains? config :mod-jk) 
     (jk/install-mod-jk))
   (rewrite/install-mod-rewrite))
 
 (s/defn configure
   [config]
-  (apache2/config-apache2-production-grade
-    :security 
-    httpd-config/security)
+  (apache2/config-apache2-production-grade)
   (jk/configure-mod-jk-worker)
-  (maintainance/write-maintainance-file :content (st/get-in config :maintainance-page-content))
+  (maintainance/write-maintainance-file 
+    :content (st/get-in config :maintainance-page-content))
   )
