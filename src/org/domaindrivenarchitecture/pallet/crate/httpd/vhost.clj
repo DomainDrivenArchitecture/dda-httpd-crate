@@ -50,12 +50,25 @@
   [config :- schema/HttpdConfig]
   (into 
     []
-    (let [use-mod-jk (contains? config :mod-jk)]
+    (let [use-mod-jk (contains? config :mod-jk)
+          domain-name (get-in config [:fqdn])]
       (concat
         (vhost/vhost-head 
           :listening-port (st/get-in config [:listening-port])
-          :domain-name  (st/get-in config [:fqdn])
-          :server-admin-email (st/get-in config [:server-admin-email])
+          :domain-name  domain-name
+          :server-admin-email (st/get-in config [:server-admin-email]))
+        (httpd-common/prefix 
+          "  "
+          (vhost/vhost-location
+            :location-options
+            (into []
+                  (concat
+                    ["Order allow,deny"
+                     "Allow from all"
+                     ""]
+                    (auth/vhost-basic-auth-options
+                      :domain-name domain-name))))
+          )
           (when (contains? config :google-id)
             (google/vhost-ownership-verification 
               (get-in config [:google-id])
@@ -67,12 +80,12 @@
               :log-name "ssl-access.log"
               :log-format "combined")
           (when (contains? config [:cert-letsencrypt])
-            (gnutls/vhost-gnutls-letsencrypt (get-in config [:fqdn])))
+            (gnutls/vhost-gnutls-letsencrypt domain-name))
           (when (contains? config [:cert-manual])
-            (gnutls/vhost-gnutls (get-in config [:fqdn])))
+            (gnutls/vhost-gnutls domain-name))
           vhost/vhost-tail
         ))
-      )))
+      ))
 
 ; TODO: krj 2016.05.27: needs testing and prob fixing
 (s/defn configure
