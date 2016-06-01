@@ -28,6 +28,9 @@
              :server-admin-email "admin@politaktiv.org"
              :cert-letsencrypt {:letsencrypt-mail "admin@politaktiv.org"}
              :google-id "ggl1234"
+             :listening-port "443"
+             :mod-jk {:app-port "8009"}
+             :maintainance-page-content ["test"]
              }]})
 
 (def liferay-example-vhost
@@ -47,9 +50,9 @@
   "  </Location>"
   "  "  
   "  JkMount /* mod_jk_www"
-  "  "  
-  "  Alias /ggl1234.html \"/var/www/static/google/ggl1234.html\""
-  "  JkUnMount /ggl1234.html mod_jk_www"
+  "   "
+  "  Alias /googleggl1234.html \"/var/www/static/google/googleggl1234.html\""
+  "  JkUnMount /googleggl1234.html mod_jk_www"
   "  "  
   "  ErrorDocument 503 /error/503.html"
   "  Alias /error \"/var/www/static/error\""
@@ -69,10 +72,13 @@
   "  "  
   "</VirtualHost>"])
 
+(defn trim-string-vector [string-vector] (filter #(not= % "") (map clojure.string/trim string-vector)))
+
+
 (deftest vhost
   (testing 
     "test the server spec" 
-    (is (= liferay-example-vhost
-          (sut/vhost 
-            (dda-crate/merge-config httpd/dda-httpd-crate liferay-config)))
+    (is (= (trim-string-vector liferay-example-vhost)
+          (trim-string-vector(sut/vhost 
+                               (dda-crate/merge-config httpd/dda-httpd-crate liferay-config))))
     )))

@@ -70,19 +70,21 @@
                     (auth/vhost-basic-auth-options
                       :domain-name domain-name))))
           )
-          (when (contains? vhost-config :google-id)
-            (google/vhost-ownership-verification 
-              (get-in vhost-config [:google-id])
-              use-mod-jk))
-          (when (contains? vhost-config [:maintainance-page-content])
-            (maintainance/vhost-service-unavailable-error-page use-mod-jk))
+        (when (contains? vhost-config :mod-jk)
+                         (jk/vhost-jk-mount)) 
+        (when (contains? vhost-config :google-id)
+          (google/vhost-ownership-verification 
+            :id (get-in vhost-config [:google-id])
+            :consider-jk use-mod-jk)) 
+          (when (contains? vhost-config :maintainance-page-content)
+            (maintainance/vhost-service-unavailable-error-page :consider-jk use-mod-jk))
           (vhost/vhost-log 
               :error-name "error.log"
               :log-name "ssl-access.log"
               :log-format "combined")
-          (when (contains? vhost-config [:cert-letsencrypt])
+          (when (contains? vhost-config :cert-letsencrypt)
             (gnutls/vhost-gnutls-letsencrypt domain-name))
-          (when (contains? vhost-config [:cert-manual])
+          (when (contains? vhost-config :cert-manual)
             (gnutls/vhost-gnutls domain-name))
           vhost/vhost-tail
         ))
