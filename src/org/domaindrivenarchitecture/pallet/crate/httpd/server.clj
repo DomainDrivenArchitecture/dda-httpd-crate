@@ -52,7 +52,6 @@
   [config :- schema/HttpdConfig]
   (let [vhost-config (first (get-in config [:vhosts]))]
     (apache2/config-apache2-production-grade)
-    (jk/configure-mod-jk-worker)
     (maintainance/write-maintainance-file 
       :content (st/get-in vhost-config :maintainance-page-content))
   ))

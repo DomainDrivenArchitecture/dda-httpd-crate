@@ -100,6 +100,7 @@
 	       (get-in vhost-config :domain-cert) 
 	       (get-in vhost-config :domain-key) 
 	       (get-in vhost-config :ca-cert)))
+    ; TODO jem: put timeouts here
     (jk/configure-mod-jk-worker)
     (google/configure-ownership-verification (get-in vhost-config [:id]))    
     (apache2/configure-and-enable-vhost
