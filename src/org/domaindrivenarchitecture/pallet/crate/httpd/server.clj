@@ -26,20 +26,33 @@
     [httpd.crate.webserver-maintainance :as maintainance]
     [org.domaindrivenarchitecture.pallet.crate.httpd.schema :as schema]))
 
+(s/defn reducer-module-used :- s/Bool
+  "searches throug the whole config in oder to find out, wheter a specific module is used."
+  [key :- s/Keyword]
+  (fn [vhost-config1 vhost-config2]
+    (or (contains? vhost-config1 key)
+        (contains? vhost-config2 key))))
+
+(s/defn module-used? :- s/Bool
+  "searches throug the whole config in oder to find out, wheter a specific module is used."
+  [config :- schema/HttpdConfig
+   key :- s/Keyword]
+  (reduce (reducer-module-used key)  (get-in config [:vhosts])))
 
 (s/defn install
   [config :- schema/HttpdConfig]
   (apache2/install-apache2-action)
   (apache2/install-apachetop-action)
   (gnutls/install-mod-gnutls)
-  (when (contains? config :mod-jk) 
+  (when (module-used? config :mod-jk) 
     (jk/install-mod-jk))
   (rewrite/install-mod-rewrite))
 
 (s/defn configure
-  [config]
-  (apache2/config-apache2-production-grade)
-  (jk/configure-mod-jk-worker)
-  (maintainance/write-maintainance-file 
-    :content (st/get-in config :maintainance-page-content))
-  )
+  [config :- schema/HttpdConfig]
+  (let [vhost-config (first (get-in config [:vhosts]))]
+    (apache2/config-apache2-production-grade)
+    (jk/configure-mod-jk-worker)
+    (maintainance/write-maintainance-file 
+      :content (st/get-in vhost-config :maintainance-page-content))
+  ))

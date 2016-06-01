@@ -20,9 +20,9 @@
 
 ; TODO: krj 2016.05.27: should consider if/where :domain-name needs to be inserted
 ;see vhost/prefix-wrapper and vhost/configure for details
-(def HttpdConfig
+(def VhostConfig
   "defines a schema for a httpdConfig"
-  {:fqdn s/Str
+  {:domain-name s/Str
    :listening-port s/Str 
    :server-admin-email s/Str
    ; either letsencrypt or manual certificates
@@ -36,3 +36,5 @@
    (s/optional-key :maintainance-page-content) [s/Str]
    (s/optional-key :google-id) s/Str})
 
+(def HttpdConfig 
+  {:vhosts [VhostConfig]})
