@@ -37,4 +37,4 @@
    (s/optional-key :google-id) s/Str})
 
 (def HttpdConfig 
-  {:vhosts [VhostConfig]})
+  {:vhosts {s/Keyword VhostConfig}})

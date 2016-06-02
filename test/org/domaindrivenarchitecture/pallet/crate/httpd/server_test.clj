@@ -1,3 +1,5 @@
+
+
 ; Licensed to the Apache Software Foundation (ASF) under one
 ; or more contributor license agreements. See the NOTICE file
 ; distributed with this work for additional information
@@ -14,71 +16,22 @@
 ; See the License for the specific language governing permissions and
 ; limitations under the License.
 
-(ns org.domaindrivenarchitecture.pallet.crate.httpd.vhost-test
+(ns org.domaindrivenarchitecture.pallet.crate.httpd.server-test
   (:require
     [clojure.test :refer :all]
     [schema.core :as s]
     [org.domaindrivenarchitecture.pallet.core.dda-crate :as dda-crate]
     [org.domaindrivenarchitecture.pallet.crate.httpd :as httpd]
-    [org.domaindrivenarchitecture.pallet.crate.httpd.vhost :as sut]
+    [org.domaindrivenarchitecture.pallet.crate.httpd.server :as sut]
   ))
 
-(def liferay-config 
-  {:vhosts [{:domain-name "intermediate.intra.politaktiv.org"
-             :server-admin-email "admin@politaktiv.org"
-             :cert-letsencrypt {:letsencrypt-mail "admin@politaktiv.org"}
-             :google-id "ggl1234"
-             :listening-port "443"
-             :mod-jk {:app-port "8009"}
-             :maintainance-page-content ["test"]
-             }]})
+(def config {})
 
-(def liferay-example-vhost
-  ["<VirtualHost *:443>"
-  "  ServerName intermediate.intra.politaktiv.org"
-  "  ServerAdmin admin@politaktiv.org"
-  "  "  
-  "  <Location />"
-  "    Order allow,deny"
-  "    Allow from all"
-  "    "    
-  "    AuthName \"Authorization for intermediate.intra.politaktiv.org\""
-  "    AuthType Basic"
-  "    AuthBasicProvider file"
-  "    AuthUserFile /etc/apache2/htpasswd-intermediate.intra.politaktiv.org"
-  "    Require valid-user"
-  "  </Location>"
-  "  "  
-  "  JkMount /* mod_jk_www"
-  "   "
-  "  Alias /googleggl1234.html \"/var/www/static/google/googleggl1234.html\""
-  "  JkUnMount /googleggl1234.html mod_jk_www"
-  "  "  
-  "  ErrorDocument 503 /error/503.html"
-  "  Alias /error \"/var/www/static/error\""
-  "  JkUnMount /error/* mod_jk_www"
-  "  "  
-  "  ErrorLog \"/var/log/apache2/error.log\""
-  "  LogLevel warn"
-  "  CustomLog \"/var/log/apache2/ssl-access.log\" combined"
-  "  "
-  "  GnuTLSEnable on"
-  "  GnuTLSCacheTimeout 300"
-  "  GnuTLSPriorities SECURE:!VERS-SSL3.0:!MD5:!DHE-RSA:!DHE-DSS:!AES-256-CBC:%COMPAT"
-  "  GnuTLSExportCertificates on"
-  "  "  
-  "  GnuTLSCertificateFile /etc/letsencrypt/live/intermediate.intra.politaktiv.org/fullchain.pem"
-  "  GnuTLSKeyFile /etc/letsencrypt/live/intermediate.intra.politaktiv.org/privkey.pem"
-  "  "  
-  "</VirtualHost>"])
-
-(defn trim-string-vector [string-vector] (filter #(not= % "") (map clojure.string/trim string-vector)))
-
-
-(deftest vhost
+(deftest module-used-test
   (testing 
-    "test the server spec" 
-    (is (= (trim-string-vector liferay-example-vhost)
-          (trim-string-vector(sut/vhost 
-                               (dda-crate/merge-config httpd/dda-httpd-crate liferay-config))))
-    )))
+    "test module-used?" 
+    (is 
+      (sut/module-used? (dda-crate/merge-config httpd/dda-httpd-crate config)
+                        :mod-jk)
+      )
+    ))

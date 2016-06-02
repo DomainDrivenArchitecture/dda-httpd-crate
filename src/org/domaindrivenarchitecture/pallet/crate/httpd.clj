@@ -25,13 +25,16 @@
 
 (def HttpdConfig schema/HttpdConfig)
 
+(def default-vhost-config
+  {:domain-name "localhost.localdomain"
+   :listening-port "443"
+   :server-admin-email "admin@localdomain"
+   :maintainance-page-content ["<h1>Webserver Maintainance Mode</h1>"]
+   :mod-jk {:app-port "8009"}
+   })
+
 (def default-config
-  {:vhosts [{:domain-name "localhost.localdomain"
-             :listening-port "443"
-             :server-admin-email "admin@localdomain"
-             :maintainance-page-content ["<h1>Webserver Maintainance Mode</h1>"]
-             :mod-jk {:app-port "8009"}
-             }]})
+  {:vhosts {:default default-vhost-config}})
 
 (def dda-httpd-crate 
   (dda-crate/make-dda-crate
