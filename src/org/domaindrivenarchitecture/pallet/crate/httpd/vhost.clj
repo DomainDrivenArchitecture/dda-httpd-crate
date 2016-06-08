@@ -35,12 +35,11 @@
 (s/defn vhost-head-wrapper
   "wrapper function for the vhost-head function in the httpd-crate"
   [config :- schema/HttpdConfig]
-  ; TODO: krj 2016.05.27: (st/get-in ..) will not work here and needs to be changed
   ; jem: Why should we use a wrapper here?
   (vhost/vhost-head 
-    :listening-port (st/get-in config [:listening-port])
-    :domain-name  (st/get-in config [:domain-name])
-    :server-admin-email (st/get-in config [:server-admin-email])))
+    :listening-port (get-in config [:listening-port])
+    :domain-name  (get-in config [:domain-name])
+    :server-admin-email (get-in config [:server-admin-email])))
 
 (s/defn vhost
   "defines a httpd servers vhost."
