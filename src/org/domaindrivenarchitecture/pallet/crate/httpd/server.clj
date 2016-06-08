@@ -53,5 +53,5 @@
   (let [vhost-config (first (get-in config [:vhosts]))]
     (apache2/config-apache2-production-grade)
     (maintainance/write-maintainance-file 
-      :content (st/get-in vhost-config :maintainance-page-content))
+      :content (get-in vhost-config [:maintainance-page-content]))
   ))

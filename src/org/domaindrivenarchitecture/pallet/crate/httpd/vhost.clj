@@ -42,9 +42,6 @@
     :domain-name  (st/get-in config [:domain-name])
     :server-admin-email (st/get-in config [:server-admin-email])))
 
-; jem: Why should we use a wrapper here??!
-(def vhost-tail-wrapper ["</VirtualHost>"])
-
 (s/defn vhost
   "defines a httpd servers vhost."
   [config :- schema/HttpdConfig]
@@ -90,24 +87,25 @@
           ))
     ))
 
-; TODO: krj 2016.05.27: needs testing and prob fixing
 (s/defn configure
   [config :- schema/HttpdConfig]
   (let [vhost-config (first (get-in config [:vhosts]))]  
     (when (contains? vhost-config :cert-manual)
       (gnutls/configure-gnutls-credentials
-	       (get-in vhost-config :domain-name)
-	       (get-in vhost-config :domain-cert) 
-	       (get-in vhost-config :domain-key) 
-	       (get-in vhost-config :ca-cert)))
+	       (:domain-name (get-in vhost-config :domain-name))
+	       (:domain-cert (get-in vhost-config :domain-cert)) 
+	       (:domain-key (get-in vhost-config :domain-key)) 
+	       (:ca-cert (get-in vhost-config :ca-cert))))
     ; TODO jem: put timeouts here
     (jk/configure-mod-jk-worker)
-    (google/configure-ownership-verification (get-in vhost-config [:id]))    
+    (google/configure-ownership-verification (:id (get-in vhost-config [:id])))    
     (apache2/configure-and-enable-vhost
       "000-default"
       (vhost/vhost-conf-default-redirect-to-https-only
-        (get-in vhost-config :domain-name)
-        (get-in vhost-config :server-admin-email) (str "admin@" (get-in vhost-config [:domain-name]))))
+        (:domain-name (get-in vhost-config :domain-name))
+        (:adminmail (get-in vhost-config :server-admin-email)) 
+        ;(str "admin@" (get-in vhost-config [:domain-name]))
+        ))
     (apache2/configure-and-enable-vhost
       "000-default-ssl" (vhost vhost-config))
     ))
