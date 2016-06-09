@@ -32,79 +32,73 @@
     [org.domaindrivenarchitecture.pallet.crate.httpd.schema :as schema]
   ))
 
-(s/defn vhost-head-wrapper
-  "wrapper function for the vhost-head function in the httpd-crate"
-  [config :- schema/HttpdConfig]
-  ; jem: Why should we use a wrapper here?
-  (vhost/vhost-head 
-    :listening-port (get-in config [:listening-port])
-    :domain-name  (get-in config [:domain-name])
-    :server-admin-email (get-in config [:server-admin-email])))
-
 (s/defn vhost
-  "defines a httpd servers vhost."
-  [config :- schema/HttpdConfig]
-  (into 
-    []
-    (let [vhost-config (first (get-in config [:vhosts]))
-          use-mod-jk (contains? vhost-config :mod-jk)
-          domain-name (get-in vhost-config [:domain-name])]
-      (concat
-        (vhost/vhost-head 
-          :listening-port (st/get-in vhost-config [:listening-port])
-          :domain-name  domain-name
-          :server-admin-email (st/get-in vhost-config [:server-admin-email]))
-        (httpd-common/prefix 
-          "  "
-          (vhost/vhost-location
-            :location-options
-            (into []
-                  (concat
-                    ["Order allow,deny"
-                     "Allow from all"
-                     ""]
-                    (auth/vhost-basic-auth-options
-                      :domain-name domain-name))))
-          )
-        (when (contains? vhost-config :mod-jk)
-                         (jk/vhost-jk-mount)) 
-        (when (contains? vhost-config :google-id)
-          (google/vhost-ownership-verification 
-            :id (get-in vhost-config [:google-id])
-            :consider-jk use-mod-jk)) 
-        (when (contains? vhost-config :maintainance-page-content)
-          (maintainance/vhost-service-unavailable-error-page :consider-jk use-mod-jk))
-        (vhost/vhost-log 
-            :error-name "error.log"
-            :log-name "ssl-access.log"
-            :log-format "combined")
-        (when (contains? vhost-config :cert-letsencrypt)
-          (gnutls/vhost-gnutls-letsencrypt domain-name))
-        (when (contains? vhost-config :cert-manual)
-          (gnutls/vhost-gnutls domain-name))
-          vhost/vhost-tail
-          ))
+  "Creates the vhost configuration from a VhostConfig."
+  [vhost-config :- schema/VhostConfig]
+  (let [use-mod-jk (contains? vhost-config :mod-jk)
+        domain-name (get-in vhost-config [:domain-name])]
+    (vec (concat
+           (vhost/vhost-head 
+             :listening-port (st/get-in vhost-config [:listening-port])
+             :domain-name  domain-name
+             :server-admin-email (st/get-in vhost-config [:server-admin-email]))
+           (httpd-common/prefix 
+             "  " (vec (concat
+             (vhost/vhost-location
+               :location-options
+               (vec (concat
+                      ["Order allow,deny"
+                       "Allow from all"
+                       ""]
+                      (auth/vhost-basic-auth-options
+                        :domain-name domain-name))))
+             (when (contains? vhost-config :mod-jk)
+               (concat (jk/vhost-jk-mount) [""]))
+             (when (contains? vhost-config :google-id)
+               (google/vhost-ownership-verification 
+                 :id (get-in vhost-config [:google-id])
+                 :consider-jk use-mod-jk)) 
+             (when (contains? vhost-config :maintainance-page-content)
+               (maintainance/vhost-service-unavailable-error-page :consider-jk use-mod-jk))
+             (vhost/vhost-log 
+               :error-name "error.log"
+               :log-name "ssl-access.log"
+               :log-format "combined")
+             (when (contains? vhost-config :cert-letsencrypt)
+               (gnutls/vhost-gnutls-letsencrypt domain-name))
+             (when (contains? vhost-config :cert-manual)
+               (gnutls/vhost-gnutls domain-name))
+             )))
+           vhost/vhost-tail
+           ))
     ))
+
+(s/defn configure-vhost 
+  [vhost-name :- s/Str
+   vhost-config :- schema/VhostConfig]
+  (when (contains? vhost-config :cert-manual)
+    (gnutls/configure-gnutls-credentials
+      (:domain-name (get-in vhost-config :domain-name))
+      (:domain-cert (get-in vhost-config :domain-cert)) 
+      (:domain-key (get-in vhost-config :domain-key)) 
+      (:ca-cert (get-in vhost-config :ca-cert))))
+  ; TODO jem: put timeouts here
+  (jk/configure-mod-jk-worker)
+  (google/configure-ownership-verification (:id (get-in vhost-config [:id])))    
+  (apache2/configure-and-enable-vhost
+    (str "000-" vhost-name)
+    (vhost/vhost-conf-default-redirect-to-https-only
+      (:domain-name (get-in vhost-config :domain-name))
+      (:adminmail (get-in vhost-config :server-admin-email)) 
+      ;(str "admin@" (get-in vhost-config [:domain-name]))
+      ))
+  (apache2/configure-and-enable-vhost
+    (str "000-" vhost-name "-ssl") (vhost vhost-config))  
+)
 
 (s/defn configure
   [config :- schema/HttpdConfig]
-  (let [vhost-config (first (get-in config [:vhosts]))]  
-    (when (contains? vhost-config :cert-manual)
-      (gnutls/configure-gnutls-credentials
-	       (:domain-name (get-in vhost-config :domain-name))
-	       (:domain-cert (get-in vhost-config :domain-cert)) 
-	       (:domain-key (get-in vhost-config :domain-key)) 
-	       (:ca-cert (get-in vhost-config :ca-cert))))
-    ; TODO jem: put timeouts here
-    (jk/configure-mod-jk-worker)
-    (google/configure-ownership-verification (:id (get-in vhost-config [:id])))    
-    (apache2/configure-and-enable-vhost
-      "000-default"
-      (vhost/vhost-conf-default-redirect-to-https-only
-        (:domain-name (get-in vhost-config :domain-name))
-        (:adminmail (get-in vhost-config :server-admin-email)) 
-        ;(str "admin@" (get-in vhost-config [:domain-name]))
-        ))
-    (apache2/configure-and-enable-vhost
-      "000-default-ssl" (vhost vhost-config))
-    ))
+  (let [vhost-configs (get-in config [:vhosts])]  
+    (doseq [[vhost-name vhost-config] vhost-configs] 
+      (configure-vhost vhost-name vhost-config)
+    )))
