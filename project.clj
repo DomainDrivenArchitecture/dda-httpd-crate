@@ -6,7 +6,7 @@
                  [metosin/schema-tools "0.9.0"]
                  [org.domaindrivenarchitecture/dda-config-commons "0.1.4"]
                  [org.domaindrivenarchitecture/dda-pallet "0.1.0-SNAPSHOT"]
-                 [org.domaindrivenarchitecture/httpd "0.2.2"]]
+                 [org.domaindrivenarchitecture/httpd "0.2.3-SNAPSHOT"]]
   :repositories [["snapshots" :clojars]
                  ["releases" :clojars]]
   :deploy-repositories [["snapshots" :clojars]

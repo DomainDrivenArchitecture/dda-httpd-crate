@@ -31,7 +31,17 @@
                                   :domain-key s/Str 
                                   (s/optional-key :ca-cert) s/Str}
    ; mod_jk
-   (s/optional-key :mod-jk) {(s/optional-key :app-port) s/Str}
+   (s/optional-key :mod-jk) {(s/optional-key :app-port) s/Str
+                             (s/optional-key :host) s/Str
+                             (s/optional-key :worker) s/Str
+                             (s/optional-key :socket-timeout) s/Int
+                             (s/optional-key :socket-connect-timeout) s/Int
+                             (s/optional-key :JkStripSession) s/Str
+                             (s/optional-key :JkWatchdogInterval) s/Int
+                             }
+   ;limits
+   (s/optional-key :limits) {(s/optional-key :server-limit) s/Int
+                             (s/optional-key :max-clients) s/Int}
    ; other stuff
    (s/optional-key :maintainance-page-content) [s/Str]
    (s/optional-key :google-id) s/Str})

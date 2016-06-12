@@ -74,6 +74,7 @@
     ))
 
 (s/defn configure-vhost 
+  "Takes a vhost-name and vhost-config and generates vhost-config files"
   [vhost-name :- s/Str
    vhost-config :- schema/VhostConfig]
   (when (contains? vhost-config :cert-manual)
@@ -83,7 +84,9 @@
       (:domain-key (get-in vhost-config :domain-key)) 
       (:ca-cert (get-in vhost-config :ca-cert))))
   ; TODO jem: put timeouts here
-  (jk/configure-mod-jk-worker)
+  (apache2/configure-file-and-enable "limits.conf" (httpd-config/limits (get-in vhost-config [:limits])))
+  (when (contains? vhost-config :mod-jk)
+    (jk/configure-mod-jk-worker (get-in vhost-config [:mod-jk])))
   (google/configure-ownership-verification (:id (get-in vhost-config [:id])))    
   (apache2/configure-and-enable-vhost
     (str "000-" vhost-name)
