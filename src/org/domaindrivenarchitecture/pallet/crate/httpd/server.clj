@@ -45,7 +45,7 @@
   (apache2/install-apachetop-action)
   (gnutls/install-mod-gnutls)
   (when (module-used? config :mod-jk) 
-    (jk/install-mod-jk (get-in config [:vhosts :mod-jk]))
+    (jk/install-mod-jk (get-in config [:vhosts :mod-jk])))
   (rewrite/install-mod-rewrite))
 
 (s/defn configure
