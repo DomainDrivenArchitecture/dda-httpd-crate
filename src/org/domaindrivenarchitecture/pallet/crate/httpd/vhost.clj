@@ -17,7 +17,6 @@
 (ns org.domaindrivenarchitecture.pallet.crate.httpd.vhost
   (:require
     [schema.core :as s]
-    [schema-tools.core :as st]
     [org.domaindrivenarchitecture.config.commons.map-utils :as map-utils]
     [httpd.crate.apache2 :as apache2]
     [httpd.crate.vhost :as vhost]
@@ -79,7 +78,8 @@
    vhost-config :- schema/VhostConfig]
   (when (contains? vhost-config :cert-manual)
     (gnutls/configure-gnutls-credentials
-      (:domain-name (get-in vhost-config :domain-name))
+      ; TODO review jem 2016_06_14: use [..] and remove function ... 
+      :domain-name (get-in vhost-config [:domain-name])
       (:domain-cert (get-in vhost-config :domain-cert)) 
       (:domain-key (get-in vhost-config :domain-key)) 
       (:ca-cert (get-in vhost-config :ca-cert))))

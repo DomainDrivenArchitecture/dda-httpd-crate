@@ -72,6 +72,45 @@
   "  "  
   "</VirtualHost>"])
 
+(def etc-libapache2-mod-jk-workers-properties
+  ["workers.tomcat_home=/usr/share/tomcat6"
+   "workers.java_home=/usr/lib/jvm/default-java"
+   "ps=/"
+   ""
+   "#"
+   "#------ worker list ------------------------------------------"
+   "worker.list=mod_jk_www"
+   "worker.mod_jk_www.port=8009"
+   "worker.mod_jk_www.host=127.0.0.1"
+   "worker.mod_jk_www.type=ajp13"
+   "worker.mod_jk_www.socket_timeout=900"
+   "worker.mod_jk_www.socket_keepalive=false"
+   "worker.mod_jk_www.connection_pool_timeout=100"
+   ])
+
+(def etc-libapache2-mod-jk-httpd-jk-conf
+  ["<IfModule jk_module>"
+   "    JkWorkersFile /etc/libapache2-mod-jk/workers.properties"
+   "    JkLogFile /var/log/apache2/mod_jk.log"
+   "    JkLogLevel info"
+   "    JkShmFile /var/log/apache2/jk-runtime-status"
+   "    # JkOptions +RejectUnsafeURI"
+   "    # JkStripSession On"
+   "    JkWatchdogInterval 60"
+   "    <Location /jk-status>"
+   "        JkMount jk-status"
+   "        Order deny,allow"
+   "        Deny from all"
+   "        Allow from 127.0.0.1"
+   "    </Location>"
+   "    <Location /jk-manager>"
+   "        JkMount jk-manager"
+   "        Order deny,allow"
+   "        Deny from all"
+   "        Allow from 127.0.0.1"
+   "    </Location>"
+   "</IfModule>"])
+
 (deftest vhost
   (testing 
     "Test the creation of an example vhost from configuration." 
