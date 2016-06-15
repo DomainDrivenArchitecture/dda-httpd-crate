@@ -54,12 +54,12 @@
 
 (s/defn install
   "install function for httpd-crate."
-  [config :- HpptdConfig]
+  [config :- HttpdConfig]
   (server/install config))
 
 (s/defn configure
   "configure function for httpd-crate."
-  [config :- HpptdConfig]
+  [config :- HttpdConfig]
   (server/configure config)
   (vhost/configure))
   
