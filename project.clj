@@ -3,7 +3,6 @@
   :dependencies [[org.clojure/clojure "1.7.0"]
                  [com.palletops/pallet "0.8.12"]
                  [prismatic/schema "1.1.1"]
-                 [metosin/schema-tools "0.9.0"]
                  [org.domaindrivenarchitecture/dda-config-commons "0.1.4"]
                  [org.domaindrivenarchitecture/dda-pallet "0.1.0-SNAPSHOT"]
                  [org.domaindrivenarchitecture/httpd "0.2.3-SNAPSHOT"]]

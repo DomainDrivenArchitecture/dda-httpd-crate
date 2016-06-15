@@ -52,16 +52,26 @@
     :config-default default-config
     ))
 
+(s/defn install
+  "install function for httpd-crate."
+  [config :- HpptdConfig]
+  (server/install config))
+
+(s/defn configure
+  "configure function for httpd-crate."
+  [config :- HpptdConfig]
+  (server/configure config)
+  (vhost/configure))
+  
 (defmethod dda-crate/dda-install 
   :dda-httpd [dda-crate partial-effective-config]
   (let [config (dda-crate/merge-config dda-crate partial-effective-config)]
-    (server/install config)))
+    (install config)))
 
 (defmethod dda-crate/dda-configure 
   :dda-httpd [dda-crate partial-effective-config]
   (let [config (dda-crate/merge-config dda-crate partial-effective-config)]
-    (server/configure config)
-    (vhost/configure)))
+    (configure config)))
 
 (def with-httpd
   (dda-crate/create-server-spec dda-httpd-crate))

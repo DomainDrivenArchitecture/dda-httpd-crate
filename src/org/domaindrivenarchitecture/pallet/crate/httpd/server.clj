@@ -44,7 +44,9 @@
   (apache2/install-apache2-action)
   (apache2/install-apachetop-action)
   (gnutls/install-mod-gnutls)
-  (when (module-used? config :mod-jk) 
+  ; TODO: review jem 2016_06_15: If we have a central modjk-configuration part, 
+  ; we should also have a central configuration for ...
+  (when (module-used? config :mod-jk)
     (jk/install-mod-jk (get-in config [:vhosts :mod-jk])))
   (rewrite/install-mod-rewrite))
 

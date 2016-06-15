@@ -38,9 +38,9 @@
         domain-name (get-in vhost-config [:domain-name])]
     (vec (concat
            (vhost/vhost-head 
-             :listening-port (st/get-in vhost-config [:listening-port])
+             :listening-port (get-in vhost-config [:listening-port])
              :domain-name  domain-name
-             :server-admin-email (st/get-in vhost-config [:server-admin-email]))
+             :server-admin-email (get-in vhost-config [:server-admin-email]))
            (httpd-common/prefix 
              "  " (vec (concat
              (vhost/vhost-location
