@@ -44,10 +44,9 @@
   (apache2/install-apache2-action)
   (apache2/install-apachetop-action)
   (gnutls/install-mod-gnutls)
-  ; TODO: review jem 2016_06_15: If we have a central modjk-configuration part, 
-  ; we should also have a central configuration for ...
   (when (module-used? config :mod-jk)
-    (jk/install-mod-jk (get-in config [:vhosts :mod-jk])))
+    (jk/install-mod-jk :jkStripSession (get-in config [:mod-jk :jkStripSession])
+                       :jkWatchdogInterval (get-in config [:mod-jk :jkWatchdogInterval])))
   (rewrite/install-mod-rewrite))
 
 (s/defn configure
