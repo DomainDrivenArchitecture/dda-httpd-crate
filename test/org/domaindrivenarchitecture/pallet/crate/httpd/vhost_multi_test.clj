@@ -22,46 +22,14 @@
     [org.domaindrivenarchitecture.pallet.crate.httpd :as httpd]
     [org.domaindrivenarchitecture.pallet.crate.httpd.vhost :as sut]
     [httpd.crate.vhost :as vhost]
+    [httpd.crate.mod-proxy-http :as proxy] ;Not in vhost yet
+    [httpd.crate.mod-gnutls :as gnutls]
   ))
-
-(def VhostConfig2
-  "defines a schema for a httpdConfig"
-  {:domain-name s/Str
-   :listening-port s/Str 
-   :server-admin-email s/Str
-   ; either letsencrypt or manual certificates
-   (s/optional-key :cert-letsencrypt) {:letsencrypt-mail s/Str} 
-   (s/optional-key :cert-manual) {:domain-cert s/Str 
-                                  :domain-key s/Str 
-                                  (s/optional-key :ca-cert) s/Str}
-   ; mod_jk
-   ; TODO review jem 2016_06_14: sub map entries should not be optional. 
-   (s/optional-key :mod-jk) {(s/optional-key :app-port) s/Str
-                             (s/optional-key :host) s/Str
-                             (s/optional-key :worker) s/Str
-                             (s/optional-key :socket-timeout) s/Int
-                             (s/optional-key :socket-connect-timeout) s/Int
-                             (s/optional-key :JkStripSession) s/Str
-                             (s/optional-key :JkWatchdogInterval) s/Int
-                             }
-   ;limits
-   (s/optional-key :limits) {(s/optional-key :server-limit) s/Int
-                             (s/optional-key :max-clients) s/Int}
-   ; other stuff
-   (s/optional-key :maintainance-page-content) [s/Str]
-   (s/optional-key :google-id) s/Str})
 
 (def etc-apache2-meissa-config
   {:domain-name "jira.meissa-gmbh.de"
-   :listening-port "80"
    :server-admin-email "admin@jira.meissa-gmbh.de"})
 
-(def etc-apache2-politaktiv-config
-  {:domain-name "jira.politaktiv.org"
-   :listening-port "80"
-   :server-admin-email "admin@jira.politaktiv.org"})
-
-; This equals (vhost/vhost-conf-default-redirect-to-https-only :domain-name (get-in config1 [:domain-name]) :server-admin-email (get-in config1 [:server-admin-email]))
 (def etc-apache2-sites-enabled-000-meissa-conf
   ["<VirtualHost *:80>"
   "  ServerName jira.meissa-gmbh.de"
@@ -77,6 +45,10 @@
   "  "
   "</VirtualHost>"])
 
+(def etc-apache2-politaktiv-config
+  {:domain-name "jira.politaktiv.org"
+   :server-admin-email "admin@jira.politaktiv.org"})
+
 (def etc-apache2-sites-enabled-000-politaktiv-conf
   ["<VirtualHost *:80>"
    "  ServerName jira.politaktiv.org"
@@ -91,6 +63,18 @@
    "  RewriteRule ^/(.*)$ https://%{SERVER_NAME}/$1 [R=301,L]"
    "  "
    "</VirtualHost>"])
+
+(def etc-apache2-meissa-ssl-config
+  {:domain-name "jira.meissa-gmbh.de"
+   :listening-port "443"
+   :server-admin-email "admin@jira.meissa-gmbh.de"
+   :location-directive false
+   :proxy {:target-port "8080"
+           :additional-directives ["ProxyPreserveHost On"
+                                   "ProxyRequests     Off"]}
+   :cert-manual {:domain-cert "domaincert"
+                 :domain-key "domainkey"
+                 :ca-cert "optional-ca-cert"}})
 
 (def etc-apache2-sites-enabled-000-meissa-ssl-conf
   ["<VirtualHost *:443>"
@@ -110,8 +94,10 @@
    "  GnuTLSPriorities SECURE:!VERS-SSL3.0:!MD5:!DHE-RSA:!DHE-DSS:!AES-256-CBC:%COMPAT"
    "  GnuTLSExportCertificates on"
    "  "
-   "  #GnuTLSCertificateFile /etc/apache2/ssl.crt/jira.meissa-gmbh.de.certs"
-   "  #GnuTLSKeyFile /etc/apache2/ssl.key/jira.meissa-gmbh.de.key"
+   ;"  #GnuTLSCertificateFile /etc/apache2/ssl.crt/jira.meissa-gmbh.de.certs"
+   ;"  #GnuTLSKeyFile /etc/apache2/ssl.key/jira.meissa-gmbh.de.key"
+   ;TODO gec: 2016-06-17: gnutls/vhost-gnutls doesn't use :domain-cert, :domain-key, :ca-cert from config
+   ;                      It just consumes a domain-name and consumes those paths instead with it:
    "  GnuTLSCertificateFile  /etc/letsencrypt/live/jira.meissa-gmbh.de/cert.pem"
    "  GnuTLSKeyFile /etc/letsencrypt/live/jira.meissa-gmbh.de/privkey.pem"
    "  GnuTLSClientCAFile /etc/letsencrypt/live/jira.meissa-gmbh.de/fullchain.pem"
@@ -154,3 +140,9 @@
             :domain-name (get-in etc-apache2-politaktiv-config [:domain-name]) 
             :server-admin-email (get-in etc-apache2-politaktiv-config [:server-admin-email]))))
     ))
+
+;(proxy/vhost-proxy :target-port "8180" :additional-directives ["  ProxyPreserveHost On" "  ProxyRequests     Off"])
+
+(defn trim-string-vector 
+  [string-vector] 
+  (filter #(not= % "") (map clojure.string/trim string-vector)))

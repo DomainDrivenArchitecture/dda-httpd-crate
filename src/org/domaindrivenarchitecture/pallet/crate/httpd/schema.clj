@@ -25,6 +25,7 @@
   {:domain-name s/Str
    :listening-port s/Str 
    :server-admin-email s/Str
+   :location-directive s/Bool
    ; either letsencrypt or manual certificates
    (s/optional-key :cert-letsencrypt) {:letsencrypt-mail s/Str} 
    (s/optional-key :cert-manual) {:domain-cert s/Str 
@@ -40,6 +41,11 @@
                              (s/optional-key :JkStripSession) s/Str
                              (s/optional-key :JkWatchdogInterval) s/Int
                              }
+   ;proxy
+   (s/optional-key :proxy) {(s/optional-key :target-host) s/Str
+                            (s/optional-key :target-port) s/Str
+                            (s/optional-key :mapped-url-path) s/Str
+                            (s/optional-key :additional-directives) [s/Str]}
    ;limits
    (s/optional-key :limits) {(s/optional-key :server-limit) s/Int
                              (s/optional-key :max-clients) s/Int}
