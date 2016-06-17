@@ -42,10 +42,8 @@
                              (s/optional-key :JkWatchdogInterval) s/Int
                              }
    ;proxy
-   (s/optional-key :proxy) {(s/optional-key :target-host) s/Str
-                            (s/optional-key :target-port) s/Str
-                            (s/optional-key :mapped-url-path) s/Str
-                            (s/optional-key :additional-directives) [s/Str]}
+   (s/optional-key :proxy) {:target-port s/Str
+                            :additional-directives [s/Str]}
    ;limits
    (s/optional-key :limits) {(s/optional-key :server-limit) s/Int
                              (s/optional-key :max-clients) s/Int}

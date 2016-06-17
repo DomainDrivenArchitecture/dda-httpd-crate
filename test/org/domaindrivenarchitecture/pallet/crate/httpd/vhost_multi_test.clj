@@ -22,13 +22,7 @@
     [org.domaindrivenarchitecture.pallet.crate.httpd :as httpd]
     [org.domaindrivenarchitecture.pallet.crate.httpd.vhost :as sut]
     [httpd.crate.vhost :as vhost]
-    [httpd.crate.mod-proxy-http :as proxy] ;Not in vhost yet
-    [httpd.crate.mod-gnutls :as gnutls]
   ))
-
-(def etc-apache2-meissa-config
-  {:domain-name "jira.meissa-gmbh.de"
-   :server-admin-email "admin@jira.meissa-gmbh.de"})
 
 (def etc-apache2-sites-enabled-000-meissa-conf
   ["<VirtualHost *:80>"
@@ -45,10 +39,6 @@
   "  "
   "</VirtualHost>"])
 
-(def etc-apache2-politaktiv-config
-  {:domain-name "jira.politaktiv.org"
-   :server-admin-email "admin@jira.politaktiv.org"})
-
 (def etc-apache2-sites-enabled-000-politaktiv-conf
   ["<VirtualHost *:80>"
    "  ServerName jira.politaktiv.org"
@@ -64,17 +54,7 @@
    "  "
    "</VirtualHost>"])
 
-(def etc-apache2-meissa-ssl-config
-  {:domain-name "jira.meissa-gmbh.de"
-   :listening-port "443"
-   :server-admin-email "admin@jira.meissa-gmbh.de"
-   :location-directive false
-   :proxy {:target-port "8080"
-           :additional-directives ["ProxyPreserveHost On"
-                                   "ProxyRequests     Off"]}
-   :cert-manual {:domain-cert "domaincert"
-                 :domain-key "domainkey"
-                 :ca-cert "optional-ca-cert"}})
+
 
 (def etc-apache2-sites-enabled-000-meissa-ssl-conf
   ["<VirtualHost *:443>"
@@ -96,11 +76,8 @@
    "  "
    ;"  #GnuTLSCertificateFile /etc/apache2/ssl.crt/jira.meissa-gmbh.de.certs"
    ;"  #GnuTLSKeyFile /etc/apache2/ssl.key/jira.meissa-gmbh.de.key"
-   ;TODO gec: 2016-06-17: gnutls/vhost-gnutls doesn't use :domain-cert, :domain-key, :ca-cert from config
-   ;                      It just consumes a domain-name and consumes those paths instead with it:
-   "  GnuTLSCertificateFile  /etc/letsencrypt/live/jira.meissa-gmbh.de/cert.pem"
+   "  GnuTLSCertificateFile  /etc/letsencrypt/live/jira.meissa-gmbh.de/fullchain.pem"
    "  GnuTLSKeyFile /etc/letsencrypt/live/jira.meissa-gmbh.de/privkey.pem"
-   "  GnuTLSClientCAFile /etc/letsencrypt/live/jira.meissa-gmbh.de/fullchain.pem"
    "  "
    "</VirtualHost>"])
 
@@ -113,7 +90,7 @@
    "  ProxyRequests     Off"
    "  ProxyPass / http://localhost:8180/"
    "  ProxyPassReverse / http://localhost:8180/"
-   "  "
+   ;"  "
    "  ErrorLog \"/var/log/apache2/error.log\""
    "  LogLevel warn"
    "  CustomLog \"/var/log/apache2/ssl-access.log\" combined"
@@ -128,6 +105,28 @@
    "  "
    "</VirtualHost>"])
 
+(def etc-apache2-meissa-config
+  {:domain-name "jira.meissa-gmbh.de"
+   :listening-port "443"
+   :server-admin-email "admin@jira.meissa-gmbh.de"
+   :location-directive false
+   :proxy {:target-port "8080"
+           :additional-directives ["ProxyPreserveHost On"
+                                   "ProxyRequests     Off"]}
+   :cert-manual {:domain-cert "domaincert"
+                 :domain-key "domainkey"
+                 :ca-cert "optional-ca-cert"}})
+
+(def etc-apache2-politaktiv-config
+  {:domain-name "jira.politaktiv.org"
+   :listening-port "443"
+   :server-admin-email "admin@jira.politaktiv.org"
+   :location-directive false
+   :proxy {:target-port "8180"
+           :additional-directives ["ProxyPreserveHost On"
+                                   "ProxyRequests     Off"]}
+   :cert-letsencrypt {:letsencrypt-mail "test.mail@m.de"}})
+
 (deftest vhost
   (testing 
     "Test the creation of an example vhost from configuration." 
@@ -139,10 +138,8 @@
           (vhost/vhost-conf-default-redirect-to-https-only 
             :domain-name (get-in etc-apache2-politaktiv-config [:domain-name]) 
             :server-admin-email (get-in etc-apache2-politaktiv-config [:server-admin-email]))))
+    (is (= (sut/vhost etc-apache2-meissa-config) 
+           etc-apache2-sites-enabled-000-meissa-ssl-conf)) ; FAILS
+    (is (= (sut/vhost etc-apache2-politaktiv-config) 
+           etc-apache2-sites-enabled-000-politaktiv-ssl-conf))
     ))
-
-;(proxy/vhost-proxy :target-port "8180" :additional-directives ["  ProxyPreserveHost On" "  ProxyRequests     Off"])
-
-(defn trim-string-vector 
-  [string-vector] 
-  (filter #(not= % "") (map clojure.string/trim string-vector)))
