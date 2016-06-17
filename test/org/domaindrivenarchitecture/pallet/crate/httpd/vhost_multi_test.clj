@@ -21,9 +21,48 @@
     [org.domaindrivenarchitecture.pallet.core.dda-crate :as dda-crate]
     [org.domaindrivenarchitecture.pallet.crate.httpd :as httpd]
     [org.domaindrivenarchitecture.pallet.crate.httpd.vhost :as sut]
+    [httpd.crate.vhost :as vhost]
   ))
 
-(def etc-apache2-sites-enabled-000-meissa.conf
+(def VhostConfig2
+  "defines a schema for a httpdConfig"
+  {:domain-name s/Str
+   :listening-port s/Str 
+   :server-admin-email s/Str
+   ; either letsencrypt or manual certificates
+   (s/optional-key :cert-letsencrypt) {:letsencrypt-mail s/Str} 
+   (s/optional-key :cert-manual) {:domain-cert s/Str 
+                                  :domain-key s/Str 
+                                  (s/optional-key :ca-cert) s/Str}
+   ; mod_jk
+   ; TODO review jem 2016_06_14: sub map entries should not be optional. 
+   (s/optional-key :mod-jk) {(s/optional-key :app-port) s/Str
+                             (s/optional-key :host) s/Str
+                             (s/optional-key :worker) s/Str
+                             (s/optional-key :socket-timeout) s/Int
+                             (s/optional-key :socket-connect-timeout) s/Int
+                             (s/optional-key :JkStripSession) s/Str
+                             (s/optional-key :JkWatchdogInterval) s/Int
+                             }
+   ;limits
+   (s/optional-key :limits) {(s/optional-key :server-limit) s/Int
+                             (s/optional-key :max-clients) s/Int}
+   ; other stuff
+   (s/optional-key :maintainance-page-content) [s/Str]
+   (s/optional-key :google-id) s/Str})
+
+(def etc-apache2-meissa-config
+  {:domain-name "jira.meissa-gmbh.de"
+   :listening-port "80"
+   :server-admin-email "admin@jira.meissa-gmbh.de"})
+
+(def etc-apache2-politaktiv-config
+  {:domain-name "jira.politaktiv.org"
+   :listening-port "80"
+   :server-admin-email "admin@jira.politaktiv.org"})
+
+; This equals (vhost/vhost-conf-default-redirect-to-https-only :domain-name (get-in config1 [:domain-name]) :server-admin-email (get-in config1 [:server-admin-email]))
+(def etc-apache2-sites-enabled-000-meissa-conf
   ["<VirtualHost *:80>"
   "  ServerName jira.meissa-gmbh.de"
   "  ServerAdmin admin@jira.meissa-gmbh.de"
@@ -38,7 +77,7 @@
   "  "
   "</VirtualHost>"])
 
-(def etc-apache2-sites-enabled-000-politaktiv.conf
+(def etc-apache2-sites-enabled-000-politaktiv-conf
   ["<VirtualHost *:80>"
    "  ServerName jira.politaktiv.org"
    "  ServerAdmin admin@jira.politaktiv.org"
@@ -53,7 +92,7 @@
    "  "
    "</VirtualHost>"])
 
-(def etc-apache2-sites-enabled-000-meissa-ssl.conf
+(def etc-apache2-sites-enabled-000-meissa-ssl-conf
   ["<VirtualHost *:443>"
    "  ServerName jira.meissa-gmbh.de"
    "  ServerAdmin admin@jira.meissa-gmbh.de"
@@ -79,7 +118,7 @@
    "  "
    "</VirtualHost>"])
 
-(def etc-apache2-sites-enabled-000-politaktiv-ssl.conf
+(def etc-apache2-sites-enabled-000-politaktiv-ssl-conf
   ["<VirtualHost *:443>"
    "  ServerName jira.politaktiv.org"
    "  ServerAdmin admin@jira.politaktiv.org"
@@ -102,3 +141,16 @@
    "  GnuTLSKeyFile /etc/apache2/ssl.key/jira.politaktiv.org.key"
    "  "
    "</VirtualHost>"])
+
+(deftest vhost
+  (testing 
+    "Test the creation of an example vhost from configuration." 
+    (is (= etc-apache2-sites-enabled-000-meissa-conf
+          (vhost/vhost-conf-default-redirect-to-https-only 
+            :domain-name (get-in etc-apache2-meissa-config [:domain-name]) 
+            :server-admin-email (get-in etc-apache2-meissa-config [:server-admin-email]))))
+    (is (= etc-apache2-sites-enabled-000-politaktiv-conf
+          (vhost/vhost-conf-default-redirect-to-https-only 
+            :domain-name (get-in etc-apache2-politaktiv-config [:domain-name]) 
+            :server-admin-email (get-in etc-apache2-politaktiv-config [:server-admin-email]))))
+    ))

@@ -78,30 +78,29 @@
    vhost-config :- schema/VhostConfig]
   (when (contains? vhost-config :cert-manual)
     (gnutls/configure-gnutls-credentials
-      ; TODO review jem 2016_06_14: use [..] and remove function ... 
       :domain-name (get-in vhost-config [:domain-name])
-      (:domain-cert (get-in vhost-config :domain-cert)) 
-      (:domain-key (get-in vhost-config :domain-key)) 
-      (:ca-cert (get-in vhost-config :ca-cert))))
+      :domain-cert (get-in vhost-config [:domain-cert]) 
+      :domain-key (get-in vhost-config [:domain-key]) 
+      :ca-cert (get-in vhost-config [:ca-cert])))
   ; TODO jem: put timeouts here
   (apache2/configure-file-and-enable "limits.conf" (httpd-config/limits (get-in vhost-config [:limits])))
   (when (contains? vhost-config :mod-jk)
     (jk/configure-mod-jk-worker (get-in vhost-config [:mod-jk])))
-  (google/configure-ownership-verification (:id (get-in vhost-config [:id])))    
+  (google/configure-ownership-verification :id (get-in vhost-config [:google-id]))    
   (apache2/configure-and-enable-vhost
     (str "000-" vhost-name)
     (vhost/vhost-conf-default-redirect-to-https-only
-      (:domain-name (get-in vhost-config :domain-name))
-      (:adminmail (get-in vhost-config :server-admin-email)) 
+      :domain-name (get-in vhost-config [:domain-name])
+      :server-admin-email (get-in vhost-config [:server-admin-email]) 
       ;(str "admin@" (get-in vhost-config [:domain-name]))
       ))
   (apache2/configure-and-enable-vhost
-    (str "000-" vhost-name "-ssl") (vhost vhost-config))  
+    (str "000-" vhost-name "-ssl") (vhost vhost-config))
 )
 
 (s/defn configure
   [config :- schema/HttpdConfig]
   (let [vhost-configs (get-in config [:vhosts])]  
-    (doseq [[vhost-name vhost-config] vhost-configs] 
+    (doseq [[vhost-name vhost-config] vhost-configs]
       (configure-vhost vhost-name vhost-config)
     )))
