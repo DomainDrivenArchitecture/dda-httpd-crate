@@ -28,6 +28,7 @@
     [httpd.crate.common :as httpd-common]
     [httpd.crate.mod-rewrite :as rewrite]
     [httpd.crate.webserver-maintainance :as maintainance]
+    [httpd.crate.mod-proxy-http :as proxy]
     [org.domaindrivenarchitecture.pallet.crate.httpd.schema :as schema]
   ))
 
@@ -43,14 +44,15 @@
              :server-admin-email (get-in vhost-config [:server-admin-email]))
            (httpd-common/prefix 
              "  " (vec (concat
-             (vhost/vhost-location
-               :location-options
-               (vec (concat
-                      ["Order allow,deny"
-                       "Allow from all"
-                       ""]
-                      (auth/vhost-basic-auth-options
-                        :domain-name domain-name))))
+             (when (-> vhost-config :location-directive)
+               (vhost/vhost-location
+                 :location-options
+                 (vec (concat
+                        ["Order allow,deny"
+                         "Allow from all"
+                         ""]
+                        (auth/vhost-basic-auth-options
+                          :domain-name domain-name)))))
              (when (contains? vhost-config :mod-jk)
                (concat (jk/vhost-jk-mount) [""]))
              (when (contains? vhost-config :google-id)
@@ -59,6 +61,10 @@
                  :consider-jk use-mod-jk)) 
              (when (contains? vhost-config :maintainance-page-content)
                (maintainance/vhost-service-unavailable-error-page :consider-jk use-mod-jk))
+             (when (contains? vhost-config :proxy)
+               (proxy/vhost-proxy 
+                 :target-port (-> vhost-config :proxy :target-port)
+                 :additional-directives (-> vhost-config :proxy :additional-directives)))
              (vhost/vhost-log 
                :error-name "error.log"
                :log-name "ssl-access.log"
@@ -78,10 +84,10 @@
    vhost-config :- schema/VhostConfig]
   (when (contains? vhost-config :cert-manual)
     (gnutls/configure-gnutls-credentials
-      :domain-name (get-in vhost-config [:domain-name])
-      :domain-cert (get-in vhost-config [:domain-cert]) 
-      :domain-key (get-in vhost-config [:domain-key]) 
-      :ca-cert (get-in vhost-config [:ca-cert])))
+            :domain-name (-> vhost-config :domain-name)
+            :domain-cert (-> vhost-config :cert-manual :domain-cert) 
+            :domain-key (-> vhost-config :cert-manual :domain-key) 
+            :ca-cert (-> vhost-config :cert-manual :ca-cert)))  
   (apache2/configure-file-and-enable 
     "limits.conf" 
     (httpd-config/limits 
