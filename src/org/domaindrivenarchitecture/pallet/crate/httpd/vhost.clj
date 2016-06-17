@@ -82,10 +82,18 @@
       :domain-cert (get-in vhost-config [:domain-cert]) 
       :domain-key (get-in vhost-config [:domain-key]) 
       :ca-cert (get-in vhost-config [:ca-cert])))
-  ; TODO jem: put timeouts here
-  (apache2/configure-file-and-enable "limits.conf" (httpd-config/limits (get-in vhost-config [:limits])))
+  (apache2/configure-file-and-enable 
+    "limits.conf" 
+    (httpd-config/limits 
+      :max-clients (get-in vhost-config [:limits :max-clients])
+      :server-limit (get-in vhost-config [:limits :server-limit])))
   (when (contains? vhost-config :mod-jk)
-    (jk/configure-mod-jk-worker (get-in vhost-config [:mod-jk])))
+    (jk/configure-mod-jk-worker 
+      (jk/workers-configuration :port (get-in vhost-config [:mod-jk :app-port])
+                             :host (get-in vhost-config [:mod-jk :host])
+                             :worker (get-in vhost-config [:mod-jk :worker])
+                             :socket-timeout (get-in vhost-config [:mod-jk :socket-timeout])
+                             :socket-connect-timeout (get-in vhost-config [:mod-jk :socket-connect-timeout]))))
   (google/configure-ownership-verification :id (get-in vhost-config [:google-id]))    
   (apache2/configure-and-enable-vhost
     (str "000-" vhost-name)
