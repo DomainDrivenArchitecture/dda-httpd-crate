@@ -76,7 +76,7 @@
    "  "
    ;"  #GnuTLSCertificateFile /etc/apache2/ssl.crt/jira.meissa-gmbh.de.certs"
    ;"  #GnuTLSKeyFile /etc/apache2/ssl.key/jira.meissa-gmbh.de.key"
-   "  GnuTLSCertificateFile  /etc/letsencrypt/live/jira.meissa-gmbh.de/fullchain.pem"
+   "  GnuTLSCertificateFile /etc/letsencrypt/live/jira.meissa-gmbh.de/fullchain.pem"
    "  GnuTLSKeyFile /etc/letsencrypt/live/jira.meissa-gmbh.de/privkey.pem"
    "  "
    "</VirtualHost>"])
@@ -113,9 +113,7 @@
    :proxy {:target-port "8080"
            :additional-directives ["ProxyPreserveHost On"
                                    "ProxyRequests     Off"]}
-   :cert-manual {:domain-cert "domaincert"
-                 :domain-key "domainkey"
-                 :ca-cert "optional-ca-cert"}})
+   :cert-letsencrypt {:letsencrypt-mail "test.mail@m.de"}})
 
 (def etc-apache2-politaktiv-config
   {:domain-name "jira.politaktiv.org"
@@ -125,7 +123,9 @@
    :proxy {:target-port "8180"
            :additional-directives ["ProxyPreserveHost On"
                                    "ProxyRequests     Off"]}
-   :cert-letsencrypt {:letsencrypt-mail "test.mail@m.de"}})
+   :cert-manual {:domain-cert "domaincert"
+                 :domain-key "domainkey"
+                 :ca-cert "optional-ca-cert"}})
 
 (deftest vhost
   (testing 
