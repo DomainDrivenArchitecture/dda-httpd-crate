@@ -20,6 +20,7 @@
     [schema.core :as s]
     [org.domaindrivenarchitecture.pallet.core.dda-crate :as dda-crate]
     [org.domaindrivenarchitecture.pallet.crate.httpd :as httpd]
+    [httpd.crate.mod-jk :as jk]
     [org.domaindrivenarchitecture.pallet.crate.httpd.vhost :as sut]
   ))
 
@@ -29,9 +30,15 @@
    :cert-letsencrypt {:letsencrypt-mail "admin@domain.tld"}
    :google-id "ggl1234"
    :listening-port "443"
-   :mod-jk {:app-port "8009"}
+   :mod-jk {:app-port "8009"
+            :jkWatchdogInterval 60
+            :jkStripSession "On"}
    :maintainance-page-content ["test"]
    })
+
+(defn trim-string-vector 
+  [string-vector] 
+  (filter #(not= % "") (map clojure.string/trim string-vector)))
 
 (def vhost-expected
   ["<VirtualHost *:443>"
@@ -80,30 +87,48 @@
    "#"
    "#------ worker list ------------------------------------------"
    "worker.list=mod_jk_www"
+   
    "worker.mod_jk_www.port=8009"
    "worker.mod_jk_www.host=127.0.0.1"
    "worker.mod_jk_www.type=ajp13"
    "worker.mod_jk_www.socket_timeout=900"
    "worker.mod_jk_www.socket_keepalive=false"
    "worker.mod_jk_www.connection_pool_timeout=100"
+   ;worker.vhost1.port=80009"
+   ;worker.vhost1.host=123.000...."
+   ;"worker.list=mod_jk_www,vhost1"
    ])
 
 (def etc-libapache2-mod-jk-httpd-jk-conf
-  ["<IfModule jk_module>"
-   "    JkWorkersFile /etc/libapache2-mod-jk/workers.properties"
+  ["# Licensed to the Apache Software Foundation (ASF) under one or more"
+   "# contributor license agreements.  See the NOTICE file distributed with"
+   "# this work for additional information regarding copyright ownership."
+   "# The ASF licenses this file to You under the Apache License, Version 2.0"
+   "# (the \"License\"); you may not use this file except in compliance with"
+   "# the License.  You may obtain a copy of the License at"
+   "#"
+   "#     http://www.apache.org/licenses/LICENSE-2.0"
+   ""
+   "<IfModule jk_module>"   
    "    JkLogFile /var/log/apache2/mod_jk.log"
    "    JkLogLevel info"
    "    JkShmFile /var/log/apache2/jk-runtime-status"
-   "    # JkOptions +RejectUnsafeURI"
-   "    # JkStripSession On"
+   ;why is this commented out? 
+   ;"    # JkOptions +RejectUnsafeURI"
+   ;"    # JkStripSession On"
+   "    JkOptions +RejectUnsafeURI"
+   "    JkStripSession On"
    "    JkWatchdogInterval 60"
+   
    "    <Location /jk-status>"
+   "# Inside Location we can omit the URL in JkMount"
    "        JkMount jk-status"
    "        Order deny,allow"
    "        Deny from all"
    "        Allow from 127.0.0.1"
    "    </Location>"
    "    <Location /jk-manager>"
+   "# Inside Location we can omit the URL in JkMount"
    "        JkMount jk-manager"
    "        Order deny,allow"
    "        Deny from all"
@@ -115,4 +140,11 @@
   (testing 
     "Test the creation of an example vhost from configuration." 
     (is (= vhost-expected (sut/vhost vhost-test-config)))
-    ))
+    (is (= (trim-string-vector etc-libapache2-mod-jk-httpd-jk-conf) 
+            (trim-string-vector (jk/mod-jk-configuration :jkWatchdogInterval (get-in vhost-test-config [:mod-jk :jkWatchdogInterval])
+                                           :jkStripSession (get-in vhost-test-config [:mod-jk :jkStripSession])
+                                           :vhost-jk-status-location? true))))
+  )
+)
+
+
