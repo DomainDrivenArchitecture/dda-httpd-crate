@@ -44,6 +44,7 @@
   (apache2/install-apache2-action)
   (apache2/install-apachetop-action)
   (gnutls/install-mod-gnutls)
+  ;TODO: here should only be jk-install not the creation of a remote file
   (when (module-used? config :mod-jk)
     (jk/install-mod-jk :jkStripSession (get-in config [:mod-jk :jkStripSession])
                        :jkWatchdogInterval (get-in config [:mod-jk :jkWatchdogInterval])))
