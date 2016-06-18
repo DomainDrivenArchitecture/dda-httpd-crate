@@ -33,13 +33,13 @@
                                   (s/optional-key :ca-cert) s/Str}
    ; mod_jk
    ; TODO review jem 2016_06_14: sub map entries should not be optional. 
-   (s/optional-key :mod-jk) {(s/optional-key :app-port) s/Str
-                             (s/optional-key :host) s/Str
-                             (s/optional-key :worker) s/Str
-                             (s/optional-key :socket-timeout) s/Int
-                             (s/optional-key :socket-connect-timeout) s/Int
-                             (s/optional-key :JkStripSession) s/Str
-                             (s/optional-key :JkWatchdogInterval) s/Int
+   (s/optional-key :mod-jk) {:app-port s/Str
+                             :host s/Str
+                             :worker s/Str
+                             :socket-timeout s/Int
+                             :socket-connect-timeout s/Int
+                             :JkStripSession s/Str
+                             :JkWatchdogInterval s/Int
                              }
    ;proxy
    (s/optional-key :proxy) {:target-port s/Str
