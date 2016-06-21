@@ -18,6 +18,7 @@
   (:require
     [schema.core :as s]
     [schema-tools.core :as st]
+    [pallet.actions :as actions]
     [httpd.crate.apache2 :as apache2]
     [httpd.crate.config :as httpd-config]
     [httpd.crate.mod-gnutls :as gnutls]
@@ -44,10 +45,8 @@
   (apache2/install-apache2-action)
   (apache2/install-apachetop-action)
   (gnutls/install-mod-gnutls)
-  ;TODO: here should only be jk-install not the creation of a remote file
   (when (module-used? config :mod-jk)
-    (jk/install-mod-jk :jkStripSession (get-in config [:mod-jk :jkStripSession])
-                       :jkWatchdogInterval (get-in config [:mod-jk :jkWatchdogInterval])))
+    (actions/package "libapache2-mod-jk"))
   (rewrite/install-mod-rewrite))
 
 (s/defn configure
