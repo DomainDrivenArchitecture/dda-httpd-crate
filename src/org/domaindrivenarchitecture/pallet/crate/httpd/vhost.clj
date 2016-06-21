@@ -18,6 +18,8 @@
   (:require
     [schema.core :as s]
     [org.domaindrivenarchitecture.config.commons.map-utils :as map-utils]
+    [pallet.actions :as actions]
+    [httpd.crate.cmds :as cmds]
     [httpd.crate.apache2 :as apache2]
     [httpd.crate.vhost :as vhost]
     [httpd.crate.config :as httpd-config]
@@ -122,7 +124,21 @@
 
 (s/defn configure
   [config :- schema/HttpdConfig]
-  (let [vhost-configs (get-in config [:vhosts])]  
+  (let [vhost-configs (get-in config [:vhosts])
+        first-vhost (first vhost-configs)]  
     (doseq [[vhost-name vhost-config] vhost-configs]
-      (configure-vhost vhost-name vhost-config)
-    )))
+      (configure-vhost vhost-name vhost-config))
+    (actions/remote-file
+    "/etc/apache2/mods-available/jk.conf"
+    :owner "root"
+    :group "root"
+    :mode "644"
+    :force true
+    :content 
+    (clojure.string/join
+      \newline
+      (jk/mod-jk-configuration (-> first-vhost :mod-jk :JkStripSession)
+                               (-> first-vhost :mod-jk :JkWatchdogInterval))
+      ))
+    (cmds/a2enmod "jk")
+    ))
