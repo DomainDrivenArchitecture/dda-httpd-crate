@@ -25,7 +25,7 @@
   {:domain-name s/Str
    :listening-port s/Str 
    :server-admin-email s/Str
-   :location-directive s/Bool
+   (s/optional-key :locations-override) [s/Str]
    ; either letsencrypt or manual certificates
    (s/optional-key :cert-letsencrypt) {:letsencrypt-mail s/Str} 
    (s/optional-key :cert-manual) {:domain-cert s/Str 

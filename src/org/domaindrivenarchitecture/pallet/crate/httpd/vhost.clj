@@ -46,15 +46,8 @@
              :server-admin-email (get-in vhost-config [:server-admin-email]))
            (httpd-common/prefix 
              "  " (vec (concat
-             (when (-> vhost-config :location-directive)
-               (vhost/vhost-location
-                 :location-options
-                 (vec (concat
-                        ["Order allow,deny"
-                         "Allow from all"
-                         ""]
-                        (auth/vhost-basic-auth-options
-                          :domain-name domain-name)))))
+             (when (contains? vhost-config :locations-override)
+               (-> vhost-config :locations-override))
              (when (contains? vhost-config :mod-jk)
                (concat 
                  (jk/vhost-jk-mount :worker (get-in vhost-config [:mod-jk :worker])) 
