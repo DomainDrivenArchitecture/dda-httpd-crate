@@ -62,7 +62,7 @@
   "configure function for httpd-crate."
   [config :- HttpdConfig]
   (server/configure config)
-  (vhost/configure))
+  (vhost/configure config))
   
 (defmethod dda-crate/dda-install 
   :dda-httpd [dda-crate partial-effective-config]
