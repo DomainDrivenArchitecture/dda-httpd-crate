@@ -29,7 +29,8 @@
   {:domain-name "localhost.localdomain"
    :listening-port "443"
    :server-admin-email "admin@localdomain"
-   :location-directive true
+   ; TODO: gec 2016-06-22: Think about a proper default value
+   :locations-override ""
    :maintainance-page-content ["<h1>Webserver Maintainance Mode</h1>"]
    :mod-jk {:app-port "8009"
             :host "127.0.0.1"
