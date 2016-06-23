@@ -46,6 +46,10 @@
              :server-admin-email (get-in vhost-config [:server-admin-email]))
            (httpd-common/prefix 
              "  " (vec (concat
+             ; TODO: review jem 2016.06.23: hmmm ... basic-auth function is missing now ...
+             ; Schema: :location {(s/optional-key :basic-auth) s/Bool
+             ;                    (s/optional-key :locations-override) [s/Str]}
+             ; with "either override or basic auth"? ... better ideas?
              (when (contains? vhost-config :locations-override)
                (-> vhost-config :locations-override))
              (when (contains? vhost-config :mod-jk)
@@ -121,6 +125,8 @@
         first-vhost (first vhost-configs)]  
     (doseq [[vhost-name vhost-config] vhost-configs]
       (configure-vhost vhost-name vhost-config))
+    ; TODO: review jem 2016.06.23: use fn from httpd-crate!
+    ; TODO: review jem 2016.06.23: what happens if we have different configuration per vhost?
     (actions/remote-file
     "/etc/apache2/mods-available/jk.conf"
     :owner "root"

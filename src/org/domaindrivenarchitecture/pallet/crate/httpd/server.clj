@@ -46,6 +46,7 @@
   (apache2/install-apachetop-action)
   (gnutls/install-mod-gnutls)
   (when (module-used? config :mod-jk)
+    ; TODO: review jem 2016.06.23:  Use here function of httpd-crate instead!
     (actions/package "libapache2-mod-jk"))
   (rewrite/install-mod-rewrite))
 
