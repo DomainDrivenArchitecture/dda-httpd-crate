@@ -16,7 +16,7 @@
                [org.clojure/test.check "0.9.0"]]
               :plugins
               [[com.palletops/pallet-lein "0.8.0-alpha.1"]
-               [lein-ancient "0.6.10"]]}
+               [lein-sub "0.3.0"]]}
              :leiningen/reply
              {:dependencies [[org.slf4j/jcl-over-slf4j "1.7.21"]]
               :exclusions [commons-logging]}}
