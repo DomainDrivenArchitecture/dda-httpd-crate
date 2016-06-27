@@ -32,7 +32,6 @@
                                   :domain-key s/Str 
                                   (s/optional-key :ca-cert) s/Str}
    ; mod_jk
-   ; TODO review jem 2016_06_14: sub map entries should not be optional. 
    (s/optional-key :mod-jk) {:app-port s/Str
                              :host s/Str
                              :worker s/Str

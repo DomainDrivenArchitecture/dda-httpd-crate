@@ -21,6 +21,7 @@
     [org.domaindrivenarchitecture.config.commons.map-utils :as map-utils]
     [org.domaindrivenarchitecture.pallet.crate.httpd.schema :as schema]
     [org.domaindrivenarchitecture.pallet.crate.httpd.server :as server]
+    [org.domaindrivenarchitecture.pallet.core.dda-crate.versioned-plan :as version-plan]
     [org.domaindrivenarchitecture.pallet.crate.httpd.vhost :as vhost]))
 
 (def HttpdConfig schema/HttpdConfig)
@@ -30,7 +31,7 @@
    :listening-port "443"
    :server-admin-email "admin@localdomain"
    ; TODO: gec 2016-06-22: Think about a proper default value
-   :locations-override ""
+   :locations-override [""]
    :maintainance-page-content ["<h1>Webserver Maintainance Mode</h1>"]
    :mod-jk {:app-port "8009"
             :host "127.0.0.1"
@@ -66,14 +67,14 @@
   (vhost/configure config))
   
 (defmethod dda-crate/dda-install 
-  :dda-httpd [dda-crate partial-effective-config]
-  (let [config (dda-crate/merge-config dda-crate partial-effective-config)]
-    (install config)))
+  :dda-httpd [dda-crate config]
+    (version-plan/plan-when-cleaninstall
+      dda-crate
+      (install config)))
 
 (defmethod dda-crate/dda-configure 
-  :dda-httpd [dda-crate partial-effective-config]
-  (let [config (dda-crate/merge-config dda-crate partial-effective-config)]
-    (configure config)))
+  :dda-httpd [dda-crate config]
+    (configure config))
 
 (def with-httpd
   (dda-crate/create-server-spec dda-httpd-crate))
