@@ -104,10 +104,10 @@
     (jk/configure-mod-jk-worker 
       :workers-configuration
       (jk/workers-configuration :port (get-in vhost-config [:mod-jk :app-port])
-                :host (get-in vhost-config [:mod-jk :host])
-                :worker (get-in vhost-config [:mod-jk :worker])
-                :socket-timeout (get-in vhost-config [:mod-jk :socket-timeout])
-                :socket-connect-timeout (get-in vhost-config [:mod-jk :socket-connect-timeout]))))
+                                :host (get-in vhost-config [:mod-jk :host])
+                                :worker (get-in vhost-config [:mod-jk :worker])
+                                :socket-timeout (get-in vhost-config [:mod-jk :socket-timeout])
+                                :socket-connect-timeout (get-in vhost-config [:mod-jk :socket-connect-timeout]))))
   (google/configure-ownership-verification :id (get-in vhost-config [:google-id]))    
   (apache2/configure-and-enable-vhost
     (str "000-" vhost-name)
