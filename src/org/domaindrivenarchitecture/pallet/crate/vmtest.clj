@@ -1,3 +1,5 @@
+; TODO: review jem 2016_06_28: license missing. Lets discuss function and location as general pattern in team. 
+
 (ns org.domaindrivenarchitecture.pallet.crate.vmtest
     (:require 
     [org.domaindrivenarchitecture.pallet.core.cli-helper :as cli-helper]

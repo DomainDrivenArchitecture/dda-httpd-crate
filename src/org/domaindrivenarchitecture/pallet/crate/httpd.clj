@@ -68,7 +68,8 @@
   [config :- HttpdConfig]
   (server/configure config)
   (vhost/configure config))
-  
+
+; TODO: review jem 2016_06_28: we don't need verions here, I think. Let's discuss this.
 (defmethod dda-crate/dda-install 
   :dda-httpd [dda-crate config]
     (version-plan/plan-when-cleaninstall
