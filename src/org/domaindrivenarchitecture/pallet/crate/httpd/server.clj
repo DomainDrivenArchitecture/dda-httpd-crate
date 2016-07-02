@@ -25,7 +25,8 @@
     [httpd.crate.mod-jk :as jk]
     [httpd.crate.mod-rewrite :as rewrite]
     [httpd.crate.webserver-maintainance :as maintainance]
-    [org.domaindrivenarchitecture.pallet.crate.httpd.schema :as schema]))
+    [org.domaindrivenarchitecture.pallet.crate.httpd.schema :as schema]
+    [clojure.algo.generic.functor]))
 
 (s/defn reducer-module-used :- s/Bool
   "searches throug the whole config in oder to find out, wheter a specific module is used."
@@ -34,7 +35,7 @@
     (or (contains? vhost-config1 key)
         (contains? vhost-config2 key))))
 
-(s/defn module-used? :- s/Bool
+(s/defn ^:always-validate module-used? :- s/Bool
   "searches throug the whole config in oder to find out, wheter a specific module is used."
   [config :- schema/HttpdConfig
    key :- s/Keyword]
@@ -46,8 +47,10 @@
   (apache2/install-apachetop-action)
   (gnutls/install-mod-gnutls)
   (when (module-used? config :mod-jk)
-    ; TODO: review jem 2016.06.23:  Use here function of httpd-crate instead!
-    (actions/package "libapache2-mod-jk"))
+    (when (module-used? config :mod-jk)
+    (jk/install-mod-jk :jkStripSession (-> config :jk-configuration :jkStripSession)
+     (actions/package "libapache2-mod-jk"))
+                        :jkWatchdogInterval (-> config :jk-configuration :jkWatchdogInterval)))
   (rewrite/install-mod-rewrite))
 
 (s/defn configure

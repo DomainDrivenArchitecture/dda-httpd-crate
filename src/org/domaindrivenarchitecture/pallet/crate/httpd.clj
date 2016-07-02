@@ -37,15 +37,18 @@
             :host "127.0.0.1"
             :worker "mod_jk_www"
             :socket-timeout 60000
-            :socket-connect-timeout 300
-            :JkStripSession "On"
-            :JkWatchdogInterval 120}
+            :socket-connect-timeout 300}
    :limits {:server-limit 150 
             :max-clients 150}
    })
 
+(def default-jk-config
+  {:jkStripSession "On"
+   :jkWatchdogInterval 120})
+
 (def default-config
-  {:vhosts {:default default-vhost-config}})
+  {:vhosts {:default default-vhost-config}
+   :jk-configuration {:default default-jk-config}})
 
 (def dda-httpd-crate 
   (dda-crate/make-dda-crate

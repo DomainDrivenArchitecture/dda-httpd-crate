@@ -122,23 +122,7 @@
 
 (s/defn configure
   [config :- schema/HttpdConfig]
-  (let [vhost-configs (get-in config [:vhosts])
-        first-vhost (first vhost-configs)]  
+  (let [vhost-configs (get-in config [:vhosts])]  
     (doseq [[vhost-name vhost-config] vhost-configs]
       (configure-vhost vhost-name vhost-config))
-    ; TODO: review jem 2016.06.23: use fn from httpd-crate!
-    ; TODO: review jem 2016.06.23: what happens if we have different configuration per vhost?
-    (actions/remote-file
-    "/etc/apache2/mods-available/jk.conf"
-    :owner "root"
-    :group "root"
-    :mode "644"
-    :force true
-    :content 
-    (clojure.string/join
-      \newline
-      (jk/mod-jk-configuration (-> first-vhost :mod-jk :JkStripSession)
-                               (-> first-vhost :mod-jk :JkWatchdogInterval))
-      ))
-    (cmds/a2enmod "jk")
     ))
