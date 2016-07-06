@@ -28,29 +28,14 @@
     [org.domaindrivenarchitecture.pallet.crate.httpd.schema :as schema]
     [clojure.algo.generic.functor]))
 
-(s/defn reducer-module-used :- s/Bool
-  "searches throug the whole config in oder to find out, wheter a specific module is used."
-  [key :- s/Keyword]
-  (fn [vhost-config1 vhost-config2]
-    (or (contains? vhost-config1 key)
-        (contains? vhost-config2 key))))
-
-(s/defn ^:always-validate module-used? :- s/Bool
-  "searches throug the whole config in oder to find out, wheter a specific module is used."
-  [config :- schema/HttpdConfig
-   key :- s/Keyword]
-  (reduce (reducer-module-used key)  (get-in config [:vhosts])))
-
 (s/defn install
   [config :- schema/HttpdConfig]
   (apache2/install-apache2-action)
   (apache2/install-apachetop-action)
   (gnutls/install-mod-gnutls)
-  (when (module-used? config :mod-jk)
-    (when (module-used? config :mod-jk)
-    (jk/install-mod-jk :jkStripSession (-> config :jk-configuration :jkStripSession)
-     (actions/package "libapache2-mod-jk"))
-                        :jkWatchdogInterval (-> config :jk-configuration :jkWatchdogInterval)))
+   (jk/install-mod-jk 
+     :jkStripSession (-> config :jk-configuration :jkStripSession)
+     :jkWatchdogInterval (-> config :jk-configuration :jkWatchdogInterval))
   (rewrite/install-mod-rewrite))
 
 (s/defn configure
