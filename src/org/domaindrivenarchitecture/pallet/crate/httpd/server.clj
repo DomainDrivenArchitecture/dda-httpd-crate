@@ -25,8 +25,7 @@
     [httpd.crate.mod-jk :as jk]
     [httpd.crate.mod-rewrite :as rewrite]
     [httpd.crate.webserver-maintainance :as maintainance]
-    [org.domaindrivenarchitecture.pallet.crate.httpd.schema :as schema]
-    [clojure.algo.generic.functor]))
+    [org.domaindrivenarchitecture.pallet.crate.httpd.schema :as schema]))
 
 (s/defn install
   [config :- schema/HttpdConfig]
