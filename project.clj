@@ -1,7 +1,6 @@
 (defproject org.domaindrivenarchitecture/dda-httpd-crate "0.1.0-SNAPSHOT"
   :description "new dda-httpd-crate"
   :dependencies [[org.clojure/clojure "1.7.0"]
-                 [org.clojure/algo.generic "0.1.2"]
                  [com.palletops/pallet "0.8.12" :exclusions [org.clojure/tools.cli]]
                  [prismatic/schema "1.1.2"]
                  [org.domaindrivenarchitecture/dda-init-crate "0.1.0-SNAPSHOT"]
