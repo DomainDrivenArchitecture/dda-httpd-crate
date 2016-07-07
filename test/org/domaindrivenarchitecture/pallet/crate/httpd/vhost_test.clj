@@ -27,16 +27,7 @@
 (def vhost-test-config 
   {:domain-name "subdomain.domain.tld"
    :server-admin-email "admin@domain.tld"
-   :locations-override  ["  <Location />"
-                         "    Order allow,deny"
-                         "    Allow from all"
-                         "    "    
-                         "    AuthName \"Authorization for subdomain.domain.tld\""
-                         "    AuthType Basic"
-                         "    AuthBasicProvider file"
-                         "    AuthUserFile /etc/apache2/htpasswd-subdomain.domain.tld"
-                         "    Require valid-user"
-                         "  </Location>"]
+   :location {:basic-auth true}
    :cert-letsencrypt {:letsencrypt-mail "admin@domain.tld"}
    :google-id "ggl1234"
    :listening-port "443"
