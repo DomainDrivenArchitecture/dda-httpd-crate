@@ -53,4 +53,4 @@
 
 (def HttpdConfig 
   {:vhosts {s/Keyword VhostConfig}
-   :jk-configuration {s/Keyword jk-configuration}})
+   :jk-configuration jk-configuration})

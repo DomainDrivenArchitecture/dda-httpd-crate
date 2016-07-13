@@ -42,13 +42,10 @@
             :max-clients 150}
    })
 
-(def default-jk-config
-  {:jkStripSession "On"
-   :jkWatchdogInterval 120})
-
 (def default-config
   {:vhosts {:default default-vhost-config}
-   :jk-configuration {:default default-jk-config}})
+   :jk-configuration {:jkStripSession "On"
+                      :jkWatchdogInterval 120}})
 
 (def dda-httpd-crate 
   (dda-crate/make-dda-crate

@@ -55,13 +55,7 @@
              (when (contains? vhost-config :mod-jk)
                (concat 
                  (jk/vhost-jk-mount :worker (get-in vhost-config [:mod-jk :worker])) 
-                 [""]
-                 (map str (jk/workers-configuration 
-                            :port (get-in vhost-config [:mod-jk :app-port])
-                            :host (get-in vhost-config [:mod-jk :host])
-                            :worker (get-in vhost-config [:mod-jk :worker])
-                            :socket-timeout (get-in vhost-config [:mod-jk :socket-timeout])
-                            :socket-connect-timeout (get-in vhost-config [:mod-jk :socket-connect-timeout])))))
+                 [""]))
              (when (contains? vhost-config :google-id)
                (google/vhost-ownership-verification 
                  :id (get-in vhost-config [:google-id])
@@ -82,6 +76,14 @@
                (gnutls/vhost-gnutls domain-name))
              )))
            vhost/vhost-tail
+           (when (contains? vhost-config :mod-jk)
+                   (map str (jk/workers-configuration 
+                                      :port (get-in vhost-config [:mod-jk :app-port])
+                                      :host (get-in vhost-config [:mod-jk :host])
+                                      :worker (get-in vhost-config [:mod-jk :worker])
+                                      :socket-timeout (get-in vhost-config [:mod-jk :socket-timeout])
+                                      :socket-connect-timeout (get-in vhost-config [:mod-jk :socket-connect-timeout])
+                                      :jk-worker-property? true)))
            ))
     ))
 
@@ -124,5 +126,5 @@
   [config :- schema/HttpdConfig]
   (let [vhost-configs (get-in config [:vhosts])]  
     (doseq [[vhost-name vhost-config] vhost-configs]
-      (configure-vhost vhost-name vhost-config))
+      (configure-vhost (name vhost-name) vhost-config))
     ))

@@ -139,7 +139,7 @@
             :domain-name (get-in etc-apache2-politaktiv-config [:domain-name]) 
             :server-admin-email (get-in etc-apache2-politaktiv-config [:server-admin-email]))))
     (is (= (sut/vhost etc-apache2-meissa-config) 
-           etc-apache2-sites-enabled-000-meissa-ssl-conf)) ; FAILS
+           etc-apache2-sites-enabled-000-meissa-ssl-conf))
     (is (= (sut/vhost etc-apache2-politaktiv-config) 
            etc-apache2-sites-enabled-000-politaktiv-ssl-conf))
     ))
