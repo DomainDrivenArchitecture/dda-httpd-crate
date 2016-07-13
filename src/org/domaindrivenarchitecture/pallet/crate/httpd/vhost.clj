@@ -46,12 +46,21 @@
              :server-admin-email (get-in vhost-config [:server-admin-email]))
            (httpd-common/prefix 
              "  " (vec (concat
-             ; TODO: review jem 2016.06.23: hmmm ... basic-auth function is missing now ...
-             ; Schema: :location {(s/optional-key :basic-auth) s/Bool
-             ;                    (s/optional-key :locations-override) [s/Str]}
-             ; with "either override or basic auth"? ... better ideas?
-             (when (contains? vhost-config :locations-override)
-               (-> vhost-config :locations-override))
+             (when (contains? vhost-config :location)
+               (cond 
+                 (and (contains? (-> vhost-config :location) :basic-auth)
+                      (-> vhost-config :location :basic-auth))
+                 (vhost/vhost-location
+                   :location-options
+                   (vec (concat
+                          ["Order allow,deny"
+                           "Allow from all"
+                           ""]
+                          (auth/vhost-basic-auth-options
+                            :domain-name domain-name))))
+                 
+                 (contains? (-> vhost-config :location) :locations-override)
+                 (-> vhost-config :locations-override)))
              (when (contains? vhost-config :mod-jk)
                (concat 
                  (jk/vhost-jk-mount :worker (get-in vhost-config [:mod-jk :worker])) 

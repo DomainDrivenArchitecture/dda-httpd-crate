@@ -109,7 +109,6 @@
   {:domain-name "jira.meissa-gmbh.de"
    :listening-port "443"
    :server-admin-email "admin@jira.meissa-gmbh.de"
-   :locations-override ""
    :proxy {:target-port "8080"
            :additional-directives ["ProxyPreserveHost On"
                                    "ProxyRequests     Off"]}
@@ -119,7 +118,6 @@
   {:domain-name "jira.politaktiv.org"
    :listening-port "443"
    :server-admin-email "admin@jira.politaktiv.org"
-   :locations-override ""
    :proxy {:target-port "8180"
            :additional-directives ["ProxyPreserveHost On"
                                    "ProxyRequests     Off"]}
