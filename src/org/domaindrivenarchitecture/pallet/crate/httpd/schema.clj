@@ -18,14 +18,14 @@
   (:require
     [schema.core :as s]))
 
-; TODO: krj 2016.05.27: should consider if/where :domain-name needs to be inserted
-;see vhost/prefix-wrapper and vhost/configure for details
 (def VhostConfig
   "defines a schema for a httpdConfig"
   {:domain-name s/Str
    :listening-port s/Str 
    :server-admin-email s/Str
-   (s/optional-key :locations-override) [s/Str]
+   ;(s/optional-key :locations-override) [s/Str]
+   (s/optional-key :location) {(s/optional-key :basic-auth) s/Bool
+                               (s/optional-key :locations-override) [s/Str]}
    ; either letsencrypt or manual certificates
    (s/optional-key :cert-letsencrypt) {:letsencrypt-mail s/Str} 
    (s/optional-key :cert-manual) {:domain-cert s/Str 
@@ -37,8 +37,6 @@
                              :worker s/Str
                              :socket-timeout s/Int
                              :socket-connect-timeout s/Int
-                             :JkStripSession s/Str
-                             :JkWatchdogInterval s/Int
                              }
    ;proxy
    (s/optional-key :proxy) {:target-port s/Str
@@ -50,5 +48,11 @@
    (s/optional-key :maintainance-page-content) [s/Str]
    (s/optional-key :google-id) s/Str})
 
+(def jk-configuration
+  "Defines the schema for a jk-configuration, not mod-jk!"
+  {:jkStripSession s/Str
+   :jkWatchdogInterval s/Int})
+
 (def HttpdConfig 
-  {:vhosts {s/Keyword VhostConfig}})
+  {:vhosts {s/Keyword VhostConfig}
+   :jk-configuration jk-configuration})

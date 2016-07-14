@@ -27,11 +27,4 @@
 
 (def config {})
 
-(deftest module-used-test
-  (testing 
-    "test module-used?" 
-    (is 
-      (sut/module-used? (dda-crate/merge-config httpd/dda-httpd-crate config)
-                        :mod-jk)
-      )
-    ))
+

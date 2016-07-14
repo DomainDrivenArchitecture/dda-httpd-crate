@@ -30,22 +30,20 @@
   {:domain-name "localhost.localdomain"
    :listening-port "443"
    :server-admin-email "admin@localdomain"
-   ; TODO: gec 2016-06-22: Think about a proper default value
-   :locations-override [""]
    :maintainance-page-content ["<h1>Webserver Maintainance Mode</h1>"]
    :mod-jk {:app-port "8009"
             :host "127.0.0.1"
             :worker "mod_jk_www"
             :socket-timeout 60000
-            :socket-connect-timeout 300
-            :JkStripSession "On"
-            :JkWatchdogInterval 120}
+            :socket-connect-timeout 300}
    :limits {:server-limit 150 
             :max-clients 150}
    })
 
 (def default-config
-  {:vhosts {:default default-vhost-config}})
+  {:vhosts {:default default-vhost-config}
+   :jk-configuration {:jkStripSession "On"
+                      :jkWatchdogInterval 120}})
 
 (def dda-httpd-crate 
   (dda-crate/make-dda-crate

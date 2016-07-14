@@ -109,7 +109,6 @@
   {:domain-name "jira.meissa-gmbh.de"
    :listening-port "443"
    :server-admin-email "admin@jira.meissa-gmbh.de"
-   :locations-override ""
    :proxy {:target-port "8080"
            :additional-directives ["ProxyPreserveHost On"
                                    "ProxyRequests     Off"]}
@@ -119,7 +118,6 @@
   {:domain-name "jira.politaktiv.org"
    :listening-port "443"
    :server-admin-email "admin@jira.politaktiv.org"
-   :locations-override ""
    :proxy {:target-port "8180"
            :additional-directives ["ProxyPreserveHost On"
                                    "ProxyRequests     Off"]}
@@ -139,7 +137,7 @@
             :domain-name (get-in etc-apache2-politaktiv-config [:domain-name]) 
             :server-admin-email (get-in etc-apache2-politaktiv-config [:server-admin-email]))))
     (is (= (sut/vhost etc-apache2-meissa-config) 
-           etc-apache2-sites-enabled-000-meissa-ssl-conf)) ; FAILS
+           etc-apache2-sites-enabled-000-meissa-ssl-conf))
     (is (= (sut/vhost etc-apache2-politaktiv-config) 
            etc-apache2-sites-enabled-000-politaktiv-ssl-conf))
     ))

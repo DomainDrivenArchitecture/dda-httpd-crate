@@ -46,22 +46,25 @@
              :server-admin-email (get-in vhost-config [:server-admin-email]))
            (httpd-common/prefix 
              "  " (vec (concat
-             ; TODO: review jem 2016.06.23: hmmm ... basic-auth function is missing now ...
-             ; Schema: :location {(s/optional-key :basic-auth) s/Bool
-             ;                    (s/optional-key :locations-override) [s/Str]}
-             ; with "either override or basic auth"? ... better ideas?
-             (when (contains? vhost-config :locations-override)
-               (-> vhost-config :locations-override))
+             (when (contains? vhost-config :location)
+               (cond 
+                 (and (contains? (-> vhost-config :location) :basic-auth)
+                      (-> vhost-config :location :basic-auth))
+                 (vhost/vhost-location
+                   :location-options
+                   (vec (concat
+                          ["Order allow,deny"
+                           "Allow from all"
+                           ""]
+                          (auth/vhost-basic-auth-options
+                            :domain-name domain-name))))
+                 
+                 (contains? (-> vhost-config :location) :locations-override)
+                 (-> vhost-config :locations-override)))
              (when (contains? vhost-config :mod-jk)
                (concat 
                  (jk/vhost-jk-mount :worker (get-in vhost-config [:mod-jk :worker])) 
-                 [""]
-                 (map str (jk/workers-configuration 
-                            :port (get-in vhost-config [:mod-jk :app-port])
-                            :host (get-in vhost-config [:mod-jk :host])
-                            :worker (get-in vhost-config [:mod-jk :worker])
-                            :socket-timeout (get-in vhost-config [:mod-jk :socket-timeout])
-                            :socket-connect-timeout (get-in vhost-config [:mod-jk :socket-connect-timeout])))))
+                 [""]))
              (when (contains? vhost-config :google-id)
                (google/vhost-ownership-verification 
                  :id (get-in vhost-config [:google-id])
@@ -82,6 +85,14 @@
                (gnutls/vhost-gnutls domain-name))
              )))
            vhost/vhost-tail
+           (when (contains? vhost-config :mod-jk)
+                   (map str (jk/workers-configuration 
+                                      :port (get-in vhost-config [:mod-jk :app-port])
+                                      :host (get-in vhost-config [:mod-jk :host])
+                                      :worker (get-in vhost-config [:mod-jk :worker])
+                                      :socket-timeout (get-in vhost-config [:mod-jk :socket-timeout])
+                                      :socket-connect-timeout (get-in vhost-config [:mod-jk :socket-connect-timeout])
+                                      :jk-worker-property? true)))
            ))
     ))
 
@@ -122,23 +133,7 @@
 
 (s/defn configure
   [config :- schema/HttpdConfig]
-  (let [vhost-configs (get-in config [:vhosts])
-        first-vhost (first vhost-configs)]  
+  (let [vhost-configs (get-in config [:vhosts])]  
     (doseq [[vhost-name vhost-config] vhost-configs]
-      (configure-vhost vhost-name vhost-config))
-    ; TODO: review jem 2016.06.23: use fn from httpd-crate!
-    ; TODO: review jem 2016.06.23: what happens if we have different configuration per vhost?
-    (actions/remote-file
-    "/etc/apache2/mods-available/jk.conf"
-    :owner "root"
-    :group "root"
-    :mode "644"
-    :force true
-    :content 
-    (clojure.string/join
-      \newline
-      (jk/mod-jk-configuration (-> first-vhost :mod-jk :JkStripSession)
-                               (-> first-vhost :mod-jk :JkWatchdogInterval))
-      ))
-    (cmds/a2enmod "jk")
+      (configure-vhost (name vhost-name) vhost-config))
     ))
