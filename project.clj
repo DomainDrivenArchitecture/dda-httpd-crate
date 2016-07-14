@@ -12,7 +12,9 @@
   :deploy-repositories [["snapshots" :clojars]
                         ["releases" :clojars]]
   :profiles {:dev
-             {:dependencies
+             {:source-paths ["src" "src"
+                             "intergation" "integration"]
+              :dependencies
               [[com.palletops/pallet "0.8.12" :classifier "tests"]
                [org.clojure/test.check "0.9.0"]]
               :plugins
