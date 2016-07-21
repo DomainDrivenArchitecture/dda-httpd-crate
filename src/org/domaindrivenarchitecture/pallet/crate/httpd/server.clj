@@ -32,15 +32,21 @@
   (apache2/install-apache2-action)
   (apache2/install-apachetop-action)
   (gnutls/install-mod-gnutls)
-   (jk/install-mod-jk 
-     :jkStripSession (-> config :jk-configuration :jkStripSession)
-     :jkWatchdogInterval (-> config :jk-configuration :jkWatchdogInterval))
-  (rewrite/install-mod-rewrite))
+  (rewrite/install-mod-rewrite)
+  (when (contains? config :jk-configuration)
+    (jk/install-mod-jk 
+      :jkStripSession (-> config :jk-configuration :jkStripSession)
+      :jkWatchdogInterval (-> config :jk-configuration :jkWatchdogInterval)))
+  )
 
 (s/defn configure
   [config :- schema/HttpdConfig]
-  (let [vhost-config (first (get-in config [:vhosts]))]
-    (apache2/config-apache2-production-grade)
-    (maintainance/write-maintainance-file 
-      :content (get-in vhost-config [:maintainance-page-content]))
-  ))
+  
+  (apache2/config-apache2-production-grade)
+  
+  (apache2/configure-file-and-enable 
+    "limits.conf" 
+    (httpd-config/limits 
+      :max-clients (get-in config [:limits :max-clients])
+      :server-limit (get-in config [:limits :server-limit])))
+  )

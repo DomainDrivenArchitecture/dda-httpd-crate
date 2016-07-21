@@ -39,97 +39,97 @@
   [vhost-config :- schema/VhostConfig]
   (let [use-mod-jk (contains? vhost-config :mod-jk)
         domain-name (get-in vhost-config [:domain-name])]
-    (vec (concat
+    (vec 
+      (concat
            (vhost/vhost-head 
-             :listening-port (get-in vhost-config [:listening-port])
-             :domain-name  domain-name
-             :server-admin-email (get-in vhost-config [:server-admin-email]))
-           (httpd-common/prefix 
-             "  " (vec (concat
-             (when (contains? vhost-config :location)
-               (cond 
-                 (and (contains? (-> vhost-config :location) :basic-auth)
-                      (-> vhost-config :location :basic-auth))
-                 (vhost/vhost-location
-                   :location-options
-                   (vec (concat
-                          ["Order allow,deny"
+          :listening-port (get-in vhost-config [:listening-port])
+          :domain-name  domain-name
+          :server-admin-email (get-in vhost-config [:server-admin-email]))
+        (httpd-common/prefix 
+          "  " (vec (concat
+          (when (contains? vhost-config :location)
+            (cond 
+              (and (contains? (-> vhost-config :location) :basic-auth)
+                   (-> vhost-config :location :basic-auth))
+              (vhost/vhost-location
+                :location-options
+                (vec (concat
+                       ["Order allow,deny"
                            "Allow from all"
                            ""]
-                          (auth/vhost-basic-auth-options
+                       (auth/vhost-basic-auth-options
                             :domain-name domain-name))))
                  
-                 (contains? (-> vhost-config :location) :locations-override)
-                 (-> vhost-config :locations-override)))
-             (when (contains? vhost-config :mod-jk)
-               (concat 
-                 (jk/vhost-jk-mount :worker (get-in vhost-config [:mod-jk :worker])) 
-                 [""]))
-             (when (contains? vhost-config :google-id)
-               (google/vhost-ownership-verification 
-                 :id (get-in vhost-config [:google-id])
-                 :consider-jk use-mod-jk)) 
-             (when (contains? vhost-config :maintainance-page-content)
-               (maintainance/vhost-service-unavailable-error-page :consider-jk use-mod-jk))
-             (when (contains? vhost-config :proxy)
-               (proxy/vhost-proxy 
-                 :target-port (-> vhost-config :proxy :target-port)
-                 :additional-directives (-> vhost-config :proxy :additional-directives)))
-             (vhost/vhost-log 
-               :error-name "error.log"
-               :log-name "ssl-access.log"
-               :log-format "combined")
-             (when (contains? vhost-config :cert-letsencrypt)
-               (gnutls/vhost-gnutls-letsencrypt domain-name))
-             (when (contains? vhost-config :cert-manual)
-               (gnutls/vhost-gnutls domain-name))
-             )))
+              (contains? (-> vhost-config :location) :locations-override)
+              (-> vhost-config :locations-override)))
+          (when (contains? vhost-config :mod-jk)
+            (concat 
+              (jk/vhost-jk-mount :worker (get-in vhost-config [:mod-jk :worker])) 
+              [""]))
+          (when (contains? vhost-config :google-id)
+            (google/vhost-ownership-verification 
+              :id (get-in vhost-config [:google-id])
+              :consider-jk use-mod-jk)) 
+          (when (contains? vhost-config :maintainance-page-content)
+            (maintainance/vhost-service-unavailable-error-page :consider-jk use-mod-jk))
+          (when (contains? vhost-config :proxy)
+            (proxy/vhost-proxy 
+              :target-port (-> vhost-config :proxy :target-port)
+              :additional-directives (-> vhost-config :proxy :additional-directives)))
+          (vhost/vhost-log 
+            :error-name "error.log"
+            :log-name "ssl-access.log"
+            :log-format "combined")
+          
+          (when (contains? vhost-config :cert-letsencrypt)
+            (gnutls/vhost-gnutls-letsencrypt domain-name))
+          
+          (when (contains? vhost-config :cert-manual)
+            (gnutls/vhost-gnutls domain-name))
+          )))
            vhost/vhost-tail
-           (when (contains? vhost-config :mod-jk)
-                   (map str (jk/workers-configuration 
-                                      :port (get-in vhost-config [:mod-jk :app-port])
-                                      :host (get-in vhost-config [:mod-jk :host])
-                                      :worker (get-in vhost-config [:mod-jk :worker])
-                                      :socket-timeout (get-in vhost-config [:mod-jk :socket-timeout])
-                                      :socket-connect-timeout (get-in vhost-config [:mod-jk :socket-connect-timeout])
-                                      :jk-worker-property? true)))
-           ))
+        (when (contains? vhost-config :mod-jk)
+          (concat
+            [""]
+            (jk/workers-configuration 
+              :port (get-in vhost-config [:mod-jk :port])
+              :host (get-in vhost-config [:mod-jk :host])
+              :worker (get-in vhost-config [:mod-jk :worker])
+              :socket-timeout (get-in vhost-config [:mod-jk :socket-timeout-sec])
+              :socket-connect-timeout (get-in vhost-config [:mod-jk :socket-connect-timeout-ms])
+              :maintain-timout-sec (get-in vhost-config [:mod-jk :maintain-timout-sec])
+              :in-httpd-conf? true)))
+        ))
     ))
 
 (s/defn configure-vhost 
   "Takes a vhost-name and vhost-config and generates vhost-config files"
   [vhost-name :- s/Str
    vhost-config :- schema/VhostConfig]
+  
   (when (contains? vhost-config :cert-manual)
     (gnutls/configure-gnutls-credentials
             :domain-name (-> vhost-config :domain-name)
             :domain-cert (-> vhost-config :cert-manual :domain-cert) 
             :domain-key (-> vhost-config :cert-manual :domain-key) 
             :ca-cert (-> vhost-config :cert-manual :ca-cert)))  
-  (apache2/configure-file-and-enable 
-    "limits.conf" 
-    (httpd-config/limits 
-      :max-clients (get-in vhost-config [:limits :max-clients])
-      :server-limit (get-in vhost-config [:limits :server-limit])))
-  (when (contains? vhost-config :mod-jk)
-    (jk/configure-mod-jk-worker 
-      :workers-configuration
-      (jk/workers-configuration :port (get-in vhost-config [:mod-jk :app-port])
-                                :host (get-in vhost-config [:mod-jk :host])
-                                :worker (get-in vhost-config [:mod-jk :worker])
-                                :socket-timeout (get-in vhost-config [:mod-jk :socket-timeout])
-                                :socket-connect-timeout (get-in vhost-config [:mod-jk :socket-connect-timeout]))))
-  (google/configure-ownership-verification :id (get-in vhost-config [:google-id]))    
+  
+  (when (contains? vhost-config :google-id)
+    (google/configure-ownership-verification :id (get-in vhost-config [:google-id])))
+  
+  (when (contains? vhost-config :maintainance-page-content)
+    (maintainance/write-maintainance-file 
+        :content (get-in vhost-config [:maintainance-page-content])))
+    
   (apache2/configure-and-enable-vhost
     (str "000-" vhost-name)
     (vhost/vhost-conf-default-redirect-to-https-only
       :domain-name (get-in vhost-config [:domain-name])
-      :server-admin-email (get-in vhost-config [:server-admin-email]) 
-      ;(str "admin@" (get-in vhost-config [:domain-name]))
-      ))
+      :server-admin-email (get-in vhost-config [:server-admin-email])))
+  
   (apache2/configure-and-enable-vhost
     (str "000-" vhost-name "-ssl") (vhost vhost-config))
-)
+  )
 
 (s/defn configure
   [config :- schema/HttpdConfig]

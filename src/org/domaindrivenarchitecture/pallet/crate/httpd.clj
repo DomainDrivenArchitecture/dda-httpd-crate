@@ -31,19 +31,20 @@
    :listening-port "443"
    :server-admin-email "admin@localdomain"
    :maintainance-page-content ["<h1>Webserver Maintainance Mode</h1>"]
-   :mod-jk {:app-port "8009"
+   :mod-jk {:port "8009"
             :host "127.0.0.1"
             :worker "mod_jk_www"
-            :socket-timeout 60000
-            :socket-connect-timeout 300}
-   :limits {:server-limit 150 
-            :max-clients 150}
+            :maintain-timout-sec 90
+            :socket-connect-timeout-ms 62000}
    })
 
 (def default-config
-  {:vhosts {:default default-vhost-config}
+  {:limits {:server-limit 150 
+            :max-clients 150}
    :jk-configuration {:jkStripSession "On"
-                      :jkWatchdogInterval 120}})
+                      :jkWatchdogInterval 120}
+   :vhosts {:default default-vhost-config}
+   })
 
 (def dda-httpd-crate 
   (dda-crate/make-dda-crate

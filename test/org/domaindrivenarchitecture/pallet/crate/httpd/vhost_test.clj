@@ -31,15 +31,20 @@
    :cert-letsencrypt {:letsencrypt-mail "admin@domain.tld"}
    :google-id "ggl1234"
    :listening-port "443"
-   :mod-jk {:app-port "8009"
-            :jkWatchdogInterval 60
-            :jkStripSession "On"
+   :mod-jk {:port "8009"
             :host "127.0.0.1"
             :worker "mod_jk_www"
-            :socket-timeout 60000
-            :socket-connect-timeout 300}
+            :maintain-timout-sec 90
+            :socket-connect-timeout-ms 60000}
    :maintainance-page-content ["test"]
    })
+
+(def test-config
+  {:limits {:server-limit 150 
+            :max-clients 150}
+   :jk-configuration {:jkStripSession "On"
+                      :jkWatchdogInterval 120}
+   :vhosts {}})
 
 (defn trim-string-vector 
   [string-vector] 
@@ -83,27 +88,15 @@
   "  GnuTLSKeyFile /etc/letsencrypt/live/subdomain.domain.tld/privkey.pem"
   "  "  
   "</VirtualHost>"
-  "# workers.tomcat_home should point to the location where you"
-  "# installed tomcat. This is where you have your conf, webapps and lib"
-  "# directories."
-  "#workers.tomcat_home=/usr/share/tomcat6"
-  "# workers.java_home should point to your Java installation. Normally"
-  "# you should have a bin and lib directories beneath it."
-  "#workers.java_home=/usr/lib/jvm/default-java"
-  "# You should configure your environment slash... ps=\\ on NT and / on UNIX"
-  "# and maybe something different elsewhere."
-  "#ps=/"
-  "# The loadbalancer (type lb) workers perform wighted round-robin"
-  "# load balancing with sticky sessions."
-  "#worker.loadbalancer.type=lb"
-  "#worker.loadbalancer.balance_workers=mod_jk_www"
+  ""
   "JkWorkerProperty worker.list=mod_jk_www"
+  "JkWorkerProperty worker.maintain=90"
   "JkWorkerProperty worker.mod_jk_www.port=8009"
   "JkWorkerProperty worker.mod_jk_www.host=127.0.0.1"
   "JkWorkerProperty worker.mod_jk_www.type=ajp13"
-  "JkWorkerProperty worker.mod_jk_www.socket_connect_timeout=300"
-  "JkWorkerProperty worker.mod_jk_www.socket_timeout=60000"
-  "JkWorkerProperty worker.mod_jk_www.socket_keepalive=false"
+  "JkWorkerProperty worker.mod_jk_www.socket_connect_timeout=60000"
+  "JkWorkerProperty worker.mod_jk_www.ping_mode=I"
+  "JkWorkerProperty worker.mod_jk_www.socket_keepalive=true"
   "JkWorkerProperty worker.mod_jk_www.connection_pool_timeout=100"])
 
 (def etc-libapache2-mod-jk-workers-properties
@@ -113,65 +106,52 @@
    ""
    "#"
    "#------ worker list ------------------------------------------"
-   "worker.list=mod_jk_www"
-   
+   "worker.list=mod_jk_www"   
    "worker.mod_jk_www.port=8009"
    "worker.mod_jk_www.host=127.0.0.1"
    "worker.mod_jk_www.type=ajp13"
    "worker.mod_jk_www.socket_timeout=900"
    "worker.mod_jk_www.socket_keepalive=false"
-   "worker.mod_jk_www.connection_pool_timeout=100"
-   ;worker.vhost1.port=80009"
-   ;worker.vhost1.host=123.000...."
-   ;"worker.list=mod_jk_www,vhost1"
-   ])
+   "worker.mod_jk_www.connection_pool_timeout=100"])
 
 (def etc-libapache2-mod-jk-httpd-jk-conf
-  ["# Licensed to the Apache Software Foundation (ASF) under one or more"
-   "# contributor license agreements.  See the NOTICE file distributed with"
-   "# this work for additional information regarding copyright ownership."
-   "# The ASF licenses this file to You under the Apache License, Version 2.0"
-   "# (the \"License\"); you may not use this file except in compliance with"
-   "# the License.  You may obtain a copy of the License at"
-   "#"
-   "#     http://www.apache.org/licenses/LICENSE-2.0"
-   ""
-   "<IfModule jk_module>"   
-   "    JkLogFile /var/log/apache2/mod_jk.log"
-   "    JkLogLevel info"
-   "    JkShmFile /var/log/apache2/jk-runtime-status"
-   ;why is this commented out? 
-   ;"    # JkOptions +RejectUnsafeURI"
-   ;"    # JkStripSession On"
-   "    JkOptions +RejectUnsafeURI"
-   "    JkStripSession On"
-   "    JkWatchdogInterval 60"
-   
-   "    <Location /jk-status>"
-   "# Inside Location we can omit the URL in JkMount"
-   "        JkMount jk-status"
-   "        Order deny,allow"
-   "        Deny from all"
-   "        Allow from 127.0.0.1"
-   "    </Location>"
-   "    <Location /jk-manager>"
-   "# Inside Location we can omit the URL in JkMount"
-   "        JkMount jk-manager"
-   "        Order deny,allow"
-   "        Deny from all"
-   "        Allow from 127.0.0.1"
-   "    </Location>"
+  ["<IfModule jk_module>"   
+   "  JkLogFile /var/log/apache2/mod_jk.log"
+   "  JkLogLevel info"
+   "  JkShmFile /var/log/apache2/jk-runtime-status"
+   "  JkOptions +RejectUnsafeURI"
+   "  JkStripSession On"
+   "  JkWatchdogInterval 120"
+   "  "
+   "  <Location /jk-status>"
+   "    # Inside Location we can omit the URL in JkMount"
+   "    JkMount jk-status"
+   "    Order deny,allow"
+   "    Deny from all"
+   "    Allow from 127.0.0.1"
+   "  </Location>"
+   "  <Location /jk-manager>"
+   "    # Inside Location we can omit the URL in JkMount"
+   "    JkMount jk-manager"
+   "    Order deny,allow"
+   "    Deny from all"
+   "    Allow from 127.0.0.1"
+   "  </Location>"
    "</IfModule>"])
 
 (deftest vhost
   (testing 
     "Test the creation of an example vhost from configuration." 
     (is (= (trim-string-vector vhost-expected) (trim-string-vector (sut/vhost vhost-test-config))))
+  ))
+
+; TODO: review jem 2016.07.20: This tests httpd-crate functionality. Either test a ssa-httpd-crate fn or shift test to httpd-crate!
+(deftest modjk
+  (testing 
+    "Test the creation of an example modjk from configuration." 
     (is (= (trim-string-vector etc-libapache2-mod-jk-httpd-jk-conf) 
-            (trim-string-vector (jk/mod-jk-configuration :jkWatchdogInterval (get-in vhost-test-config [:mod-jk :jkWatchdogInterval])
-                                           :jkStripSession (get-in vhost-test-config [:mod-jk :jkStripSession])
-                                           :vhost-jk-status-location? true))))
-  )
-)
-
-
+            (trim-string-vector (jk/mod-jk-configuration 
+                                  :jkWatchdogInterval (get-in test-config [:jk-configuration :jkWatchdogInterval])
+                                  :jkStripSession (get-in test-config [:jk-configuration :jkStripSession])
+                                  :vhost-jk-status-location? true))))
+  ))

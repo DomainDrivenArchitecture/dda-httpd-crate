@@ -32,8 +32,7 @@
   (group-spec
     "poc"
     :extends [httpd/with-httpd
-              :group-spec-test
-              ]
+              :group-spec-test]
     )
   )
 

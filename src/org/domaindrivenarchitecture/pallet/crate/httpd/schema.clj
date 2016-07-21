@@ -32,21 +32,19 @@
                                   :domain-key s/Str 
                                   (s/optional-key :ca-cert) s/Str}
    ; mod_jk
-   (s/optional-key :mod-jk) {:app-port s/Str
+   (s/optional-key :mod-jk) {:worker s/Str
                              :host s/Str
-                             :worker s/Str
-                             :socket-timeout s/Int
-                             :socket-connect-timeout s/Int
-                             }
+                             :port s/Str
+                             :maintain-timout-sec s/Int
+                             :socket-connect-timeout-ms s/Int}
    ;proxy
    (s/optional-key :proxy) {:target-port s/Str
                             :additional-directives [s/Str]}
-   ;limits
-   (s/optional-key :limits) {(s/optional-key :server-limit) s/Int
-                             (s/optional-key :max-clients) s/Int}
+   
    ; other stuff
    (s/optional-key :maintainance-page-content) [s/Str]
-   (s/optional-key :google-id) s/Str})
+   (s/optional-key :google-id) s/Str
+   })
 
 (def jk-configuration
   "Defines the schema for a jk-configuration, not mod-jk!"
@@ -54,5 +52,10 @@
    :jkWatchdogInterval s/Int})
 
 (def HttpdConfig 
-  {:vhosts {s/Keyword VhostConfig}
-   :jk-configuration jk-configuration})
+  {
+   :jk-configuration jk-configuration
+   :vhosts {s/Keyword VhostConfig}
+   ;limits
+   (s/optional-key :limits) {(s/optional-key :server-limit) s/Int
+                             (s/optional-key :max-clients) s/Int}
+   })
