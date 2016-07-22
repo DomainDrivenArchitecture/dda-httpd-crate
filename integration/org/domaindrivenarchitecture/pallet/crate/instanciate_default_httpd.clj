@@ -11,6 +11,8 @@
       pallet.stevedore.bash)
   (:require
     [org.domaindrivenarchitecture.pallet.crate.httpd :as httpd]
+    [org.domaindrivenarchitecture.pallet.crate.init :as init]
+    [org.domaindrivenarchitecture.pallet.core.cli-helper :as cli-helper]
     )
   (:gen-class :main true))
 
@@ -31,17 +33,18 @@
 (def poc
   (group-spec
     "poc"
-    :extends [httpd/with-httpd
-              :group-spec-test]
+    :extends [init/with-init
+              httpd/with-httpd
+              ;the following line leads to an Error and is prob unnecessary
+              ;:group-spec-test
+              ]
     )
   )
 
-
-
 (defn -main
-  [& args]
-  (apply lift
-         poc
-         :user pallet-user
-         :compute my-pocket-cloud
-         args))
+ [& args]
+ (apply lift
+       poc
+       :user pallet-user
+       :compute my-pocket-cloud
+       args))

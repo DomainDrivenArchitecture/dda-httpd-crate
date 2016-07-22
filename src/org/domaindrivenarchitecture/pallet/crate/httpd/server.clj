@@ -31,6 +31,7 @@
   [config :- schema/HttpdConfig]
   (apache2/install-apache2-action)
   (apache2/install-apachetop-action)
+  (apache2/install-letsencrypt-action)
   (gnutls/install-mod-gnutls)
   (rewrite/install-mod-rewrite)
   (when (contains? config :jk-configuration)

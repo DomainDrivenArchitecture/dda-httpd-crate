@@ -127,6 +127,10 @@
       :domain-name (get-in vhost-config [:domain-name])
       :server-admin-email (get-in vhost-config [:server-admin-email])))
   
+  ;(apache2/install-letsencrypt-certs 
+  ;  (-> vhost-config :domain-name)
+  ;  :adminmail (-> vhost-config :server-admin-email))
+  
   (apache2/configure-and-enable-vhost
     (str "000-" vhost-name "-ssl") (vhost vhost-config))
   )
