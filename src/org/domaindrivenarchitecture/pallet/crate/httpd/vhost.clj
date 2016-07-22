@@ -112,7 +112,12 @@
             :domain-name (-> vhost-config :domain-name)
             :domain-cert (-> vhost-config :cert-manual :domain-cert) 
             :domain-key (-> vhost-config :cert-manual :domain-key) 
-            :ca-cert (-> vhost-config :cert-manual :ca-cert)))  
+            :ca-cert (-> vhost-config :cert-manual :ca-cert)))
+    
+  (when (contains? vhost-config :cert-letsencrypt)
+    (apache2/install-letsencrypt-certs 
+      (get-in vhost-config [:domain-name])
+      :adminmail (get-in vhost-config [:cert-letsencrypt :letsencrypt-mail])))
   
   (when (contains? vhost-config :google-id)
     (google/configure-ownership-verification :id (get-in vhost-config [:google-id])))
@@ -120,17 +125,15 @@
   (when (contains? vhost-config :maintainance-page-content)
     (maintainance/write-maintainance-file 
         :content (get-in vhost-config [:maintainance-page-content])))
+  
+
     
   (apache2/configure-and-enable-vhost
     (str "000-" vhost-name)
     (vhost/vhost-conf-default-redirect-to-https-only
       :domain-name (get-in vhost-config [:domain-name])
       :server-admin-email (get-in vhost-config [:server-admin-email])))
-  
-  ;(apache2/install-letsencrypt-certs 
-  ;  (-> vhost-config :domain-name)
-  ;  :adminmail (-> vhost-config :server-admin-email))
-  
+   
   (apache2/configure-and-enable-vhost
     (str "000-" vhost-name "-ssl") (vhost vhost-config))
   )
