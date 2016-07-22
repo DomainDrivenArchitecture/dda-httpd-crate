@@ -12,7 +12,6 @@
   (:require
     [org.domaindrivenarchitecture.pallet.crate.httpd :as httpd]
     [org.domaindrivenarchitecture.pallet.crate.init :as init]
-    [org.domaindrivenarchitecture.pallet.core.cli-helper :as cli-helper]
     )
   (:gen-class :main true))
 
