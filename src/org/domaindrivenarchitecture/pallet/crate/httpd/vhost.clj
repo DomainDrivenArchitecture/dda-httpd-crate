@@ -95,10 +95,11 @@
               :port (get-in vhost-config [:mod-jk :port])
               :host (get-in vhost-config [:mod-jk :host])
               :worker (get-in vhost-config [:mod-jk :worker])
-              :socket-timeout (get-in vhost-config [:mod-jk :socket-timeout-sec])
-              :socket-connect-timeout (get-in vhost-config [:mod-jk :socket-connect-timeout-ms])
+              :socket-connect-timeout-ms (get-in vhost-config [:mod-jk :socket-connect-timeout-ms])
               :maintain-timout-sec (get-in vhost-config [:mod-jk :maintain-timout-sec])
-              :in-httpd-conf? true)))
+              :in-httpd-conf true
+              :socket-keep-alive true
+              :ping-mode "I")))
         ))
     ))
 

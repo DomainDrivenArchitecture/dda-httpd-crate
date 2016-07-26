@@ -36,6 +36,7 @@
   (rewrite/install-mod-rewrite)
   (when (contains? config :jk-configuration)
     (jk/install-mod-jk 
+      :workers-properties-file nil
       :jkStripSession (-> config :jk-configuration :jkStripSession)
       :jkWatchdogInterval (-> config :jk-configuration :jkWatchdogInterval)))
   )

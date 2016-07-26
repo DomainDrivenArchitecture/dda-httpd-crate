@@ -137,6 +137,7 @@
    "    Deny from all"
    "    Allow from 127.0.0.1"
    "  </Location>"
+   "  "
    "</IfModule>"])
 
 (deftest vhost
@@ -145,7 +146,7 @@
     (is (= (trim-string-vector vhost-expected) (trim-string-vector (sut/vhost vhost-test-config))))
   ))
 
-; TODO: review jem 2016.07.20: This tests httpd-crate functionality. Either test a ssa-httpd-crate fn or shift test to httpd-crate!
+; TODO: review jem 2016.07.20: This tests httpd-crate functionality. Either test a dda-httpd-crate fn or shift test to httpd-crate!
 (deftest modjk
   (testing 
     "Test the creation of an example modjk from configuration." 
@@ -153,5 +154,6 @@
             (trim-string-vector (jk/mod-jk-configuration 
                                   :jkWatchdogInterval (get-in test-config [:jk-configuration :jkWatchdogInterval])
                                   :jkStripSession (get-in test-config [:jk-configuration :jkStripSession])
-                                  :vhost-jk-status-location? true))))
+                                  :vhost-jk-status-location? true
+                                  :workers-properties-file nil))))
   ))
