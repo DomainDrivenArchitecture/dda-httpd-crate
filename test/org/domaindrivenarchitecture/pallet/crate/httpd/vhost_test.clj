@@ -114,46 +114,9 @@
    "worker.mod_jk_www.socket_keepalive=false"
    "worker.mod_jk_www.connection_pool_timeout=100"])
 
-(def etc-libapache2-mod-jk-httpd-jk-conf
-  ["<IfModule jk_module>"   
-   "  JkLogFile /var/log/apache2/mod_jk.log"
-   "  JkLogLevel info"
-   "  JkShmFile /var/log/apache2/jk-runtime-status"
-   "  JkOptions +RejectUnsafeURI"
-   "  JkStripSession On"
-   "  JkWatchdogInterval 120"
-   "  "
-   "  <Location /jk-status>"
-   "    # Inside Location we can omit the URL in JkMount"
-   "    JkMount jk-status"
-   "    Order deny,allow"
-   "    Deny from all"
-   "    Allow from 127.0.0.1"
-   "  </Location>"
-   "  <Location /jk-manager>"
-   "    # Inside Location we can omit the URL in JkMount"
-   "    JkMount jk-manager"
-   "    Order deny,allow"
-   "    Deny from all"
-   "    Allow from 127.0.0.1"
-   "  </Location>"
-   "  "
-   "</IfModule>"])
-
 (deftest vhost
   (testing 
     "Test the creation of an example vhost from configuration." 
     (is (= (trim-string-vector vhost-expected) (trim-string-vector (sut/vhost vhost-test-config))))
   ))
 
-; TODO: review jem 2016.07.20: This tests httpd-crate functionality. Either test a dda-httpd-crate fn or shift test to httpd-crate!
-(deftest modjk
-  (testing 
-    "Test the creation of an example modjk from configuration." 
-    (is (= (trim-string-vector etc-libapache2-mod-jk-httpd-jk-conf) 
-            (trim-string-vector (jk/mod-jk-configuration 
-                                  :jkWatchdogInterval (get-in test-config [:jk-configuration :jkWatchdogInterval])
-                                  :jkStripSession (get-in test-config [:jk-configuration :jkStripSession])
-                                  :vhost-jk-status-location? true
-                                  :workers-properties-file nil))))
-  ))
