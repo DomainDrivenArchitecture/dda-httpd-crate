@@ -16,6 +16,7 @@
 
 (ns org.domaindrivenarchitecture.pallet.crate.httpd.vhost-test
   (:require
+    [org.domaindrivenarchitecture.config.commons.directory-model :as directory-model]
     [clojure.test :refer :all]
     [schema.core :as s]
     [org.domaindrivenarchitecture.pallet.core.dda-crate :as dda-crate]
@@ -45,10 +46,6 @@
    :jk-configuration {:jkStripSession "On"
                       :jkWatchdogInterval 120}
    :vhosts {}})
-
-(defn trim-string-vector 
-  [string-vector] 
-  (filter #(not= % "") (map clojure.string/trim string-vector)))
 
 (def vhost-expected
   ["<VirtualHost *:443>"
@@ -117,6 +114,6 @@
 (deftest vhost
   (testing 
     "Test the creation of an example vhost from configuration." 
-    (is (= (trim-string-vector vhost-expected) (trim-string-vector (sut/vhost vhost-test-config))))
+    (is (= (directory-model/trim-string-vector vhost-expected) (directory-model/trim-string-vector (sut/vhost vhost-test-config))))
   ))
 

@@ -4,7 +4,7 @@
                  [com.palletops/pallet "0.8.12" :exclusions [org.clojure/tools.cli]]
                  [prismatic/schema "1.1.2"]
                  [org.domaindrivenarchitecture/dda-init-crate "0.1.0-SNAPSHOT"]
-                 [org.domaindrivenarchitecture/dda-config-commons "0.1.4"]
+                 [org.domaindrivenarchitecture/dda-config-commons "0.1.5-SNAPSHOT"]
                  [org.domaindrivenarchitecture/dda-pallet "0.1.0-SNAPSHOT"]
                  [org.domaindrivenarchitecture/httpd "0.2.3-SNAPSHOT"]]
   :repositories [["snapshots" :clojars]
