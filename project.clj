@@ -16,6 +16,7 @@
                              "intergation" "integration"]
               :dependencies
               [[com.palletops/pallet "0.8.12" :classifier "tests"]
+               [org.domaindrivenarchitecture/dda-config-commons "0.1.5-SNAPSHOT" :classifier "tests"]
                [org.clojure/test.check "0.9.0"]]
               :plugins
               [[com.palletops/pallet-lein "0.8.0-alpha.1"]

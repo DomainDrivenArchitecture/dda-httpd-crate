@@ -16,7 +16,7 @@
 
 (ns org.domaindrivenarchitecture.pallet.crate.httpd.vhost-test
   (:require
-    [org.domaindrivenarchitecture.config.commons.directory-model :as directory-model]
+    [org.domaindrivenarchitecture.config.commons.string-test-utils :as string-utils]
     [clojure.test :refer :all]
     [schema.core :as s]
     [org.domaindrivenarchitecture.pallet.core.dda-crate :as dda-crate]
@@ -114,6 +114,6 @@
 (deftest vhost
   (testing 
     "Test the creation of an example vhost from configuration." 
-    (is (= (directory-model/trim-string-vector vhost-expected) (directory-model/trim-string-vector (sut/vhost vhost-test-config))))
+    (is (= (string-utils/trim-string-vector vhost-expected) (string-utils/trim-string-vector (sut/vhost vhost-test-config))))
   ))
 
