@@ -24,8 +24,21 @@
     [httpd.crate.mod-gnutls :as gnutls]
     [httpd.crate.mod-jk :as jk]
     [httpd.crate.mod-rewrite :as rewrite]
+    [httpd.crate.mod-proxy-http :as proxy]
     [httpd.crate.webserver-maintainance :as maintainance]
     [org.domaindrivenarchitecture.pallet.crate.httpd.schema :as schema]))
+
+(s/defn contains-proxy?
+  "Checks whether the httpd config uses mod_proxy"
+  [config :- schema/HttpdConfig]
+  (let [res (some true? 
+                  (map 
+                    (fn [k] (= k :proxy)) 
+                    (flatten 
+                      (map #(keys %) 
+                           (vals (-> config :vhosts))))))]
+    (if (nil? res)
+    false res)))
 
 (s/defn install
   [config :- schema/HttpdConfig]
@@ -39,6 +52,8 @@
       :workers-properties-file nil
       :jkStripSession (-> config :jk-configuration :jkStripSession)
       :jkWatchdogInterval (-> config :jk-configuration :jkWatchdogInterval)))
+  (when (contains-proxy? config)
+    (proxy/install-mod-proxy-http))
   )
 
 (s/defn configure
