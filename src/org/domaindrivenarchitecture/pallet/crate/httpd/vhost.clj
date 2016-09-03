@@ -106,7 +106,8 @@
 (s/defn configure-vhost 
   "Takes a vhost-name and vhost-config and generates vhost-config files"
   [vhost-name :- s/Str
-   vhost-config :- schema/VhostConfig]
+   vhost-config :- schema/VhostConfig
+   apache-version :- s/Str]
   
   (when (contains? vhost-config :cert-manual)
     (gnutls/configure-gnutls-credentials
@@ -114,11 +115,11 @@
             :domain-cert (-> vhost-config :cert-manual :domain-cert) 
             :domain-key (-> vhost-config :cert-manual :domain-key) 
             :ca-cert (-> vhost-config :cert-manual :ca-cert)))
-    
-  (when (contains? vhost-config :cert-letsencrypt)
-    (apache2/install-letsencrypt-certs 
-      (get-in vhost-config [:domain-name])
-      :adminmail (get-in vhost-config [:cert-letsencrypt :letsencrypt-mail])))
+;    
+;  (when (contains? vhost-config :cert-letsencrypt)
+;    (apache2/install-letsencrypt-certs 
+;      (get-in vhost-config [:domain-name])
+;      :adminmail (get-in vhost-config [:cert-letsencrypt :letsencrypt-mail])))
   
   (when (contains? vhost-config :google-id)
     (google/configure-ownership-verification :id (get-in vhost-config [:google-id])))
@@ -127,21 +128,20 @@
     (maintainance/write-maintainance-file 
         :content (get-in vhost-config [:maintainance-page-content])))
   
-
-    
   (apache2/configure-and-enable-vhost
     (str "000-" vhost-name)
     (vhost/vhost-conf-default-redirect-to-https-only
       :domain-name (get-in vhost-config [:domain-name])
-      :server-admin-email (get-in vhost-config [:server-admin-email])))
+      :server-admin-email (get-in vhost-config [:server-admin-email]))
+    apache-version)
    
   (apache2/configure-and-enable-vhost
-    (str "000-" vhost-name "-ssl") (vhost vhost-config))
+    (str "000-" vhost-name "-ssl") (vhost vhost-config) apache-version)
   )
 
 (s/defn configure
   [config :- schema/HttpdConfig]
   (let [vhost-configs (get-in config [:vhosts])]  
     (doseq [[vhost-name vhost-config] vhost-configs]
-      (configure-vhost (name vhost-name) vhost-config))
+      (configure-vhost (name vhost-name) vhost-config (-> config :apache-version)))
     ))

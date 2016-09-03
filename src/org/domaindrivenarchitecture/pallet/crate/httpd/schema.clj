@@ -53,6 +53,7 @@
 
 (def HttpdConfig 
   {
+   :apache-version s/Str
    :jk-configuration jk-configuration
    :vhosts {s/Keyword VhostConfig}
    ;limits

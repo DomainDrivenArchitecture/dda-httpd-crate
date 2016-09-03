@@ -39,7 +39,8 @@
    })
 
 (def default-config
-  {:limits {:server-limit 150 
+  {:apache-version "2.4"
+   :limits {:server-limit 150 
             :max-clients 150}
    :jk-configuration {:jkStripSession "On"
                       :jkWatchdogInterval 120}
