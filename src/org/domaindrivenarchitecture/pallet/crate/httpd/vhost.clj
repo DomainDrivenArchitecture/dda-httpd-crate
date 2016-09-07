@@ -148,20 +148,3 @@
     (doseq [[vhost-name vhost-config] vhost-configs]
       (configure-vhost (name vhost-name) vhost-config (-> config :apache-version)))
     ))
-
-
-
-(def default-vhost-config
-  {:domain-name "localhost.localdomain"
-   :listening-port "443"
-   :server-admin-email "admin@localdomain"
-   :maintainance-page-content ["<h1>Webserver Maintainance Mode</h1>"]
-   :mod-jk {:tomcat-forwarding-configuration {:mount [{:path "/*" :worker "mod_jk_www"}]
-                                              ;a default for unmount is not recommended
-                                              ;:unmount [{:path "/*" :worker "mod_jk_www"}]
-                                              }
-            :worker-properties [{:worker "mod_jk_www"
-                                 :host "127.0.0.1"
-                                 :port "8009"
-                                 :maintain-timout-sec 90
-                                 :socket-connect-timeout-ms 62000}]}})
