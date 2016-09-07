@@ -32,11 +32,14 @@
                                   :domain-key s/Str 
                                   (s/optional-key :ca-cert) s/Str}
    ; mod_jk
-   (s/optional-key :mod-jk) {:worker s/Str
-                             :host s/Str
-                             :port s/Str
-                             :maintain-timout-sec s/Int
-                             :socket-connect-timeout-ms s/Int}
+   (s/optional-key :mod-jk) {:tomcat-forwarding-configuration 
+                             {:mount [{:path s/Str :worker s/Str}]
+                              (s/optional-key :unmount) [{:path s/Str :worker s/Str}]}
+                             :worker-properties [{:worker s/Str
+                                                 :host s/Str
+                                                 :port s/Str
+                                                 :maintain-timout-sec s/Int
+                                                 :socket-connect-timeout-ms s/Int}]}
    ;proxy
    (s/optional-key :proxy) {:target-port s/Str
                             :additional-directives [s/Str]}
@@ -60,3 +63,7 @@
    (s/optional-key :limits) {(s/optional-key :server-limit) s/Int
                              (s/optional-key :max-clients) s/Int}
    })
+
+(def test
+  [{:path s/Str
+    :worker s/Str}])

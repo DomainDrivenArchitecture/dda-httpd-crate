@@ -63,9 +63,12 @@
               (contains? (-> vhost-config :location) :locations-override)
               (-> vhost-config :locations-override)))
           (when (contains? vhost-config :mod-jk)
-            (concat 
-              (jk/vhost-jk-mount :worker (get-in vhost-config [:mod-jk :worker])) 
-              [""]))
+              (for [x (-> vhost-config :mod-jk :tomcat-forwarding-configuration :mount)]
+                (first (jk/vhost-jk-mount :worker (-> x :worker) :path (-> x :path)))))
+          (when (contains? (-> vhost-config :mod-jk :tomcat-forwarding-configuration) :unmount)
+            (for [x (-> vhost-config :mod-jk :tomcat-forwarding-configuration :unmount)]
+              (first (jk/vhost-jk-unmount :worker (-> x :worker) :path (-> x :path)))))
+          [" "]
           (when (contains? vhost-config :google-id)
             (google/vhost-ownership-verification 
               :id (get-in vhost-config [:google-id])
@@ -90,18 +93,18 @@
            vhost/vhost-tail
         (when (contains? vhost-config :mod-jk)
           (concat
-            [""]
-            (jk/workers-configuration 
-              :port (get-in vhost-config [:mod-jk :port])
-              :host (get-in vhost-config [:mod-jk :host])
-              :worker (get-in vhost-config [:mod-jk :worker])
-              :socket-connect-timeout-ms (get-in vhost-config [:mod-jk :socket-connect-timeout-ms])
-              :maintain-timout-sec (get-in vhost-config [:mod-jk :maintain-timout-sec])
-              :in-httpd-conf true
-              :socket-keep-alive true
-              :ping-mode "I")))
-        ))
-    ))
+            [" "]
+            (flatten (for [x (-> vhost-config :mod-jk :worker-properties)]
+                          (jk/workers-configuration 
+                            :port (-> x :port)
+                            :host (-> x :host)
+                            :worker (-> x :worker)
+                            :socket-connect-timeout-ms (-> x :socket-connect-timeout-ms)
+                            :maintain-timout-sec (-> x :maintain-timout-sec)
+                            :in-httpd-conf true
+                            :socket-keep-alive true
+                            :ping-mode "I")))))
+    ))))
 
 (s/defn configure-vhost 
   "Takes a vhost-name and vhost-config and generates vhost-config files"
@@ -145,3 +148,20 @@
     (doseq [[vhost-name vhost-config] vhost-configs]
       (configure-vhost (name vhost-name) vhost-config (-> config :apache-version)))
     ))
+
+
+
+(def default-vhost-config
+  {:domain-name "localhost.localdomain"
+   :listening-port "443"
+   :server-admin-email "admin@localdomain"
+   :maintainance-page-content ["<h1>Webserver Maintainance Mode</h1>"]
+   :mod-jk {:tomcat-forwarding-configuration {:mount [{:path "/*" :worker "mod_jk_www"}]
+                                              ;a default for unmount is not recommended
+                                              ;:unmount [{:path "/*" :worker "mod_jk_www"}]
+                                              }
+            :worker-properties [{:worker "mod_jk_www"
+                                 :host "127.0.0.1"
+                                 :port "8009"
+                                 :maintain-timout-sec 90
+                                 :socket-connect-timeout-ms 62000}]}})
