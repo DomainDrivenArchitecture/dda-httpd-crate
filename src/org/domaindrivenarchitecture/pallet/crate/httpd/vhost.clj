@@ -118,11 +118,11 @@
             :domain-cert (-> vhost-config :cert-manual :domain-cert) 
             :domain-key (-> vhost-config :cert-manual :domain-key) 
             :ca-cert (-> vhost-config :cert-manual :ca-cert)))
-;    
-;  (when (contains? vhost-config :cert-letsencrypt)
-;    (apache2/install-letsencrypt-certs 
-;      (get-in vhost-config [:domain-name])
-;      :adminmail (get-in vhost-config [:cert-letsencrypt :letsencrypt-mail])))
+    
+  (when (contains? vhost-config :cert-letsencrypt)
+    (apache2/install-letsencrypt-certs 
+      (get-in vhost-config [:domain-name])
+      :adminmail (get-in vhost-config [:cert-letsencrypt :letsencrypt-mail])))
   
   (when (contains? vhost-config :google-id)
     (google/configure-ownership-verification :id (get-in vhost-config [:google-id])))
