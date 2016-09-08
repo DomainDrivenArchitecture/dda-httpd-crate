@@ -54,14 +54,16 @@
               (vhost/vhost-location
                 :location-options
                 (vec (concat
-                       ["Order allow,deny"
-                           "Allow from all"
-                           ""]
+                       (-> vhost-config :access-control)
                        (auth/vhost-basic-auth-options
                             :domain-name domain-name))))
                  
               (contains? (-> vhost-config :location) :locations-override)
               (-> vhost-config :locations-override)))
+          (when (contains? vhost-config :alias)
+            (vec
+              (for [x (-> vhost-config :alias)]
+                (str "Alias " "\"" (-> x :url) "\"" " " "\""(-> x :path)"\"")))) 
           (when (contains? vhost-config :mod-jk)
               (for [x (-> vhost-config :mod-jk :tomcat-forwarding-configuration :mount)]
                 (first (jk/vhost-jk-mount :worker (-> x :worker) :path (-> x :path)))))
@@ -111,7 +113,10 @@
   [vhost-name :- s/Str
    vhost-config :- schema/VhostConfig
    apache-version :- s/Str]
-  
+  (when (contains? vhost-config :user-credentials)
+      (auth/configure-basic-auth-user-credentials
+      :domain-name (-> vhost-config :domain-name)
+      :user-credentials (-> vhost-config :user-credentials)))
   (when (contains? vhost-config :cert-manual)
     (gnutls/configure-gnutls-credentials
             :domain-name (-> vhost-config :domain-name)

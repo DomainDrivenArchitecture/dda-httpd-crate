@@ -31,6 +31,7 @@
    :listening-port "443"
    :server-admin-email "admin@localdomain"
    :maintainance-page-content ["<h1>Webserver Maintainance Mode</h1>"]
+   :access-control  ["Order allow,deny" "Allow from all" ""]
    :mod-jk {:tomcat-forwarding-configuration {:mount [{:path "/*" :worker "mod_jk_www"}]
                                               ;a default for unmount is not recommended
                                               ;:unmount [{:path "/*" :worker "mod_jk_www"}]

@@ -23,6 +23,9 @@
   {:domain-name s/Str
    :listening-port s/Str 
    :server-admin-email s/Str
+   :access-control [s/Str]
+   (s/optional-key :user-credentials) [s/Str]
+   (s/optional-key :alias) [{:url s/Str :path s/Str}]
    ;(s/optional-key :locations-override) [s/Str]
    (s/optional-key :location) {(s/optional-key :basic-auth) s/Bool
                                (s/optional-key :locations-override) [s/Str]}
