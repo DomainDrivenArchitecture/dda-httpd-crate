@@ -52,6 +52,9 @@
               (and (contains? (-> vhost-config :location) :basic-auth)
                    (-> vhost-config :location :basic-auth))
               (vhost/vhost-location
+                :path (if (nil? (-> vhost-config :location :path)) 
+                        "/"
+                        (-> vhost-config :location :path))
                 :location-options
                 (vec (concat
                        (-> vhost-config :access-control)
