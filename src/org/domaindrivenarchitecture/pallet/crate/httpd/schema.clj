@@ -66,7 +66,3 @@
    (s/optional-key :limits) {(s/optional-key :server-limit) s/Int
                              (s/optional-key :max-clients) s/Int}
    })
-
-(def test
-  [{:path s/Str
-    :worker s/Str}])
