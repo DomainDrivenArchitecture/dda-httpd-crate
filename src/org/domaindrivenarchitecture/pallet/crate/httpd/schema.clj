@@ -23,20 +23,26 @@
   {:domain-name s/Str
    :listening-port s/Str 
    :server-admin-email s/Str
-   ;(s/optional-key :locations-override) [s/Str]
+   :access-control [s/Str]
+   (s/optional-key :user-credentials) [s/Str]
+   (s/optional-key :alias) [{:url s/Str :path s/Str}]
    (s/optional-key :location) {(s/optional-key :basic-auth) s/Bool
-                               (s/optional-key :locations-override) [s/Str]}
+                               (s/optional-key :locations-override) [s/Str]
+                               (s/optional-key :path) s/Str}
    ; either letsencrypt or manual certificates
    (s/optional-key :cert-letsencrypt) {:letsencrypt-mail s/Str} 
    (s/optional-key :cert-manual) {:domain-cert s/Str 
                                   :domain-key s/Str 
                                   (s/optional-key :ca-cert) s/Str}
    ; mod_jk
-   (s/optional-key :mod-jk) {:worker s/Str
-                             :host s/Str
-                             :port s/Str
-                             :maintain-timout-sec s/Int
-                             :socket-connect-timeout-ms s/Int}
+   (s/optional-key :mod-jk) {:tomcat-forwarding-configuration 
+                             {:mount [{:path s/Str :worker s/Str}]
+                              (s/optional-key :unmount) [{:path s/Str :worker s/Str}]}
+                             :worker-properties [{:worker s/Str
+                                                 :host s/Str
+                                                 :port s/Str
+                                                 :maintain-timout-sec s/Int
+                                                 :socket-connect-timeout-ms s/Int}]}
    ;proxy
    (s/optional-key :proxy) {:target-port s/Str
                             :additional-directives [s/Str]}

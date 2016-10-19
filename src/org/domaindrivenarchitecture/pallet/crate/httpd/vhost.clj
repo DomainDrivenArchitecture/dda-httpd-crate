@@ -52,20 +52,28 @@
               (and (contains? (-> vhost-config :location) :basic-auth)
                    (-> vhost-config :location :basic-auth))
               (vhost/vhost-location
+                :path (if (nil? (-> vhost-config :location :path)) 
+                        "/"
+                        (-> vhost-config :location :path))
                 :location-options
                 (vec (concat
-                       ["Order allow,deny"
-                           "Allow from all"
-                           ""]
+                       (-> vhost-config :access-control)
                        (auth/vhost-basic-auth-options
                             :domain-name domain-name))))
                  
               (contains? (-> vhost-config :location) :locations-override)
               (-> vhost-config :locations-override)))
+          (when (contains? vhost-config :alias)
+            (vec
+              (for [x (-> vhost-config :alias)]
+                (str "Alias " "\"" (-> x :url) "\"" " " "\""(-> x :path)"\"")))) 
           (when (contains? vhost-config :mod-jk)
-            (concat 
-              (jk/vhost-jk-mount :worker (get-in vhost-config [:mod-jk :worker])) 
-              [""]))
+              (for [x (-> vhost-config :mod-jk :tomcat-forwarding-configuration :mount)]
+                (first (jk/vhost-jk-mount :worker (-> x :worker) :path (-> x :path)))))
+          (when (contains? (-> vhost-config :mod-jk :tomcat-forwarding-configuration) :unmount)
+            (for [x (-> vhost-config :mod-jk :tomcat-forwarding-configuration :unmount)]
+              (first (jk/vhost-jk-unmount :worker (-> x :worker) :path (-> x :path)))))
+          [" "]
           (when (contains? vhost-config :google-id)
             (google/vhost-ownership-verification 
               :id (get-in vhost-config [:google-id])
@@ -90,25 +98,28 @@
            vhost/vhost-tail
         (when (contains? vhost-config :mod-jk)
           (concat
-            [""]
-            (jk/workers-configuration 
-              :port (get-in vhost-config [:mod-jk :port])
-              :host (get-in vhost-config [:mod-jk :host])
-              :worker (get-in vhost-config [:mod-jk :worker])
-              :socket-connect-timeout-ms (get-in vhost-config [:mod-jk :socket-connect-timeout-ms])
-              :maintain-timout-sec (get-in vhost-config [:mod-jk :maintain-timout-sec])
-              :in-httpd-conf true
-              :socket-keep-alive true
-              :ping-mode "I")))
-        ))
-    ))
+            [" "]
+            (flatten (for [x (-> vhost-config :mod-jk :worker-properties)]
+                          (jk/workers-configuration 
+                            :port (-> x :port)
+                            :host (-> x :host)
+                            :worker (-> x :worker)
+                            :socket-connect-timeout-ms (-> x :socket-connect-timeout-ms)
+                            :maintain-timout-sec (-> x :maintain-timout-sec)
+                            :in-httpd-conf true
+                            :socket-keep-alive true
+                            :ping-mode "I")))))
+    ))))
 
 (s/defn configure-vhost 
   "Takes a vhost-name and vhost-config and generates vhost-config files"
   [vhost-name :- s/Str
    vhost-config :- schema/VhostConfig
    apache-version :- s/Str]
-  
+  (when (contains? vhost-config :user-credentials)
+      (auth/configure-basic-auth-user-credentials
+      :domain-name (-> vhost-config :domain-name)
+      :user-credentials (-> vhost-config :user-credentials)))
   (when (contains? vhost-config :cert-manual)
     (gnutls/configure-gnutls-credentials
             :domain-name (-> vhost-config :domain-name)

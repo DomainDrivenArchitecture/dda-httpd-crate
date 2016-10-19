@@ -31,12 +31,16 @@
    :listening-port "443"
    :server-admin-email "admin@localdomain"
    :maintainance-page-content ["<h1>Webserver Maintainance Mode</h1>"]
-   :mod-jk {:port "8009"
-            :host "127.0.0.1"
-            :worker "mod_jk_www"
-            :maintain-timout-sec 90
-            :socket-connect-timeout-ms 62000}
-   })
+   :access-control  ["Order allow,deny" "Allow from all" ""]
+   :mod-jk {:tomcat-forwarding-configuration {:mount [{:path "/*" :worker "mod_jk_www"}]
+                                              ;a default for unmount is not recommended
+                                              ;:unmount [{:path "/*" :worker "mod_jk_www"}]
+                                              }
+            :worker-properties [{:worker "mod_jk_www"
+                                 :host "127.0.0.1"
+                                 :port "8009"
+                                 :maintain-timout-sec 90
+                                 :socket-connect-timeout-ms 62000}]}})
 
 (def default-config
   {:apache-version "2.4"
