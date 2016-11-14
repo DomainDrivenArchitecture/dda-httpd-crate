@@ -1,4 +1,4 @@
-(defproject org.domaindrivenarchitecture/dda-httpd-crate "0.1.2-SNAPSHOT"
+(defproject org.domaindrivenarchitecture/dda-httpd-crate "0.1.2"
   :description "new dda-httpd-crate"
   :dependencies [[org.clojure/clojure "1.7.0"]
                  [com.palletops/pallet "0.8.12" :exclusions [org.clojure/tools.cli]]
@@ -6,7 +6,7 @@
                  [org.domaindrivenarchitecture/dda-init-crate "0.1.1"]
                  [org.domaindrivenarchitecture/dda-config-commons "0.1.6"]
                  [org.domaindrivenarchitecture/dda-pallet "0.1.1"]
-                 [org.domaindrivenarchitecture/httpd "0.2.4-SNAPSHOT"]]
+                 [org.domaindrivenarchitecture/httpd "0.2.4"]]
   :repositories [["snapshots" :clojars]
                  ["releases" :clojars]]
   :deploy-repositories [["snapshots" :clojars]
