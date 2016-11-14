@@ -49,7 +49,9 @@
    
    ; other stuff
    (s/optional-key :maintainance-page-content) [s/Str]
+   (s/optional-key :maintainance-page-worker) s/Str
    (s/optional-key :google-id) s/Str
+   (s/optional-key :google-worker) s/Str
    })
 
 (def jk-configuration

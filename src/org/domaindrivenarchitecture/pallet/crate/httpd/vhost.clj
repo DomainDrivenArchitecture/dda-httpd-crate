@@ -75,11 +75,21 @@
               (first (jk/vhost-jk-unmount :worker (-> x :worker) :path (-> x :path)))))
           [" "]
           (when (contains? vhost-config :google-id)
-            (google/vhost-ownership-verification 
-              :id (get-in vhost-config [:google-id])
-              :consider-jk use-mod-jk)) 
+            (if (contains? vhost-config :google-worker)
+              (google/vhost-ownership-verification 
+                :id (get-in vhost-config [:google-id])
+                :consider-jk use-mod-jk
+                :worker (get-in vhost-config [:google-worker]))
+              (google/vhost-ownership-verification 
+                :id (get-in vhost-config [:google-id])
+                :consider-jk use-mod-jk)))
           (when (contains? vhost-config :maintainance-page-content)
-            (maintainance/vhost-service-unavailable-error-page :consider-jk use-mod-jk))
+            (if (contains? vhost-config :maintainance-page-worker)
+              (maintainance/vhost-service-unavailable-error-page
+                :consider-jk use-mod-jk
+                :worker (get-in vhost-config [:maintainance-page-worker]))
+              (maintainance/vhost-service-unavailable-error-page 
+                :consider-jk use-mod-jk)))
           (when (contains? vhost-config :proxy)
             (proxy/vhost-proxy 
               :target-port (-> vhost-config :proxy :target-port)
