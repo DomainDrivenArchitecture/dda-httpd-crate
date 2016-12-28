@@ -47,6 +47,10 @@
           :server-admin-email (get-in vhost-config [:server-admin-email]))
         (httpd-common/prefix 
           "  " (vec (concat
+          (when (contains? vhost-config :rewrite-rules)
+            (vec (concat (-> vhost-config :rewrite-rules) [""])))
+          (when (contains? vhost-config :document-root)
+            (vhost/vhost-document-root (-> vhost-config :document-root)))
           (when (contains? vhost-config :location)
             (cond 
               (and (contains? (-> vhost-config :location) :basic-auth)
