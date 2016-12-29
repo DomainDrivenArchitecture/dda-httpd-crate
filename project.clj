@@ -3,9 +3,9 @@
   :dependencies [[org.clojure/clojure "1.7.0"]
                  [com.palletops/pallet "0.8.12" :exclusions [org.clojure/tools.cli]]
                  [prismatic/schema "1.1.3"]
-                 [org.domaindrivenarchitecture/dda-init-crate "0.2.0"]
+                 [org.domaindrivenarchitecture/dda-init-crate "0.2.1-SNAPSHOT"]
                  [org.domaindrivenarchitecture/dda-config-commons "0.1.7"]
-                 [org.domaindrivenarchitecture/dda-pallet "0.2.0"]
+                 [org.domaindrivenarchitecture/dda-pallet "0.3.0"]
                  [org.domaindrivenarchitecture/httpd "0.2.5"]]
   :repositories [["snapshots" :clojars]
                  ["releases" :clojars]]
@@ -22,7 +22,7 @@
               [[com.palletops/pallet-lein "0.8.0-alpha.1"]
                [lein-sub "0.3.0"]]}
              :leiningen/reply
-             {:dependencies [[org.slf4j/jcl-over-slf4j "1.7.21"]]
+             {:dependencies [[org.slf4j/jcl-over-slf4j "1.7.22"]]
               :exclusions [commons-logging]}}
   :local-repo-classpath true
   )
