@@ -48,10 +48,7 @@
   (apache2/install-letsencrypt-action)
   (gnutls/install-mod-gnutls)
   (rewrite/install-mod-rewrite)
-  (when (contains? config :apache-modules)
-    (when (contains? config :a2enmod)
-      (doseq [module (-> config :apache-modules :a2enmod)]
-        (cmds/a2enmod module))))
+  
   (when (contains? config :jk-configuration)
     (jk/install-mod-jk 
       :workers-properties-file nil
@@ -59,6 +56,11 @@
       :jkWatchdogInterval (-> config :jk-configuration :jkWatchdogInterval)))
   (when (contains-proxy? config)
     (proxy/install-mod-proxy-http))
+  
+  (when (contains? config :apache-modules)
+    (when (contains? config :a2enmod)
+      (doseq [module (-> config :apache-modules :a2enmod)]
+        (cmds/a2enmod module))))
   )
 
 (s/defn configure
