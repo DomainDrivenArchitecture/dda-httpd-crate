@@ -24,6 +24,8 @@
    :listening-port s/Str 
    :server-admin-email s/Str
    :access-control [s/Str]
+   (s/optional-key :document-root) s/Str
+   (s/optional-key :rewrite-rules) [s/Str]
    (s/optional-key :user-credentials) [s/Str]
    (s/optional-key :alias) [{:url s/Str :path s/Str}]
    (s/optional-key :location) {(s/optional-key :basic-auth) s/Bool
@@ -49,7 +51,9 @@
    
    ; other stuff
    (s/optional-key :maintainance-page-content) [s/Str]
+   (s/optional-key :maintainance-page-worker) s/Str
    (s/optional-key :google-id) s/Str
+   (s/optional-key :google-worker) s/Str
    })
 
 (def jk-configuration
@@ -65,4 +69,7 @@
    ;limits
    (s/optional-key :limits) {(s/optional-key :server-limit) s/Int
                              (s/optional-key :max-clients) s/Int}
+   ;apache2 modules
+   ;TODO: review gec 2016_12_28: Maybe add also a possibility to disable modules 
+   (s/optional-key :apache-modules) {(s/optional-key :a2enmod) [s/Str]}
    })

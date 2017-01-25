@@ -26,6 +26,7 @@
     [httpd.crate.mod-rewrite :as rewrite]
     [httpd.crate.mod-proxy-http :as proxy]
     [httpd.crate.webserver-maintainance :as maintainance]
+    [httpd.crate.cmds :as cmds]
     [org.domaindrivenarchitecture.pallet.crate.httpd.schema :as schema]))
 
 (s/defn contains-proxy?
@@ -47,6 +48,7 @@
   (apache2/install-letsencrypt-action)
   (gnutls/install-mod-gnutls)
   (rewrite/install-mod-rewrite)
+  
   (when (contains? config :jk-configuration)
     (jk/install-mod-jk 
       :workers-properties-file nil
@@ -54,6 +56,11 @@
       :jkWatchdogInterval (-> config :jk-configuration :jkWatchdogInterval)))
   (when (contains-proxy? config)
     (proxy/install-mod-proxy-http))
+  
+  (when (contains? config :apache-modules)
+    (when (contains? config :a2enmod)
+      (doseq [module (-> config :apache-modules :a2enmod)]
+        (cmds/a2enmod module))))
   )
 
 (s/defn configure

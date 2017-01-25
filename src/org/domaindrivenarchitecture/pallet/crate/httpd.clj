@@ -72,14 +72,16 @@
 
 ; TODO: review jem 2016_06_28: we don't need verions here, I think. Let's discuss this.
 (defmethod dda-crate/dda-install 
-  :dda-httpd [dda-crate config]
+  :dda-httpd [dda-crate partial-effective-config]
+  (let [config (dda-crate/merge-config dda-crate partial-effective-config)]
     (version-plan/plan-when-cleaninstall
       dda-crate
-      (install config)))
+      (install config))))
 
 (defmethod dda-crate/dda-configure 
-  :dda-httpd [dda-crate config]
-    (configure config))
+  :dda-httpd [dda-crate partial-effective-config]
+  (let [config (dda-crate/merge-config dda-crate partial-effective-config)]
+    (configure config)))
 
 (def with-httpd
   (dda-crate/create-server-spec dda-httpd-crate))
