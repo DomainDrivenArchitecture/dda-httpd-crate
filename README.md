@@ -1,5 +1,4 @@
 # dda-httpd-crate
-
 ## compatability
 dda-pallet is compatible to the following versions
  * pallet 0.8.x
@@ -14,6 +13,11 @@ dda-pallet is compatible to the following versions
  * static content rollout
 
 ## Details
+### mod_jk integration
+We are configuring our apache httpd server slightly different than what would be expected.
+We are defining the worker.properties inside the vhost files because the implementation 
+inside clojure is much easier.
+
 ### Static content rollout
 
 ![RolloutStaticContent](/doc/RolloutStaticContent.png)
@@ -26,3 +30,4 @@ dda-pallet is compatible to the following versions
 
 # License
 Published under [apache2.0 license](LICENSE.md)
+
