@@ -27,6 +27,15 @@ inside clojure is much easier.
 3. and unzips to "/var/www" sub directory
 
 
+## Server Maintenance
+To renew a certificate use the following commands on the target server:
+
+* service apache2 stop
+* cd /usr/lib/letsencrypt
+* ./letsencrypt-auto --standalone renew
+* service apache2 start
+
+Please note that you need to be root in order to execute the commands.
 
 # License
 Published under [apache2.0 license](LICENSE.md)
