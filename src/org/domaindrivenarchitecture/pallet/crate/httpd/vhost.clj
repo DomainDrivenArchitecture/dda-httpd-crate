@@ -32,6 +32,7 @@
     [httpd.crate.webserver-maintainance :as maintainance]
     [httpd.crate.mod-proxy-http :as proxy]
     [org.domaindrivenarchitecture.pallet.crate.httpd.schema :as schema]
+    [org.domaindrivenarchitecture.pallet.crate.httpd.letsencrypt :as letsencrypt]
   ))
 
 (s/defn vhost
@@ -142,7 +143,7 @@
             :ca-cert (-> vhost-config :cert-manual :ca-cert)))
     
   (when (contains? vhost-config :cert-letsencrypt)
-    (apache2/install-letsencrypt-certs 
+    (letsencrypt/install-letsencrypt-certs 
       (get-in vhost-config [:domain-name])
       :adminmail (get-in vhost-config [:cert-letsencrypt :letsencrypt-mail])))
   

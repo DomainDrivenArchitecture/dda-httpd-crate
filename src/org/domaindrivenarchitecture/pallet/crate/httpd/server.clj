@@ -27,6 +27,7 @@
     [httpd.crate.mod-proxy-http :as proxy]
     [httpd.crate.webserver-maintainance :as maintainance]
     [httpd.crate.cmds :as cmds]
+    [org.domaindrivenarchitecture.pallet.crate.httpd.letsencrypt :as letsencrypt]
     [org.domaindrivenarchitecture.pallet.crate.httpd.schema :as schema]))
 
 (s/defn contains-proxy?
@@ -45,7 +46,7 @@
   [config :- schema/HttpdConfig]
   (apache2/install-apache2-action)
   (apache2/install-apachetop-action)
-  (apache2/install-letsencrypt-action)
+  (letsencrypt/install-letsencrypt)
   (gnutls/install-mod-gnutls)
   (rewrite/install-mod-rewrite)
   
