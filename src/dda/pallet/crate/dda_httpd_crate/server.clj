@@ -14,7 +14,7 @@
 ; See the License for the specific language governing permissions and
 ; limitations under the License.
 
-(ns org.domaindrivenarchitecture.pallet.crate.httpd.server
+(ns dda.pallet.crate.dda-httpd-crate.server
   (:require
     [schema.core :as s]
     [schema-tools.core :as st]
@@ -27,20 +27,20 @@
     [httpd.crate.mod-proxy-http :as proxy]
     [httpd.crate.webserver-maintainance :as maintainance]
     [httpd.crate.cmds :as cmds]
-    [org.domaindrivenarchitecture.pallet.crate.httpd.letsencrypt :as letsencrypt]
-    [org.domaindrivenarchitecture.pallet.crate.httpd.schema :as schema]))
+    [dda.pallet.crate.dda-httpd-crate.letsencrypt :as letsencrypt]
+    [dda.pallet.crate.dda-httpd-crate.schema :as schema]))
 
 (s/defn contains-proxy?
   "Checks whether the httpd config uses mod_proxy"
   [config :- schema/HttpdConfig]
-  (let [res (some true? 
-                  (map 
-                    (fn [k] (= k :proxy)) 
-                    (flatten 
-                      (map #(keys %) 
+  (let [res (some true?
+                  (map
+                    (fn [k] (= k :proxy))
+                    (flatten
+                      (map #(keys %)
                            (vals (-> config :vhosts))))))]
     (if (nil? res)
-    false res)))
+     false res)))
 
 (s/defn install
   [config :- schema/HttpdConfig]
@@ -49,29 +49,29 @@
   (letsencrypt/install-letsencrypt)
   (gnutls/install-mod-gnutls)
   (rewrite/install-mod-rewrite)
-  
+
   (when (contains? config :jk-configuration)
-    (jk/install-mod-jk 
+    (jk/install-mod-jk
       :workers-properties-file nil
       :jkStripSession (-> config :jk-configuration :jkStripSession)
       :jkWatchdogInterval (-> config :jk-configuration :jkWatchdogInterval)))
   (when (contains-proxy? config)
     (proxy/install-mod-proxy-http))
-  
+
   (when (contains? config :apache-modules)
     (when (contains? config :a2enmod)
       (doseq [module (-> config :apache-modules :a2enmod)]
-        (cmds/a2enmod module))))
-  )
+        (cmds/a2enmod module)))))
+
 
 (s/defn configure
   [config :- schema/HttpdConfig]
-  
-  (apache2/config-apache2-production-grade)
-  
-  (apache2/configure-file-and-enable 
-    "limits.conf" 
-    (httpd-config/limits 
-      :max-clients (get-in config [:limits :max-clients])
-      :server-limit (get-in config [:limits :server-limit])))
-  )
+  (let [{:keys [limits settings]} config
+        ports (httpd-config/ports :name-based (contains? settings :name-based))]
+    (apache2/config-apache2-production-grade :ports ports)
+    (when (contains? config :limits)
+      (apache2/configure-file-and-enable
+        "limits.conf"
+        (httpd-config/limits
+          :max-clients (get-in limits [:max-clients])
+          :server-limit (get-in limits [:server-limit]))))))

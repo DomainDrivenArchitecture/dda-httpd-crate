@@ -13,27 +13,20 @@
 ; WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 ; See the License for the specific language governing permissions and
 ; limitations under the License.
-
-(ns org.domaindrivenarchitecture.pallet.crate.httpd-test
+(ns dda.pallet.crate.dda-httpd-crate.group
   (:require
-    [clojure.test :refer :all]
     [schema.core :as s]
-    [org.domaindrivenarchitecture.pallet.core.dda-crate :as dda-crate]
-    [org.domaindrivenarchitecture.pallet.crate.httpd :as sut]
-  ))
+    [pallet.api :as api]
+    [dda.pallet.core.dda-crate :as dda-crate]
+    [dda.pallet.crate.config :as config-crate]
+    [dda.pallet.domain.dda-httpd-crate :as httpd-crate]
+    [dda.pallet.domain.dda-httpd-crate.schema :as domain-schema]
+    [dda.pallet.domain.dda-httpd-crate.static-webserver :as static-webserver]))
 
-(def partial-config
-  {})
-
-(deftest merge-config
-  (testing
-    "default-httpd-webserver-configuration match schema?"
-    (is 
-      (dda-crate/merge-config sut/dda-httpd-crate partial-config))
-    ))
-
-(deftest server-spec
-  (testing 
-    "test the server spec" 
-    (is sut/with-httpd)
-    ))
+(s/defn ^:always-validate dda-httpd-group
+  [stack-config :- domain-schema/HttpdCrateStackConfig]
+  (let [group-name (name (key (first (:group-specific-config stack-config))))]
+    (api/group-spec
+     group-name
+     :extends [(config-crate/with-config stack-config)
+               httpd-crate/with-httpd])))

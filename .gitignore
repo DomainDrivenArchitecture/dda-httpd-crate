@@ -11,5 +11,7 @@ pom.xml.asc
 .lein-failures
 .nrepl-port
 /.settings/
+/.classpath
+/.project
 /bin/
 /logs/

@@ -13,30 +13,18 @@
 ; WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 ; See the License for the specific language governing permissions and
 ; limitations under the License.
-
-(ns org.domaindrivenarchitecture.pallet.crate.httpd.letsencrypt
+(ns dda.pallet.domain.dda-httpd-crate
   (:require
     [schema.core :as s]
-    [schema-tools.core :as st]
-    [pallet.actions :as actions]))
+    [dda.pallet.core.dda-crate :as dda-crate]
+    [dda.pallet.crate.dda-httpd-crate :as httpd-crate]
+    [dda.pallet.domain.dda-httpd-crate.schema :as domain-schema]
+    [dda.pallet.domain.dda-httpd-crate.static-webserver :as static-webserver]))
 
-(defn install-letsencrypt
-  []
-  (actions/package "python-letsencrypt-apache")
-  )
- 
-(defn install-letsencrypt-certs
-  [fqdn & {:keys [adminmail]}]
-  (actions/exec-script
-      ("letsencrypt certonly --apache --agree-tos --force-renew --non-interactive" 
-        "--email" ~(if (nil? adminmail) (str "admin@" fqdn) adminmail)
-        "-d" ~fqdn)
-    )
-  )
+(defn static-webserver-stack-configuration
+  [domain-config
+   & {:keys [group-key] :or {group-key :dda-httpd-group}}]
+  (static-webserver/crate-stack-configuration domain-config :group-key group-key))
 
-(defn renew-letsencrypt-certs
-  [fqdn & {:keys [adminmail]}]
-  (actions/exec-script
-      ("letsencrypt renew --apache --non-interactive" "-d" ~fqdn)
-    )
-  )
+(def with-httpd
+ (dda-crate/create-server-spec httpd-crate/httpd-crate))

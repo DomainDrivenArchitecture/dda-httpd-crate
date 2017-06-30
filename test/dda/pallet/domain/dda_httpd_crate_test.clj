@@ -1,5 +1,3 @@
-
-
 ; Licensed to the Apache Software Foundation (ASF) under one
 ; or more contributor license agreements. See the NOTICE file
 ; distributed with this work for additional information
@@ -16,15 +14,18 @@
 ; See the License for the specific language governing permissions and
 ; limitations under the License.
 
-(ns org.domaindrivenarchitecture.pallet.crate.httpd.server-test
+(ns dda.pallet.domain.dda-httpd-crate-test
   (:require
     [clojure.test :refer :all]
     [schema.core :as s]
-    [org.domaindrivenarchitecture.pallet.core.dda-crate :as dda-crate]
-    [org.domaindrivenarchitecture.pallet.crate.httpd :as httpd]
-    [org.domaindrivenarchitecture.pallet.crate.httpd.server :as sut]
-  ))
-
-(def config {})
+    [dda.pallet.core.dda-crate :as dda-crate]
+    [dda.pallet.domain.dda-httpd-crate :as sut]))
 
 
+(def partial-config
+  {})
+
+(deftest server-spec
+  (testing
+    "test the server spec"
+    (is sut/with-httpd)))

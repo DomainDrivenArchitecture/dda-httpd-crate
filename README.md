@@ -1,7 +1,7 @@
 # dda-httpd-crate
 ## compatability
 dda-pallet is compatible to the following versions
- * pallet 0.8.x
+ * pallet 0.8.x2001:bc8:4700:2300::5:f07
  * clojure 1.7
  * (x)ubunutu14.04 / 16.04
 
@@ -15,7 +15,7 @@ dda-pallet is compatible to the following versions
 ## Details
 ### mod_jk integration
 We are configuring our apache httpd server slightly different than what would be expected.
-We are defining the worker.properties inside the vhost files because the implementation 
+We are defining the worker.properties inside the vhost files because the implementation
 inside clojure is much easier.
 
 ### Static content rollout
@@ -26,6 +26,10 @@ inside clojure is much easier.
 2. httpd-crate pulls content from m2
 3. and unzips to "/var/www" sub directory
 
+
+## preconditions for letsencrypt
+* vhost contains ServerAlias for all additional names
+* dns contains A-Records for all additional names
 
 ## Server Maintenance
 To renew a certificate use the following commands on the target server:
@@ -39,4 +43,3 @@ Please note that you need to be root in order to execute the commands.
 
 # License
 Published under [apache2.0 license](LICENSE.md)
-
