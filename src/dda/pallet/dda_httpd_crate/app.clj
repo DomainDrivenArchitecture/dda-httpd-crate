@@ -20,6 +20,8 @@
     {:group-specific-config
        {group-key config}}))
 
+(def with-httpd infra/with-httpd)
+
 (defn multi-app-configuration
   [domain-config & {:keys [group-key] :or {group-key :dda-httpd-group}}]
   (s/validate domain/MultiStaticConfig domain-config)
@@ -42,4 +44,4 @@
      (api/group-spec
       group-name
       :extends [(config-crate/with-config app-config)
-                infra/with-httpd])))
+                with-httpd])))
