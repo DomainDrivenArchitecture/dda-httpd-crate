@@ -13,18 +13,19 @@
 ; WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 ; See the License for the specific language governing permissions and
 ; limitations under the License.
-(ns dda.pallet.domain.dda-httpd-crate
+
+(ns dda.pallet.dda-httpd-crate.infra-test
   (:require
+    [clojure.test :refer :all]
     [schema.core :as s]
     [dda.pallet.core.dda-crate :as dda-crate]
-    [dda.pallet.crate.dda-httpd-crate :as httpd-crate]
-    [dda.pallet.domain.dda-httpd-crate.schema :as domain-schema]
-    [dda.pallet.domain.dda-httpd-crate.static-webserver :as static-webserver]))
+    [dda.pallet.dda-httpd-crate.infra :as sut]))
 
-(defn static-webserver-stack-configuration
-  [domain-config
-   & {:keys [group-key] :or {group-key :dda-httpd-group}}]
-  (static-webserver/crate-stack-configuration domain-config :group-key group-key))
 
-(def with-httpd
- (dda-crate/create-server-spec httpd-crate/httpd-crate))
+(def partial-config
+  {})
+
+(deftest server-spec
+  (testing
+    "test the server spec"
+    (is sut/with-httpd)))

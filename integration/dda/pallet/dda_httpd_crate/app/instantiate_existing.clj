@@ -14,26 +14,28 @@
 ; See the License for the specific language governing permissions and
 ; limitations under the License.
 
-(ns dda.pallet.crate.dda-httpd-crate.instantiate-existing
+(ns dda.pallet.dda-httpd-crate.app.instantiate-existing
   (:require
     [clojure.inspector :as inspector]
+    [pallet.repl :as pr]
+    [pallet.actions :as pa]
     [org.domaindrivenarchitecture.pallet.commons.session-tools :as session-tools]
     [org.domaindrivenarchitecture.pallet.commons.pallet-schema :as ps]
     [dda.cm.operation :as operation]
     [dda.cm.existing :as existing]
-    [dda.pallet.crate.dda-httpd-crate.group :as group]
-    [dda.pallet.domain.dda-httpd-crate :as domain]
-    [dda.pallet.domain.dda-httpd-crate.static-webserver :as sw-domain]
-    [dda.pallet.domain.dda-httpd-crate.compatibility-domain :as compatibility-domain]))
+    [dda.pallet.dda-httpd-crate.app :as app]))
 
 (def provisioning-ip
-  "52.29.77.123")
+  "78.47.55.114")
 
 (def provisioning-user
-  {:login "ubuntu"})
+  {:login "root"})
 
-(def domain-config {:domain-name "aws.meissa-gmbh.de"
-                    :settings #{}})
+(def single-config {:domain-name "test1.meissa-gmbh.de"
+                    :settings #{:test}})
+
+(def multi-config {:test1.meissa-gmbh.de {:settings #{:test}}
+                   :test2.meissa-gmbh.de {:settings #{:test}}})
 
 (def domain-config-compatibility
   {:vhosts
@@ -45,14 +47,19 @@
 
 (defn integrated-group-spec []
   (merge
-    (group/dda-httpd-group (sw-domain/crate-stack-configuration domain-config))
+    (app/dda-httpd-group (app/multi-app-configuration multi-config))
     (existing/node-spec provisioning-user)))
 
 (defn apply-install []
-  (operation/do-apply-install (provider) (integrated-group-spec)))
+  (pa/set-force-overwrite true)
+  (pr/session-summary
+    (operation/do-apply-install (provider) (integrated-group-spec))))
 
 (defn apply-config []
-  (operation/do-apply-configure (provider) (integrated-group-spec)))
+  (pa/set-force-overwrite true)
+  (pr/session-summary
+    (operation/do-apply-configure (provider) (integrated-group-spec))))
 
 (defn server-test []
-  (operation/do-server-test (provider) (integrated-group-spec)))
+  (pr/session-summary
+    (operation/do-server-test (provider) (integrated-group-spec))))

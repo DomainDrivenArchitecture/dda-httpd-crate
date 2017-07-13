@@ -13,7 +13,7 @@
 ; WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 ; See the License for the specific language governing permissions and
 ; limitations under the License.
-(ns dda.pallet.crate.dda-httpd-crate.schema
+(ns dda.pallet.dda-httpd-crate.infra.schema
   (:require
     [schema.core :as s]))
 

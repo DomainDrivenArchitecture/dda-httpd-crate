@@ -1,23 +1,25 @@
-(ns dda.pallet.crate.dda-httpd-crate
-  (:require [dda.pallet.core.dda-crate :as dda-crate]
-            [pallet.actions :as actions]
-            [dda.pallet.crate.dda-httpd-crate.schema :as httpd-schema]
-            [dda.pallet.crate.dda-httpd-crate.server :as server]
-            [dda.pallet.crate.dda-httpd-crate.vhost :as vhost]
-            [schema.core :as s]))
+(ns dda.pallet.dda-httpd-crate.infra
+  (:require
+   [schema.core :as s]
+   [pallet.actions :as actions]
+   [dda.pallet.core.dda-crate :as dda-crate]
+   [dda.pallet.dda-httpd-crate.infra.schema :as httpd-schema]
+   [dda.pallet.dda-httpd-crate.infra.server :as server]
+   [dda.pallet.dda-httpd-crate.infra.vhost :as vhost]))
+
 
 (def facility :dda-httpd)
 (def version [0 1 5])
 
-(def HttpdCrateConfig
+(def HttpdConfig
   httpd-schema/HttpdConfig)
 
 (s/defn ^:always-validate install-httpd
-  [config :- HttpdCrateConfig]
+  [config :- HttpdConfig]
   (server/install config))
 
 (s/defn ^:always-validate configure-httpd
-  [config :- HttpdCrateConfig]
+  [config :- HttpdConfig]
   (server/configure config)
   (vhost/configure config))
 
@@ -38,3 +40,6 @@
   (dda-crate/make-dda-crate
    :facility facility
    :version version))
+
+(def with-httpd
+  (dda-crate/create-server-spec httpd-crate))

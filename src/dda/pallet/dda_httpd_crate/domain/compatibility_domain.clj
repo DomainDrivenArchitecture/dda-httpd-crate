@@ -1,7 +1,8 @@
-(ns dda.pallet.domain.dda-httpd-crate.compatibility-domain
+(ns dda.pallet.dda-httpd-crate.domain.compatibility-domain
   (:require
-   [dda.pallet.crate.dda-httpd-crate.schema :as httpd-schema]
-   [dda.pallet.domain.dda-httpd-crate.schema :as domain-schema]
+   [dda.pallet.dda-httpd-crate.infra :as infra]
+   [dda.pallet.dda-httpd-crate.domain.schema :as domain-schema]
+   [dda.pallet.dda-httpd-crate.infra.schema :as httpd-schema]
    [schema.core :as s]))
 
 (def VhostDomainConfig
@@ -55,9 +56,9 @@
   "Creates a stack vhost configuration from a httpd-domain-config."
   [httpd-domain-config]
   (into {}
-  (for [[k v] (:vhosts httpd-domain-config)]
-    {k (create-vhost-stack-config-from-domain v)}
-    )))
+   (for [[k v] (:vhosts httpd-domain-config)]
+     {k (create-vhost-stack-config-from-domain v)})))
+
 
 (defn create-stack-limits
   "Creates stack-limits-configuration"
@@ -71,18 +72,12 @@
   {:jkStripSession (or (-> convention-config :jk-configuration :jkStripSession) "On")
    :jkWatchdogInterval (or (-> convention-config :jk-configuration :jkWatchdogInterval) 120)})
 
-(s/defn ^:always-validate create-stack-config
-  "Creates a complete stack-config from a convention-config."
+(s/defn crate-configuration :- infra/HttpdConfig
+  "Creates a complete infrastructure config from a domain-config."
   [convention-config :- HttpdDomainConfig]
   (let [vhosts (:vhosts convention-config)]
     (-> convention-config
         (assoc :apache-version (or (:apache-version convention-config) "2.4"))
         (assoc :jk-configuration (create-stack-jk-configuration convention-config))
         (assoc :vhosts (create-stack-vhost-config convention-config))
-        (assoc :limits (create-stack-limits convention-config))
-        )))
-
-(s/defn ^:always-validate create-stack-configuration :- domain-schema/HttpdCrateStackConfig
-  [domain-config :- HttpdDomainConfig]
-  {:group-specific-config
-   {:dda-httpd-group {:dda-httpd (create-stack-config domain-config)}}})
+        (assoc :limits (create-stack-limits convention-config)))))

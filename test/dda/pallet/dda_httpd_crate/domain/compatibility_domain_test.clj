@@ -1,7 +1,7 @@
-(ns dda.pallet.domain.dda-httpd-crate.compatibility-domain-test
+(ns dda.pallet.dda-httpd-crate.domain.compatibility-domain-test
   (:require
    [clojure.test :refer :all]
-   [dda.pallet.domain.dda-httpd-crate.compatibility-domain :as sut]))
+   [dda.pallet.dda-httpd-crate.domain.compatibility-domain :as sut]))
 
 (def pair-vhost-test-convention-config-1
   {:input-config {:domain-name "domain.name"}

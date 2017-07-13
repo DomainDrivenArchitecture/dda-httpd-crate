@@ -14,12 +14,12 @@
 ; See the License for the specific language governing permissions and
 ; limitations under the License.
 
-(ns dda.pallet.crate.dda-httpd-crate.vhost
+(ns dda.pallet.dda-httpd-crate.infra.vhost
   (:require
     [schema.core :as s]
     [pallet.actions :as actions]
-    [dda.pallet.crate.dda-httpd-crate.letsencrypt :as letsencrypt]
-    [dda.pallet.crate.dda-httpd-crate.schema :as schema]
+    [dda.pallet.dda-httpd-crate.infra.letsencrypt :as letsencrypt]
+    [dda.pallet.dda-httpd-crate.infra.schema :as schema]
     [httpd.crate.apache2 :as apache2]
     [httpd.crate.basic-auth :as auth]
     [httpd.crate.common :as httpd-common]

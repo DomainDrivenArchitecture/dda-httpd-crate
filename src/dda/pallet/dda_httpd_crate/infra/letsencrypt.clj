@@ -14,7 +14,7 @@
 ; See the License for the specific language governing permissions and
 ; limitations under the License.
 
-(ns dda.pallet.crate.dda-httpd-crate.letsencrypt
+(ns dda.pallet.dda-httpd-crate.infra.letsencrypt
   (:require
     [schema.core :as s]
     [pallet.actions :as actions]))

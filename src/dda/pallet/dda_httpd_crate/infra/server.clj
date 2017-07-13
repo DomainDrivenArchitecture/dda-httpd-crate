@@ -14,7 +14,7 @@
 ; See the License for the specific language governing permissions and
 ; limitations under the License.
 
-(ns dda.pallet.crate.dda-httpd-crate.server
+(ns dda.pallet.dda-httpd-crate.infra.server
   (:require
     [schema.core :as s]
     [schema-tools.core :as st]
@@ -27,8 +27,8 @@
     [httpd.crate.mod-proxy-http :as proxy]
     [httpd.crate.webserver-maintainance :as maintainance]
     [httpd.crate.cmds :as cmds]
-    [dda.pallet.crate.dda-httpd-crate.letsencrypt :as letsencrypt]
-    [dda.pallet.crate.dda-httpd-crate.schema :as schema]))
+    [dda.pallet.dda-httpd-crate.infra.letsencrypt :as letsencrypt]
+    [dda.pallet.dda-httpd-crate.infra.schema :as schema]))
 
 (s/defn contains-proxy?
   "Checks whether the httpd config uses mod_proxy"

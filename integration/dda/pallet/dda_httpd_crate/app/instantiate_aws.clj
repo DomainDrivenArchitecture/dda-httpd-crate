@@ -14,34 +14,40 @@
 ; See the License for the specific language governing permissions and
 ; limitations under the License.
 
-(ns dda.pallet.crate.dda-httpd-crate.instantiate-aws
+(ns dda.pallet.dda-httpd-crate.app.instantiate-aws
   (:require
     [clojure.inspector :as inspector]
+    [pallet.repl :as pr]
     [org.domaindrivenarchitecture.pallet.commons.session-tools :as session-tools]
     [org.domaindrivenarchitecture.pallet.commons.pallet-schema :as ps]
     [dda.cm.operation :as operation]
     [dda.cm.aws :as cloud-target]
-    [dda.pallet.crate.dda-httpd-crate.group :as group]
-    [dda.pallet.domain.dda-httpd-crate :as domain]
-    [dda.pallet.domain.dda-httpd-crate.static-webserver :as sw-domain]))
+    [dda.pallet.dda-httpd-crate.app :as app]))
 
-(def domain-config {:domain-name "meissa-gmbh.de"
+(def single-config {:domain-name "meissa-gmbh.de"
                     :settings #{:test}})
+
+(def multi-config {:test1.meissa-gmbh.de {:settings #{:test}}
+                   :test2.meissa-gmbh.de {:settings #{:test}}})
 
 (defn integrated-group-spec [count]
   (merge
-    (group/dda-httpd-group (sw-domain/crate-stack-configuration domain-config))
+    (app/dda-httpd-group (app/multi-app-configuration multi-config))
     (cloud-target/node-spec "jem")
     {:count count}))
 
 (defn converge-install
   ([count]
-   (operation/do-converge-install (cloud-target/provider) (integrated-group-spec count)))
+   (pr/session-summary
+    (operation/do-converge-install (cloud-target/provider) (integrated-group-spec count))))
   ([key-id key-passphrase count]
-   (operation/do-converge-install (cloud-target/provider key-id key-passphrase) (integrated-group-spec count))))
+   (pr/session-summary
+    (operation/do-converge-install (cloud-target/provider key-id key-passphrase) (integrated-group-spec count)))))
 
 (defn server-test
   ([count]
-   (operation/do-server-test (cloud-target/provider) (integrated-group-spec count)))
+   (pr/session-summary
+    (operation/do-server-test (cloud-target/provider) (integrated-group-spec count))))
   ([key-id key-passphrase count]
-   (operation/do-server-test (cloud-target/provider key-id key-passphrase) (integrated-group-spec count))))
+   (pr/session-summary
+    (operation/do-server-test (cloud-target/provider key-id key-passphrase) (integrated-group-spec count)))))

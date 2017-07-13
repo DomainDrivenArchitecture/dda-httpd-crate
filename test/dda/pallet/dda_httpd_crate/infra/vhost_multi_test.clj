@@ -14,11 +14,11 @@
 ; See the License for the specific language governing permissions and
 ; limitations under the License.
 
-(ns dda.pallet.crate.dda-httpd-crate.vhost-multi-test
+(ns dda.pallet.dda-httpd-crate.infra.vhost-multi-test
   (:require
     [clojure.test :refer :all]
     [schema.core :as s]
-    [dda.pallet.crate.dda-httpd-crate.vhost :as sut]
+    [dda.pallet.dda-httpd-crate.infra.vhost :as sut]
     [httpd.crate.vhost :as vhost]))
 
 

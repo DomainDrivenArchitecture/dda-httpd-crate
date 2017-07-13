@@ -14,13 +14,13 @@
 ; See the License for the specific language governing permissions and
 ; limitations under the License.
 
-(ns dda.pallet.crate.dda-httpd-crate.vhost-test
+(ns dda.pallet.dda-httpd-crate.infra.vhost-test
   (:require
     [org.domaindrivenarchitecture.config.commons.string-test-utils :as string-utils]
     [clojure.test :refer :all]
     [schema.core :as s]
     [httpd.crate.mod-jk :as jk]
-    [dda.pallet.crate.dda-httpd-crate.vhost :as sut]))
+    [dda.pallet.dda-httpd-crate.infra.vhost :as sut]))
 
 
 (def vhost-test-config
