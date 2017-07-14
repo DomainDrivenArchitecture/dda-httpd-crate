@@ -5,8 +5,8 @@
             :url "https://www.apache.org/licenses/LICENSE-2.0.html"}
   :dependencies [[org.clojure/clojure "1.7.0"]
                  [prismatic/schema "1.1.6"]
-                 [dda/dda-config-commons "0.2.0"]                 
-                 [dda/dda-pallet "0.4.0"]
+                 [dda/dda-config-commons "0.2.0"]
+                 [dda/dda-pallet "0.5.0-SNAPSHOT"]
                  [dda/httpd "0.2.6"]]
   :profiles {:dev {:source-paths ["integration"]
                    :resource-paths ["dev-resources"]

@@ -17,7 +17,6 @@
   (:require
     [schema.core :as s]
     [pallet.api :as api]
-    [dda.pallet.crate.config :as config-crate]
     [dda.pallet.dda-httpd-crate.infra :as infra]
     [dda.pallet.dda-httpd-crate.domain.schema :as domain-schema]))
 

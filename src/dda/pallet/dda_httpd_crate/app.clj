@@ -3,7 +3,7 @@
    [schema.core :as s]
    [pallet.api :as api]
    [dda.pallet.core.dda-crate :as dda-crate]
-   [dda.pallet.crate.config :as config-crate]
+   [dda.pallet.dda-config-crate.infra :as config-crate]
    [dda.pallet.dda-httpd-crate.infra :as infra]
    [dda.pallet.dda-httpd-crate.domain :as domain]))
 
