@@ -25,18 +25,20 @@
 (defn multi-app-configuration
   [domain-config & {:keys [group-key] :or {group-key :dda-httpd-group}}]
   (s/validate domain/MultiStaticConfig domain-config)
-  (create-app-configuration (domain/multi-static-configuration domain-config)))
+  (create-app-configuration (domain/multi-static-configuration domain-config)
+                            :group-key group-key))
 
 (defn single-app-configuration
   [domain-config & {:keys [group-key] :or {group-key :dda-httpd-group}}]
   (s/validate domain/SingleStaticConfig domain-config)
-  (create-app-configuration (domain/single-static-configuration domain-config)))
-
+  (create-app-configuration (domain/single-static-configuration domain-config)
+                            :group-key group-key))
 
 (defn compatibility-app-configuration
   [domain-config & {:keys [group-key] :or {group-key :dda-httpd-group}}]
   (s/validate domain/CompatibilityConfig domain-config)
-  (create-app-configuration (domain/compat-configuration domain-config)))
+  (create-app-configuration (domain/compat-configuration domain-config)
+                            :group-key group-key))
 
 (s/defn ^:always-validate dda-httpd-group
    [app-config :- HttpdAppConfig]
