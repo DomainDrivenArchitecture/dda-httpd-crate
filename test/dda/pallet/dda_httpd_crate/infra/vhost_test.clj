@@ -16,7 +16,7 @@
 
 (ns dda.pallet.dda-httpd-crate.infra.vhost-test
   (:require
-    [org.domaindrivenarchitecture.config.commons.string-test-utils :as string-utils]
+    [dda.config.commons.string-test-utils :as string-utils]
     [clojure.test :refer :all]
     [schema.core :as s]
     [httpd.crate.mod-jk :as jk]

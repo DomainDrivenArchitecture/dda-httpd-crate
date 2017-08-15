@@ -19,8 +19,8 @@
     [clojure.inspector :as inspector]
     [pallet.repl :as pr]
     [pallet.actions :as pa]
-    [org.domaindrivenarchitecture.pallet.commons.session-tools :as session-tools]
-    [org.domaindrivenarchitecture.pallet.commons.pallet-schema :as ps]
+    [dda.pallet.commons.session-tools :as session-tools]
+    [dda.pallet.commons.pallet-schema :as ps]
     [dda.cm.operation :as operation]
     [dda.cm.existing :as existing]
     [dda.pallet.dda-httpd-crate.app :as app]))

@@ -14,6 +14,9 @@
 (def HttpdConfig
   httpd-schema/HttpdConfig)
 
+(def InfraResult
+ {facility HttpdConfig})
+
 (s/defn ^:always-validate install-httpd
   [config :- HttpdConfig]
   (server/install config))

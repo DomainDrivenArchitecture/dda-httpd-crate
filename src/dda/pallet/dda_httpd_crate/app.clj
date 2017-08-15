@@ -7,9 +7,11 @@
    [dda.pallet.dda-httpd-crate.infra :as infra]
    [dda.pallet.dda-httpd-crate.domain :as domain]))
 
+(def InfraResult infra/InfraResult)
+
 (def HttpdAppConfig
  {:group-specific-config
-  {s/Keyword {infra/facility infra/HttpdConfig}}})
+  {s/Keyword InfraResult}})
 
 (s/defn ^:allways-validate create-app-configuration :- HttpdAppConfig
   [config :- infra/HttpdConfig
