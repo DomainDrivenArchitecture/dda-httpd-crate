@@ -23,9 +23,9 @@
     [dda.pallet.dda-httpd-crate.domain.single-static :as single-static]
     [dda.pallet.dda-httpd-crate.domain.multi-static :as multi-static]))
 
-(def SingleStaticConfig single-static/SingleStaticConfig)
+(def SingleStaticConfig domain-schema/SingleStaticConfig)
 
-(def MultiStaticConfig multi-static/MultiStaticConfig)
+(def MultiStaticConfig domain-schema/MultiStaticConfig)
 
 (def CompatibilityConfig compat/HttpdDomainConfig)
 
@@ -37,9 +37,9 @@
 (s/defn ^:allways-validate single-static-configuration
   [domain-config :- SingleStaticConfig]
   {infra/facility
-    (single-static/crate-configuration domain-config)})
+    (single-static/infra-configuration domain-config)})
 
 (s/defn ^:allways-validate multi-static-configuration
   [domain-config :- MultiStaticConfig]
   {infra/facility
-    (multi-static/crate-configuration domain-config)})
+    (multi-static/infra-configuration domain-config)})

@@ -45,24 +45,32 @@
   (when (contains? vhost-config :rewrite-rules)
     (vec (concat (-> vhost-config :rewrite-rules) [""]))))
 
-(s/defn configure-location
+(s/defn location
   "Creates the location config for the vhost-function."
   [vhost-config :- schema/VhostConfig]
-  (when (contains? vhost-config :location)
+  (let [{:keys [location access-control domain-name]} vhost-config
+        {:keys [basic-auth path locations-override]
+         :or {path "/"}} location]
+    (println location)
     (cond
-      (and (contains? (-> vhost-config :location) :basic-auth)
-           (-> vhost-config :location :basic-auth))
+      (and (some? location)
+           basic-auth)
       (vhost/vhost-location
-       :path (if (nil? (-> vhost-config :location :path))
-               "/"
-               (-> vhost-config :location :path))
-       :location-options
-       (vec (concat
-             (-> vhost-config :access-control)
-             (auth/vhost-basic-auth-options
-              :domain-name (-> vhost-config :domain-name)))))
-      (contains? (-> vhost-config :location) :locations-override)
-      (-> vhost-config :locations-override))))
+        :path path
+        :location-options (vec (concat
+                                  access-control
+                                  (auth/vhost-basic-auth-options
+                                    :domain-name domain-name))))
+      (and (some? location)
+           locations-override)
+      (vhost/vhost-location
+        :path path
+        :location-options locations-override)
+      (some? location)
+      (vhost/vhost-location
+        :path path)
+      :default
+      [])))
 
 (s/defn create-alias
   "Creates the alias for the vhost-function."
@@ -177,11 +185,10 @@
         (concat
          (rewrite-rules vhost-config)
          (vhost/vhost-document-root (-> vhost-config :document-root))
-         (configure-location vhost-config)
+         (location vhost-config)
          (create-alias vhost-config)
          (create-mount vhost-config)
          (create-unmount vhost-config)
-         [" "]
          (create-google-id vhost-config)
          (create-maintenance-page vhost-config)
          (create-proxy-configuration vhost-config)

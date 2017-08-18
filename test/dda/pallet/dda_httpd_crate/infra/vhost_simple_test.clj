@@ -14,7 +14,7 @@
 ; See the License for the specific language governing permissions and
 ; limitations under the License.
 
-(ns dda.pallet.dda-httpd-crate.infra.vhost-multi-test
+(ns dda.pallet.dda-httpd-crate.infra.vhost-simple-test
   (:require
     [clojure.test :refer :all]
     [schema.core :as s]
@@ -52,14 +52,11 @@
    "  "
    "</VirtualHost>"])
 
-
-
 (def etc-apache2-sites-enabled-000-meissa-ssl-conf
   ["<VirtualHost *:443>"
    "  ServerName jira.meissa-gmbh.de"
    "  ServerAdmin admin@jira.meissa-gmbh.de"
    "  "
-   "   "
    "  ProxyPreserveHost On"
    "  ProxyRequests     Off"
    "  ProxyPass / http://localhost:8080/"
@@ -72,8 +69,6 @@
    "  GnuTLSPriorities SECURE:!VERS-SSL3.0:!MD5:!DHE-RSA:!DHE-DSS:!AES-256-CBC:%COMPAT"
    "  GnuTLSExportCertificates on"
    "  "
-   ;"  #GnuTLSCertificateFile /etc/apache2/ssl.crt/jira.meissa-gmbh.de.certs"
-   ;"  #GnuTLSKeyFile /etc/apache2/ssl.key/jira.meissa-gmbh.de.key"
    "  GnuTLSCertificateFile /etc/letsencrypt/live/jira.meissa-gmbh.de/fullchain.pem"
    "  GnuTLSKeyFile /etc/letsencrypt/live/jira.meissa-gmbh.de/privkey.pem"
    "  "
@@ -84,7 +79,6 @@
    "  ServerName jira.politaktiv.org"
    "  ServerAdmin admin@jira.politaktiv.org"
    "  "
-   "   "
    "  ProxyPreserveHost On"
    "  ProxyRequests     Off"
    "  ProxyPass / http://localhost:8180/"
@@ -100,6 +94,31 @@
    "  "
    "  GnuTLSCertificateFile /etc/apache2/ssl.crt/jira.politaktiv.org.certs"
    "  GnuTLSKeyFile /etc/apache2/ssl.key/jira.politaktiv.org.key"
+   "  "
+   "</VirtualHost>"])
+
+(def simple-with-directory-000-default-ssl-conf
+  ["<VirtualHost *:443>"
+   "  ServerName test.domaindrivenarchitecture.org"
+   "  ServerAdmin admin@domaindrivenarchitecture.org"
+   "  "
+   "  DocumentRoot \"/var/www/test.domaindrivenarchitecture.org\""
+   "  "
+   "  <Location />"
+   "    Options FollowSymLinks"
+   "    AllowOverride All"
+   "  </Location>"
+   "  "
+   "  ErrorLog \"/var/log/apache2/error.log\""
+   "  LogLevel warn"
+   "  CustomLog \"/var/log/apache2/ssl-access.log\" combined"
+   "  "
+   "  GnuTLSEnable on"
+   "  GnuTLSPriorities SECURE:!VERS-SSL3.0:!MD5:!DHE-RSA:!DHE-DSS:!AES-256-CBC:%COMPAT"
+   "  GnuTLSExportCertificates on"
+   "  "
+   "  GnuTLSCertificateFile /etc/letsencrypt/live/test.domaindrivenarchitecture.org/fullchain.pem"
+   "  GnuTLSKeyFile /etc/letsencrypt/live/test.domaindrivenarchitecture.org/privkey.pem"
    "  "
    "</VirtualHost>"])
 
@@ -123,6 +142,16 @@
                  :domain-key "domainkey"
                  :ca-cert "optional-ca-cert"}})
 
+(def simple-with-directory
+  {:domain-name "test.domaindrivenarchitecture.org",
+   :listening-port "443",
+   :server-admin-email "admin@domaindrivenarchitecture.org",
+   :document-root "/var/www/test.domaindrivenarchitecture.org",
+   :location {:locations-override ["Options FollowSymLinks"
+                                   "AllowOverride All"]}
+   :cert-letsencrypt {:email "admin@domaindrivenarchitecture.org",
+                      :domains ["test.domaindrivenarchitecture.org"]},})
+
 (deftest vhost
   (testing
     "Test the creation of an example vhost from configuration."
@@ -137,4 +166,6 @@
     (is (= (sut/vhost etc-apache2-meissa-config)
            etc-apache2-sites-enabled-000-meissa-ssl-conf))
     (is (= (sut/vhost etc-apache2-politaktiv-config)
-           etc-apache2-sites-enabled-000-politaktiv-ssl-conf))))
+           etc-apache2-sites-enabled-000-politaktiv-ssl-conf))
+    (is (= simple-with-directory-000-default-ssl-conf
+           (sut/vhost simple-with-directory)))))

@@ -15,58 +15,68 @@
 ; limitations under the License.
 (ns dda.pallet.dda-httpd-crate.domain.single-static
   (:require
+    [clojure.string :as st]
     [schema.core :as s]
     [pallet.api :as api]
-    [dda.pallet.dda-httpd-crate.infra :as infra]))
+    [dda.pallet.dda-httpd-crate.infra :as infra]
+    [dda.pallet.dda-httpd-crate.domain.maintainance :as maintain]
+    [dda.pallet.dda-httpd-crate.domain.schema :as domain-schema]))
 
-(def SingleStaticConfig
-  {:domain-name s/Str
-   (s/optional-key :google-id) s/Str
-   (s/optional-key :settings) (hash-set (s/enum :test))})
+(def server-config
+  {:apache-version "2.4"
+   :limits {:server-limit 150
+            :max-clients 150}
+   :settings #{:name-based}})
 
-(defn maintainance-html [name]
- ["<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\" \"http://www.w3.org/TR/html4/strict.dtd\">"
-  "<html>"
-  "<head>"
-  (str "<title>" name " maintainance</title>")
-  "<meta name=\"ROBOTS\" content=\"NOINDEX, NOFOLLOW\">"
-  "<meta http-equiv=\"content-type\" content=\"text/html; charset=UTF-8\">"
-  "<meta http-equiv=\"content-type\" content=\"application/xhtml+xml; charset=UTF-8\">"
-  "<meta http-equiv=\"content-style-type\" content=\"text/css\">"
-  "<meta http-equiv=\"expires\" content=\"0\">"
-  "  <style type=\"text/css\">"
-  "    * {background-color: #EEF0F2}"
-  "  </style>"
-  "</head>"
-  "<body>"
-  "  <center>"
-  "    <h1>Maintainance ongoing</h1>"
-  "    <h2>At the moment we're down due to do some maintainance. Please retry in a view moments.</h2>"
-  "  </center>"
-  "</body>"
-  "</html>"])
+(defn root-domain? [domain-name]
+  (<= (count (st/split domain-name #"\."))
+      2))
 
-(s/defn crate-configuration :- infra/HttpdConfig
-  [domain-config :- SingleStaticConfig]
+(defn calculate-domains [domain-name]
+  (if (root-domain? domain-name)
+    [domain-name (str "www." domain-name)]
+    [domain-name]))
+
+(defn calculate-root-domain [domain-name]
+  (let [parts (st/split domain-name #"\.")
+        length (count parts)]
+    (str (nth parts (- length 2)) "." (nth parts (- length 1)))))
+
+(s/defn infra-vhost-configuration :- infra/VhostConfig
+  [domain-config :- domain-schema/SingleStaticConfig]
   (let [{:keys [domain-name google-id settings]} domain-config]
-    {:apache-version "2.4"
-     :limits {:server-limit 150
-              :max-clients 150}
-     :settings #{:name-based}
-     :vhosts
-     {:default
       (merge
-        {:domain-name domain-name
-         :server-aliases [(str "www." domain-name)]
-         :listening-port "443"
+        {:domain-name domain-name}
+        (if (root-domain? domain-name)
+          {:server-aliases [(str "www." domain-name)]}
+          {})
+        {:listening-port "443"
          :document-root (str "/var/www/" domain-name)
-         :server-admin-email (str "admin@" domain-name)
-         :maintainance-page-content (maintainance-html domain-name)}
+         :server-admin-email (str "admin@" (calculate-root-domain domain-name))}
+        (if (contains? settings :with-php)
+           {:location
+             {:locations-override
+               ["Options FollowSymLinks" "AllowOverride All"]}}
+           {})
+        (if (contains? settings :without-maintainance)
+         {}
+         {:maintainance-page-content (maintain/maintainance-html domain-name)})
         (if (contains? domain-config :google-id)
           {:google-id google-id}
           {})
         (if (contains? settings :test)
           {:cert-file {:domain-cert "/etc/ssl/certs/ssl-cert-snakeoil.pem"
                        :domain-key "/etc/ssl/private/ssl-cert-snakeoil.key"}}
-          {:cert-letsencrypt {:domains [domain-name (str "www." domain-name)]
-                                 :email (str "admin@" domain-name)}}))}}))
+          {:cert-letsencrypt {:domains (calculate-domains domain-name)
+                              :email (str "admin@" (calculate-root-domain domain-name))}}))))
+
+(s/defn infra-configuration :- infra/HttpdConfig
+  [domain-config :- domain-schema/SingleStaticConfig]
+  (let [{:keys [domain-name google-id settings]} domain-config]
+    (merge
+      server-config
+      (if (contains? settings :with-php)
+        {:apache-modules {:a2enmod ["mod-php"]}}
+        {})
+      {:vhosts
+       {:default (infra-vhost-configuration domain-config)}})))

@@ -14,7 +14,7 @@
 ; See the License for the specific language governing permissions and
 ; limitations under the License.
 
-(ns dda.pallet.dda-httpd-crate.infra.vhost-test
+(ns dda.pallet.dda-httpd-crate.infra.vhost-jk-test
   (:require
     [dda.config.commons.string-test-utils :as string-utils]
     [clojure.test :refer :all]

@@ -11,8 +11,9 @@
 (def facility :dda-httpd)
 (def version [0 1 5])
 
-(def HttpdConfig
-  httpd-schema/HttpdConfig)
+(def VhostConfig httpd-schema/VhostConfig)
+
+(def HttpdConfig httpd-schema/HttpdConfig)
 
 (def InfraResult
  {facility HttpdConfig})

@@ -16,3 +16,18 @@
 (ns dda.pallet.dda-httpd-crate.domain.schema
   (:require
     [schema.core :as s]))
+
+(def VhostConfig
+  {(s/optional-key :google-id) s/Str
+   (s/optional-key :settings)
+   (hash-set (s/enum :test
+                     :without-maintainance
+                     :with-php))})
+
+(def SingleStaticConfig
+  (merge
+    {:domain-name s/Str}
+    VhostConfig))
+
+(def MultiStaticConfig
+  {s/Keyword VhostConfig})
