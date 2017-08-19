@@ -76,5 +76,6 @@
    (s/optional-key :limits) {(s/optional-key :server-limit) s/Int
                              (s/optional-key :max-clients) s/Int}
    ;TODO: review gec 2016_12_28: Maybe add also a possibility to disable modules
-   (s/optional-key :apache-modules) {(s/optional-key :a2enmod) [s/Str]}
+   (s/optional-key :apache-modules) {(s/optional-key :a2enmod) [s/Str]
+                                     (s/optional-key :install) [s/Str]}
    (s/optional-key :settings) (hash-set (s/enum :name-based))})

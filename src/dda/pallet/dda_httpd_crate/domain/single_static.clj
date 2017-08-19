@@ -76,7 +76,8 @@
     (merge
       server-config
       (if (contains? settings :with-php)
-        {:apache-modules {:a2enmod ["mod-php"]}}
+        {:apache-modules {:install ["libapache2-mod-php7.0"]
+                          :a2enmod ["php7.0"]}}
         {})
       {:vhosts
        {:default (infra-vhost-configuration domain-config)}})))

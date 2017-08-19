@@ -57,11 +57,13 @@
         :jkWatchdogInterval (-> jk-configuration :jkWatchdogInterval)))
     (when (contains-proxy? config)
       (proxy/install-mod-proxy-http))
-    (when (and (contains? config :apache-modules)
-               (contains? apache-modules :a2enmod))
+    (when (contains? config :apache-modules)
+      (when (contains? apache-modules :install)
+        (doseq [module (-> apache-modules :install)]
+          (actions/package module)))
+      (when (contains? apache-modules :a2enmod)
         (doseq [module (-> apache-modules :a2enmod)]
-          (actions/package (str "libapache2-" module))
-          (cmds/a2enmod module)))))
+          (cmds/a2enmod module))))))
 
 (s/defn configure
   [config :- schema/HttpdConfig]
