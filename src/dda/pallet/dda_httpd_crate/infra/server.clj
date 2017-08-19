@@ -44,25 +44,24 @@
 
 (s/defn install
   [config :- schema/HttpdConfig]
-  (apache2/install-apache2-action)
-  (apache2/install-apachetop-action)
-  (letsencrypt/install-letsencrypt)
-  (gnutls/install-mod-gnutls)
-  (rewrite/install-mod-rewrite)
-
-  (when (contains? config :jk-configuration)
-    (jk/install-mod-jk
-      :workers-properties-file nil
-      :jkStripSession (-> config :jk-configuration :jkStripSession)
-      :jkWatchdogInterval (-> config :jk-configuration :jkWatchdogInterval)))
-  (when (contains-proxy? config)
-    (proxy/install-mod-proxy-http))
-
-  (when (contains? config :apache-modules)
-    (when (contains? config :a2enmod)
-      (doseq [module (-> config :apache-modules :a2enmod)]
-        (cmds/a2enmod module)))))
-
+  (let [{:keys [jk-configuration apache-modules]} config]
+    (apache2/install-apache2-action)
+    (apache2/install-apachetop-action)
+    (letsencrypt/install-letsencrypt)
+    (gnutls/install-mod-gnutls)
+    (rewrite/install-mod-rewrite)
+    (when (contains? config :jk-configuration)
+      (jk/install-mod-jk
+        :workers-properties-file nil
+        :jkStripSession (-> jk-configuration :jkStripSession)
+        :jkWatchdogInterval (-> jk-configuration :jkWatchdogInterval)))
+    (when (contains-proxy? config)
+      (proxy/install-mod-proxy-http))
+    (when (and (contains? config :apache-modules)
+               (contains? apache-modules :a2enmod))
+        (doseq [module (-> apache-modules :a2enmod)]
+          (actions/package (str "libapache2-" module))
+          (cmds/a2enmod module)))))
 
 (s/defn configure
   [config :- schema/HttpdConfig]
