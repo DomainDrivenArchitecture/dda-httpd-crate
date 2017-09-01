@@ -39,7 +39,7 @@
   (let [{:keys [group-key] :or {group-key :dda-httpd-group}} options]
     {:group-specific-config
        {group-key
-        (domain/jk-configuration domain-config) group-key}}))
+        (domain/jk-configuration domain-config)}}))
 
 (defn compatibility-app-configuration
   [domain-config & {:keys [group-key] :or {group-key :dda-httpd-group}}]
