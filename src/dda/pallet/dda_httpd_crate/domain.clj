@@ -21,11 +21,14 @@
     [dda.pallet.dda-httpd-crate.domain.schema :as domain-schema]
     [dda.pallet.dda-httpd-crate.domain.compatibility-domain :as compat]
     [dda.pallet.dda-httpd-crate.domain.single-static :as single-static]
+    [dda.pallet.dda-httpd-crate.domain.jk :as jk]
     [dda.pallet.dda-httpd-crate.domain.multi-static :as multi-static]))
 
 (def SingleStaticConfig domain-schema/SingleStaticConfig)
 
 (def MultiStaticConfig domain-schema/MultiStaticConfig)
+
+(def JkConfig domain-schema/JkConfig)
 
 (def CompatibilityConfig compat/HttpdDomainConfig)
 
@@ -43,3 +46,8 @@
   [domain-config :- MultiStaticConfig]
   {infra/facility
     (multi-static/infra-configuration domain-config)})
+
+(s/defn ^:allways-validate jk-configuration
+  [domain-config :- JkConfig]
+  {infra/facility
+    (jk/infra-configuration domain-config)})
