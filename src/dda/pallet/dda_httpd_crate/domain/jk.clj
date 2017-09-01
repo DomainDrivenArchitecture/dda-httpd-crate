@@ -13,7 +13,7 @@
 ; WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 ; See the License for the specific language governing permissions and
 ; limitations under the License.
-(ns dda.pallet.dda-httpd-crate.domain.single-static
+(ns dda.pallet.dda-httpd-crate.domain.jk
   (:require
     [clojure.string :as st]
     [schema.core :as s]
@@ -27,10 +27,12 @@
   {:apache-version "2.4"
    :limits {:server-limit 150
             :max-clients 150}
-   :settings #{:name-based}})
+   :settings #{:name-based}
+   :jk-configuration {:jkStripSession "On",
+                      :jkWatchdogInterval 120}})
 
 (s/defn infra-vhost-configuration :- infra/VhostConfig
-  [domain-config :- domain-schema/SingleStaticConfig]
+  [domain-config :- domain-schema/JkConfig]
   (let [{:keys [domain-name google-id settings]} domain-config]
       (merge
         {:domain-name domain-name}
@@ -39,13 +41,15 @@
           {})
         {:listening-port "443"
          :document-root (str "/var/www/" domain-name)
-         :server-admin-email (str "admin@" (domain-name/calculate-root-domain domain-name))}
-        (if (contains? settings :with-php)
-           {:location
-             {:locations-override
-               ["Options FollowSymLinks" "AllowOverride All"]}}
-           {})
-        (maintain/infra-maintainance-configuration settings domain-name)     
+         :server-admin-email (str "admin@" (domain-name/calculate-root-domain domain-name))
+         :mod-jk {:tomcat-forwarding-configuration {:mount [{:path "/*" :worker "mod_jk_www"}]
+                                                    :unmount [{:path "/error/*" :worker "mod_jk_www"}]}
+                  :worker-properties [{:worker "mod_jk_www"
+                                       :host "localhost"
+                                       :port "8009"
+                                       :maintain-timout-sec 90
+                                       :socket-connect-timeout-ms 62000}]}}
+        (maintain/infra-maintainance-configuration settings domain-name)
         (if (contains? domain-config :google-id)
           {:google-id google-id}
           {})
@@ -56,13 +60,9 @@
                               :email (str "admin@" (domain-name/calculate-root-domain domain-name))}}))))
 
 (s/defn infra-configuration :- infra/HttpdConfig
-  [domain-config :- domain-schema/SingleStaticConfig]
+  [domain-config :- domain-schema/JkConfig]
   (let [{:keys [domain-name google-id settings]} domain-config]
     (merge
       server-config
-      (if (contains? settings :with-php)
-        {:apache-modules {:install ["libapache2-mod-php7.0"]
-                          :a2enmod ["php7.0"]}}
-        {})
       {:vhosts
        {:default (infra-vhost-configuration domain-config)}})))

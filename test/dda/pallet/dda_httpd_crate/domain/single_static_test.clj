@@ -16,7 +16,7 @@
                :cert-letsencrypt {:email "admin@domaindrivenarchitecture.org",
                                   :domains ["test.domaindrivenarchitecture.org"]},}}
   :settings #{:name-based},
-  :apache-modules {:a2enmod ["mod-php"]}})
+  :apache-modules {:a2enmod ["php7.0"], :install ["libapache2-mod-php7.0"]}})
 
 (deftest config-test
   (testing

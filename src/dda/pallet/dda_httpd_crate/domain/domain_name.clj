@@ -13,29 +13,25 @@
 ; WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 ; See the License for the specific language governing permissions and
 ; limitations under the License.
-(ns dda.pallet.dda-httpd-crate.domain.schema
+(ns dda.pallet.dda-httpd-crate.domain.domain-name
   (:require
-    [schema.core :as s]))
+    [clojure.string :as st]
+    [schema.core :as s]
+    [pallet.api :as api]
+    [dda.pallet.dda-httpd-crate.infra :as infra]
+    [dda.pallet.dda-httpd-crate.domain.maintainance :as maintain]
+    [dda.pallet.dda-httpd-crate.domain.schema :as domain-schema]))
 
-(def VhostConfig
-  {(s/optional-key :google-id) s/Str
-   (s/optional-key :settings)
-   (hash-set (s/enum :test
-                     :without-maintainance
-                     :with-php))})
+(defn root-domain? [domain-name]
+  (<= (count (st/split domain-name #"\."))
+      2))
 
-(def SingleStaticConfig
-  (merge
-    {:domain-name s/Str}
-    VhostConfig))
+(defn calculate-domains [domain-name]
+  (if (root-domain? domain-name)
+    [domain-name (str "www." domain-name)]
+    [domain-name]))
 
-(def MultiStaticConfig
-  {s/Keyword VhostConfig})
-
-(def JkConfig
-  (merge
-    VhostConfig
-    {:domain-name s/Str
-     (s/optional-key :settings)
-     (hash-set (s/enum :test
-                       :without-maintainance))}))
+(defn calculate-root-domain [domain-name]
+  (let [parts (st/split domain-name #"\.")
+        length (count parts)]
+    (str (nth parts (- length 2)) "." (nth parts (- length 1)))))

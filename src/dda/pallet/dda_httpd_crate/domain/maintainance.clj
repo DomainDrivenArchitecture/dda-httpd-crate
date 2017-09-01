@@ -36,3 +36,8 @@
   "  </center>"
   "</body>"
   "</html>"])
+
+(defn infra-maintainance-configuration [settings domain-name]
+  (if (contains? settings :without-maintainance)
+   {}
+   {:maintainance-page-content (maintainance-html domain-name)}))
