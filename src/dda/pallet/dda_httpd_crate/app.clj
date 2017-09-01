@@ -33,6 +33,14 @@
   (create-app-configuration
    (domain/single-static-configuration domain-config) group-key))
 
+(s/defn ^:allways-validate jk-app-configuration :- HttpdAppConfig
+  [domain-config :- domain/JkConfig
+   & options]
+  (let [{:keys [group-key] :or {group-key :dda-httpd-group}} options]
+    {:group-specific-config
+       {group-key
+        (domain/jk-configuration domain-config) group-key}}))
+
 (defn compatibility-app-configuration
   [domain-config & {:keys [group-key] :or {group-key :dda-httpd-group}}]
   (s/validate domain/CompatibilityConfig domain-config)
