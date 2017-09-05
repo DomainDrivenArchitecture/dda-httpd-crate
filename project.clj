@@ -6,8 +6,8 @@
   :dependencies [[org.clojure/clojure "1.7.0"]
                  [prismatic/schema "1.1.6"]
                  [dda/dda-config-commons "0.2.2"]
-                 [dda/dda-pallet "0.5.3"]
-                 [dda/httpd "0.2.6"]]
+                 [dda/dda-pallet "0.5.4-SNAPSHOT"]
+                 [dda/httpd "0.2.7-SNAPSHOT"]]
   :profiles {:dev {:source-paths ["integration"]
                    :resource-paths ["dev-resources"]
                    :dependencies
