@@ -224,30 +224,24 @@
             :domain-cert (-> vhost-config :cert-manual :domain-cert)
             :domain-key (-> vhost-config :cert-manual :domain-key)
             :ca-cert (-> vhost-config :cert-manual :ca-cert)))
-
-  (when (contains? vhost-config :cert-letsencrypt)
-    (letsencrypt/configure-letsencrypt-certs
-      (get-in vhost-config [:cert-letsencrypt :domains])
-      (get-in vhost-config [:cert-letsencrypt :email]))
-    (letsencrypt/configure-renew-cron))
-
   (when (contains? vhost-config :google-id)
     (google/configure-ownership-verification :id (get-in vhost-config [:google-id])))
-
   (when (contains? vhost-config :maintainance-page-content)
     (maintainance/write-maintainance-file
         :content (get-in vhost-config [:maintainance-page-content])))
-
   (apache2/configure-and-enable-vhost
     (str "000-" vhost-name)
     (vhost/vhost-conf-default-redirect-to-https-only
       :domain-name (get-in vhost-config [:domain-name])
       :server-admin-email (get-in vhost-config [:server-admin-email]))
     apache-version)
-
   (apache2/configure-and-enable-vhost
-    (str "000-" vhost-name "-ssl") (vhost vhost-config) apache-version))
-
+    (str "000-" vhost-name "-ssl") (vhost vhost-config) apache-version)
+  (when (contains? vhost-config :cert-letsencrypt)
+    (letsencrypt/configure-letsencrypt-certs
+      (get-in vhost-config [:cert-letsencrypt :domains])
+      (get-in vhost-config [:cert-letsencrypt :email]))
+    (letsencrypt/configure-renew-cron)))
 
 (s/defn configure
   [config :- schema/HttpdConfig]

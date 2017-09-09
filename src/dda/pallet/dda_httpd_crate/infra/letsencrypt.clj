@@ -31,7 +31,7 @@
   (let [domains-param (str "-d "(apply str (interpose " -d " domains)))]
     (actions/exec-script
         ("letsencrypt" "certonly"
-                       "--apache" "--agree-tos" "--force-renew" "--non-interactive"
+                       "--standalone" "--agree-tos" "--force-renew" "--non-interactive"
                        "--email" ~email
                        ~domains-param))))
 
