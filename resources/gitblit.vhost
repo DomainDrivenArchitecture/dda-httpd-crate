@@ -1,0 +1,33 @@
+<VirtualHost *:443>
+  ServerName repository.domaindrivenarchitecture.org
+  ServerAdmin admin@localdomain
+
+  JkMount /* mod_jk_www
+
+  ErrorDocument 503 /error/503.html
+  Alias /error "/var/www/static/error"
+  JkUnMount /error/* mod_jk_www
+
+  ErrorLog "/var/log/apache2/error.log"
+  LogLevel warn
+  CustomLog "/var/log/apache2/ssl-access.log" combined
+
+  GnuTLSEnable on
+  GnuTLSCacheTimeout 300
+  GnuTLSPriorities SECURE:!VERS-SSL3.0:!MD5:!DHE-RSA:!DHE-DSS:!AES-256-CBC:%COMPAT
+  GnuTLSExportCertificates on
+
+  GnuTLSCertificateFile /etc/letsencrypt/live/repository.domaindrivenarchitecture.org/fullchain.pem
+  GnuTLSKeyFile /etc/letsencrypt/live/repository.domaindrivenarchitecture.org/privkey.pem
+
+</VirtualHost>
+
+JkWorkerProperty worker.list=mod_jk_www
+JkWorkerProperty worker.maintain=90
+JkWorkerProperty worker.mod_jk_www.port=8009
+JkWorkerProperty worker.mod_jk_www.host=127.0.0.1
+JkWorkerProperty worker.mod_jk_www.type=ajp13
+JkWorkerProperty worker.mod_jk_www.socket_connect_timeout=62000
+JkWorkerProperty worker.mod_jk_www.ping_mode=I
+JkWorkerProperty worker.mod_jk_www.socket_keepalive=true
+JkWorkerProperty worker.mod_jk_www.connection_pool_timeout=100

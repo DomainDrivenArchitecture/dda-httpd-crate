@@ -1,9 +1,12 @@
 # dda-httpd-crate
+[![Clojars Project](https://img.shields.io/clojars/v/dda/dda-httpd-crate.svg)](https://clojars.org/dda/dda-httpd-crate)
+[![Build Status](https://travis-ci.org/DomainDrivenArchitecture/dda-httpd-crate.svg?branch=master)](https://travis-ci.org/DomainDrivenArchitecture/dda-httpd-crate)
+
 ## compatability
 dda-pallet is compatible to the following versions
- * pallet 0.8.x2001:bc8:4700:2300::5:f07
+ * pallet 0.8.x
  * clojure 1.7
- * (x)ubunutu14.04 / 16.04
+ * ubuntu 16.04
 
 ## Features
  * http -> https
