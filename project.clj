@@ -1,4 +1,4 @@
-(defproject dda/dda-httpd-crate "0.2.2"
+(defproject dda/dda-httpd-crate "0.2.3-SNAPSHOT"
   :description "new dda-httpd-crate"
   :url "https://domaindrivenarchitecture.org"
   :license {:name "Apache License, Version 2.0"
@@ -7,7 +7,7 @@
                  [prismatic/schema "1.1.6"]
                  [dda/dda-config-commons "0.2.2"]
                  [dda/dda-pallet "0.5.4"]
-                 [dda/httpd "0.2.7-SNAPSHOT"]]
+                 [dda/httpd "0.2.7"]]
   :profiles {:dev {:source-paths ["integration"]
                    :resource-paths ["dev-resources"]
                    :dependencies
