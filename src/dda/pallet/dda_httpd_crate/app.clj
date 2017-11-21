@@ -13,7 +13,7 @@
  {:group-specific-config
   {s/Keyword InfraResult}})
 
-(s/defn ^:allways-validate create-app-configuration :- HttpdAppConfig
+(s/defn ^:always-validate create-app-configuration :- HttpdAppConfig
   [config :- infra/HttpdConfig
    group-key :- s/Keyword]
   {:group-specific-config
@@ -33,7 +33,7 @@
   (create-app-configuration
    (domain/single-static-configuration domain-config) group-key))
 
-(s/defn ^:allways-validate jk-app-configuration :- HttpdAppConfig
+(s/defn ^:always-validate jk-app-configuration :- HttpdAppConfig
   [domain-config :- domain/JkConfig
    & options]
   (let [{:keys [group-key] :or {group-key :dda-httpd-group}} options]
