@@ -31,7 +31,7 @@
 
 (s/defn infra-vhost-configuration :- infra/VhostConfig
   [domain-config :- domain-schema/SingleStaticConfig]
-  (let [{:keys [domain-name google-id settings]} domain-config]
+  (let [{:keys [domain-name google-id settings alias]} domain-config]
       (merge
         {:domain-name domain-name}
         (if (domain-name/root-domain? domain-name)
@@ -45,10 +45,11 @@
              {:locations-override
                ["Options FollowSymLinks" "AllowOverride All"]}}
            {})
-        (maintain/infra-maintainance-configuration settings domain-name)     
+        (maintain/infra-maintainance-configuration settings domain-name)
         (if (contains? domain-config :google-id)
           {:google-id google-id}
           {})
+        alias
         (if (contains? settings :test)
           {:cert-file {:domain-cert "/etc/ssl/certs/ssl-cert-snakeoil.pem"
                        :domain-key "/etc/ssl/private/ssl-cert-snakeoil.key"}}

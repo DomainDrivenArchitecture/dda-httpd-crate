@@ -26,8 +26,12 @@
 
 (def SingleStaticConfig
   (merge
-    {:domain-name s/Str}
+    {:domain-name s/Str
+     (s/optional-key :alias) [{:url s/Str :path s/Str}]}
     VhostConfig))
+
+;e.g. (s/validate SingleStaticConfig
+;{:domain-name "aef" :alias [{:url "url" :path "path"}] :settings (hash-set :test :with-php)}
 
 (def MultiStaticConfig
   {s/Keyword VhostConfig})
