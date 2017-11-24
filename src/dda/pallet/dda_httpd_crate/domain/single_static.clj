@@ -49,7 +49,9 @@
         (if (contains? domain-config :google-id)
           {:google-id google-id}
           {})
-        alias
+        (if (contains? domain-config :alias)
+          {:alias alias}
+          {})
         (if (contains? settings :test)
           {:cert-file {:domain-cert "/etc/ssl/certs/ssl-cert-snakeoil.pem"
                        :domain-key "/etc/ssl/private/ssl-cert-snakeoil.key"}}
