@@ -14,7 +14,7 @@
   {s/Keyword InfraResult}})
 
 (s/defn ^:always-validate create-app-configuration :- HttpdAppConfig
-  [config :- infra/HttpdConfig
+  [config :- infra/InfraResult
    group-key :- s/Keyword]
   {:group-specific-config
      {group-key config}})
