@@ -27,7 +27,8 @@
 (def SingleStaticConfig
   (merge
     {:domain-name s/Str
-     (s/optional-key :alias) [{:url s/Str :path s/Str}]}
+     (s/optional-key :alias) [{:url s/Str :path s/Str}]
+     (s/optional-key :alias-match) [{:regex s/Str :path s/Str}]}
     VhostConfig))
 
 ;e.g. (s/validate SingleStaticConfig

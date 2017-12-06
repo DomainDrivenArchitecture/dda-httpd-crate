@@ -31,7 +31,7 @@
 
 (s/defn infra-vhost-configuration :- infra/VhostConfig
   [domain-config :- domain-schema/SingleStaticConfig]
-  (let [{:keys [domain-name google-id settings alias]} domain-config]
+  (let [{:keys [domain-name google-id settings alias alias-match]} domain-config]
       (merge
         {:domain-name domain-name}
         (if (domain-name/root-domain? domain-name)
@@ -51,6 +51,9 @@
           {})
         (if (contains? domain-config :alias)
           {:alias alias}
+          {})
+        (if (contains? domain-config :alias-match)
+          {:alias-match alias-match}
           {})
         (if (contains? settings :test)
           {:cert-file {:domain-cert "/etc/ssl/certs/ssl-cert-snakeoil.pem"
