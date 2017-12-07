@@ -20,8 +20,8 @@
     [pallet.repl :as pr]
     [dda.pallet.commons.session-tools :as session-tools]
     [dda.pallet.commons.pallet-schema :as ps]
-    [dda.cm.operation :as operation]
-    [dda.cm.aws :as cloud-target]
+    [dda.pallet.commons.operation :as operation]
+    [dda.pallet.commons.aws :as cloud-target]
     [dda.pallet.dda-httpd-crate.app :as app]))
 
 (def single-config {:domain-name "meissa-gmbh.de"

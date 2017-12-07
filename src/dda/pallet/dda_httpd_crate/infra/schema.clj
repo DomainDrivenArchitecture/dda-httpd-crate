@@ -38,6 +38,7 @@
    (s/optional-key :rewrite-rules) [s/Str]
    (s/optional-key :user-credentials) [s/Str]
    (s/optional-key :alias) [{:url s/Str :path s/Str}]
+   (s/optional-key :alias-match) [{:regex s/Str :path s/Str}]
    (s/optional-key :location) {(s/optional-key :basic-auth) s/Bool
                                (s/optional-key :locations-override) [s/Str]
                                (s/optional-key :path) s/Str}

@@ -32,22 +32,22 @@
 
 (def CompatibilityConfig compat/HttpdDomainConfig)
 
-(s/defn ^:allways-validate compat-configuration
+(s/defn ^:always-validate compat-configuration
   [domain-config :- CompatibilityConfig]
   {infra/facility
     (compat/crate-configuration domain-config)})
 
-(s/defn ^:allways-validate single-static-configuration
+(s/defn ^:always-validate single-static-configuration
   [domain-config :- SingleStaticConfig]
   {infra/facility
     (single-static/infra-configuration domain-config)})
 
-(s/defn ^:allways-validate multi-static-configuration
+(s/defn ^:always-validate multi-static-configuration
   [domain-config :- MultiStaticConfig]
   {infra/facility
     (multi-static/infra-configuration domain-config)})
 
-(s/defn ^:allways-validate jk-configuration
+(s/defn ^:always-validate jk-configuration
   [domain-config :- JkConfig]
   {infra/facility
     (jk/infra-configuration domain-config)})

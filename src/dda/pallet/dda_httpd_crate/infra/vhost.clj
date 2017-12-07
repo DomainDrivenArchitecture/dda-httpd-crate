@@ -80,6 +80,13 @@
     (for [x (-> vhost-config :alias)]
       (str "Alias " "\"" (-> x :url) "\"" " " "\""(-> x :path)"\"")))))
 
+(s/defn create-alias-match
+  "Creates the alias match for regex for the vhost-function."
+  [vhost-config :- schema/VhostConfig]
+  (vec
+    (for [x (-> vhost-config :alias-match)]
+      (str "AliasMatch " "\"" (-> x :regex) "\"" " " "\""(-> x :path)"\""))))
+
 (s/defn create-mount
   "Create mod-jk mounts for the vhost-function."
   [vhost-config :- schema/VhostConfig]
@@ -187,6 +194,7 @@
          (vhost/vhost-document-root (-> vhost-config :document-root))
          (location vhost-config)
          (create-alias vhost-config)
+         (create-alias-match vhost-config)
          (create-mount vhost-config)
          (create-unmount vhost-config)
          (create-google-id vhost-config)
