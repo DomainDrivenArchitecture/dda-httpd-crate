@@ -22,8 +22,10 @@
     [dda.pallet.dda-httpd-crate.domain.compatibility-domain :as compat]
     [dda.pallet.dda-httpd-crate.domain.single-static :as single-static]
     [dda.pallet.dda-httpd-crate.domain.jk :as jk]
-    [dda.pallet.dda-httpd-crate.domain.multi-static :as multi-static]))
+    [dda.pallet.dda-httpd-crate.domain.multi-static :as multi-static]
+    [dda.pallet.dda-httpd-crate.domain.tomcat :as tomcat]))
 
+; ----------------------- schemas --------------------------
 (def SingleStaticConfig domain-schema/SingleStaticConfig)
 
 (def MultiStaticConfig domain-schema/MultiStaticConfig)
@@ -32,6 +34,9 @@
 
 (def CompatibilityConfig compat/HttpdDomainConfig)
 
+(def TomcatConfig domain-schema/TomcatConfig)
+
+; ------- functions to create configs from specific domain configs -----
 (s/defn ^:always-validate compat-configuration
   [domain-config :- CompatibilityConfig]
   {infra/facility
@@ -51,3 +56,8 @@
   [domain-config :- JkConfig]
   {infra/facility
     (jk/infra-configuration domain-config)})
+
+(s/defn ^:always-validate tomcat-configuration
+  [domain-config :- TomcatConfig]
+  {infra/facility
+    (tomcat/infra-configuration domain-config)})
