@@ -13,13 +13,15 @@
 ; WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 ; See the License for the specific language governing permissions and
 ; limitations under the License.(ns dda.pallet.dda-httpd-crate.app
-(:require
-  [schema.core :as s]
-  [pallet.api :as api]
-  [dda.pallet.core.dda-crate :as dda-crate]
-  [dda.pallet.dda-config-crate.infra :as config-crate]
-  [dda.pallet.dda-httpd-crate.infra :as infra]
-  [dda.pallet.dda-httpd-crate.domain :as domain])
+
+(ns dda.pallet.dda-httpd-crate.app
+  (:require
+   [schema.core :as s]
+   [pallet.api :as api]
+   [dda.pallet.core.dda-crate :as dda-crate]
+   [dda.pallet.dda-config-crate.infra :as config-crate]
+   [dda.pallet.dda-httpd-crate.infra :as infra]
+   [dda.pallet.dda-httpd-crate.domain :as domain]))
 
 (def InfraResult infra/InfraResult)
 
