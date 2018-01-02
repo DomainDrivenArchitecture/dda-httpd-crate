@@ -29,17 +29,25 @@
                :document-root "/var/www/test.domaindrivenarchitecture.org",
                :cert-letsencrypt {:email "admin@domaindrivenarchitecture.org",
                                   :domains ["test.domaindrivenarchitecture.org"]},
-               :mod-jk {:tomcat-forwarding-configuration {:mount [{:path "/*" :worker "mod_jk_www"}]
-                                                          :unmount [{:path "/error/*" :worker "mod_jk_www"}]}
+               :mod-jk {:tomcat-forwarding-configuration {:mount [{:path "jkpath" :worker "wrkr1"} {:path "/*" :worker "mod_jk_www"}]
+                                                          :unmount [{:path "jkpath" :worker "wrkr1"}{:path "jkpath" :worker "wrkr2"}{:path "/error/*" :worker "mod_jk_www"}]}
                         :worker-properties [{:worker "mod_jk_www"
                                              :host "localhost"
                                              :port "8009"
                                              :maintain-timout-sec 90
-                                             :socket-connect-timeout-ms 62000}]}}}
+                                             :socket-connect-timeout-ms 62000}]}
+               :alias [{:url "alias-url", :path "alias-path"}]}}
   :settings #{:name-based},
   :jk-configuration
     {:jkStripSession "On"
      :jkWatchdogInterval 120}})
+
+(def domain-test-config
+  {:domain-name "test.domaindrivenarchitecture.org"
+   :alias [{:url "alias-url" :path "alias-path"}]
+   :jk-mount [{:path "jkpath" :worker "wrkr1"}]
+   :jk-unmount [{:path "jkpath" :worker "wrkr1"}{:path "jkpath" :worker "wrkr2"}]
+   :settings #{:without-maintainance}})
 
 (deftest config-test
   (testing
@@ -47,9 +55,4 @@
          {:domain-name "test.domaindrivenarchitecture.org"}))
     (is (=
          tomcat-infra-config
-         (sut/infra-configuration
-          {:domain-name "test.domaindrivenarchitecture.org"
-           :alias [{:url "alias-url" :path "alias-path"}]
-           :jk-mount [{:path "jkpath" :worker "wrkr1"}]
-           :jk-unmount [{:path "jkpath" :worker "wrkr1"}{:path "jkpath" :worker "wrkr2"}]
-           :settings #{:without-maintainance}})))))
+         (sut/infra-configuration domain-test-config)))))

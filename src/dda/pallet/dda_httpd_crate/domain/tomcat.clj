@@ -34,7 +34,7 @@
 
 (s/defn ^:always-validate infra-vhost-configuration :- infra/VhostConfig
   [domain-config :- domain-schema/TomcatConfig]
-  (let [{:keys [domain-name google-id settings]} domain-config]
+  (let [{:keys [domain-name google-id alias jk-mount jk-unmount settings]} domain-config]
       (merge
         {:domain-name domain-name}
         (if (domain-name/root-domain? domain-name)
@@ -43,8 +43,16 @@
         {:listening-port "443"
          :document-root (str "/var/www/" domain-name)
          :server-admin-email (str "admin@" (domain-name/calculate-root-domain domain-name))
-         :mod-jk {:tomcat-forwarding-configuration {:mount [{:path "/*" :worker "mod_jk_www"}]
-                                                    :unmount [{:path "/error/*" :worker "mod_jk_www"}]}
+         :mod-jk {:tomcat-forwarding-configuration
+                  {:mount (conj (if (contains? domain-config :jk-mount)
+                                    jk-mount
+                                    [])
+                                {:path "/*" :worker "mod_jk_www"})
+
+                   :unmount (conj (if (contains? domain-config :jk-unmount)
+                                      jk-unmount
+                                      [])
+                                  {:path "/error/*" :worker "mod_jk_www"})}
                   :worker-properties [{:worker "mod_jk_www"
                                        :host "localhost"
                                        :port "8009"
@@ -53,6 +61,9 @@
         (maintain/infra-maintainance-configuration settings domain-name)
         (if (contains? domain-config :google-id)
           {:google-id google-id}
+          {})
+        (if (contains? domain-config :alias)
+          {:alias alias}
           {})
         (if (contains? settings :test)
           {:cert-file {:domain-cert "/etc/ssl/certs/ssl-cert-snakeoil.pem"
