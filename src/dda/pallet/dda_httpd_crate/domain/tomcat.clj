@@ -44,15 +44,14 @@
          :document-root (str "/var/www/" domain-name)
          :server-admin-email (str "admin@" (domain-name/calculate-root-domain domain-name))
          :mod-jk {:tomcat-forwarding-configuration
-                  {:mount (conj (if (contains? domain-config :jk-mount)
-                                    jk-mount
-                                    [])
-                                {:path "/*" :worker "mod_jk_www"})
-
-                   :unmount (conj (if (contains? domain-config :jk-unmount)
-                                      jk-unmount
+                  (merge
+                    {:mount (conj (if (contains? domain-config :jk-mount)
+                                      jk-mount
                                       [])
-                                  {:path "/error/*" :worker "mod_jk_www"})}
+                                  {:path "/*" :worker "mod_jk_www"})}
+                    (if (contains? domain-config :jk-unmount)
+                        {:unmount jk-unmount}
+                        {}))
                   :worker-properties [{:worker "mod_jk_www"
                                        :host "localhost"
                                        :port "8009"

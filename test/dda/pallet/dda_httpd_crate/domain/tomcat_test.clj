@@ -30,7 +30,7 @@
                :cert-letsencrypt {:email "admin@domaindrivenarchitecture.org",
                                   :domains ["test.domaindrivenarchitecture.org"]},
                :mod-jk {:tomcat-forwarding-configuration {:mount [{:path "jkpath" :worker "wrkr1"} {:path "/*" :worker "mod_jk_www"}]
-                                                          :unmount [{:path "jkpath" :worker "wrkr1"}{:path "jkpath" :worker "wrkr2"}{:path "/error/*" :worker "mod_jk_www"}]}
+                                                          :unmount [{:path "jkpath" :worker "wrkr1"}{:path "jkpath" :worker "wrkr2"}]}
                         :worker-properties [{:worker "mod_jk_www"
                                              :host "localhost"
                                              :port "8009"
