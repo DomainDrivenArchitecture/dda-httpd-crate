@@ -24,30 +24,52 @@
     [dda.pallet.commons.aws :as cloud-target]
     [dda.pallet.dda-httpd-crate.app :as app]))
 
-(def single-config {:domain-name "meissa-gmbh.de"
+(def single-config {:domain-name "test0.meissa-gmbh.de"
                     :settings #{:test}})
 
 (def multi-config {:test1.meissa-gmbh.de {:settings #{:test}}
                    :test2.meissa-gmbh.de {:settings #{:test}}})
 
-(defn integrated-group-spec [count]
+(defn integrated-group-spec [domain-config target-config count]
   (merge
-    (app/dda-httpd-group (app/multi-app-configuration multi-config))
-    (cloud-target/node-spec "jem")
+    (app/dda-httpd-group (app/multi-app-configuration domain-config))
+    (cloud-target/node-spec target-config)
     {:count count}))
 
 (defn converge-install
-  ([count]
-   (pr/session-summary
-    (operation/do-converge-install (cloud-target/provider) (integrated-group-spec count))))
-  ([key-id key-passphrase count]
-   (pr/session-summary
-    (operation/do-converge-install (cloud-target/provider key-id key-passphrase) (integrated-group-spec count)))))
+  [domain-config count & options]
+  (let [{:keys [gpg-key-id gpg-passphrase domain targets]
+       :or {targets "integration/resources/gec-aws-target.edn"}} options
+      target-config (cloud-target/load-targets targets)]
+    (pr/session-summary
+      (operation/do-converge-install
+        (cloud-target/provider (:context target-config))
+        (integrated-group-spec domain-config (:node-spec target-config) count)
+        :summarize-session true))))
+
+;(defn converge-install
+;  ([count]
+;   (pr/session-summary
+;    (operation/do-converge-install (cloud-target/provider) (integrated-group-spec count))))
+;  ([key-id key-passphrase count]
+;   (pr/session-summary
+;    (operation/do-converge-install (cloud-target/provider key-id key-passphrase) (integrated-group-spec count)))))
 
 (defn server-test
-  ([count]
-   (pr/session-summary
-    (operation/do-server-test (cloud-target/provider) (integrated-group-spec count))))
-  ([key-id key-passphrase count]
-   (pr/session-summary
-    (operation/do-server-test (cloud-target/provider key-id key-passphrase) (integrated-group-spec count)))))
+  [domain-config count & options]
+  (let [{:keys [gpg-key-id gpg-passphrase domain targets]
+       :or {targets "integration/resources/gec-aws-target.edn"}} options
+      target-config (cloud-target/load-targets targets)]
+    (pr/session-summary
+      (operation/do-server-test
+        (cloud-target/provider (:context target-config))
+        (integrated-group-spec domain-config (:node-spec target-config) count)
+        :summarize-session true))))
+
+;(defn server-test
+;  ([count]
+;   (pr/session-summary
+;    (operation/do-server-test (cloud-target/provider) (integrated-group-spec count))))
+;  ([key-id key-passphrase count]
+;   (pr/session-summary
+;    (operation/do-server-test (cloud-target/provider key-id key-passphrase) (integrated-group-spec count)))))
