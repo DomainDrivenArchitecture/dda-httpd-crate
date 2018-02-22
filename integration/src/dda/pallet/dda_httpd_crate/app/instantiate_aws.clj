@@ -32,7 +32,7 @@
 
 (defn integrated-group-spec [domain-config target-config count]
   (merge
-    (app/dda-httpd-group (app/multi-app-configuration domain-config))
+    (app/dda-httpd-group-spec (app/app-configuration domain-config))
     (cloud-target/node-spec target-config)
     {:count count}))
 
@@ -47,13 +47,16 @@
         (integrated-group-spec domain-config (:node-spec target-config) count)
         :summarize-session true))))
 
-;(defn converge-install
-;  ([count]
-;   (pr/session-summary
-;    (operation/do-converge-install (cloud-target/provider) (integrated-group-spec count))))
-;  ([key-id key-passphrase count]
-;   (pr/session-summary
-;    (operation/do-converge-install (cloud-target/provider key-id key-passphrase) (integrated-group-spec count)))))
+(defn apply-configure
+  [domain-config count & options]
+  (let [{:keys [gpg-key-id gpg-passphrase domain targets]
+       :or {targets "integration/resources/gec-aws-target.edn"}} options
+      target-config (cloud-target/load-targets targets)]
+    (pr/session-summary
+      (operation/do-apply-configure
+        (cloud-target/provider (:context target-config))
+        (integrated-group-spec domain-config (:node-spec target-config) count)
+        :summarize-session true))))
 
 (defn server-test
   [domain-config count & options]
@@ -61,15 +64,7 @@
        :or {targets "integration/resources/gec-aws-target.edn"}} options
       target-config (cloud-target/load-targets targets)]
     (pr/session-summary
-      (operation/do-server-test
+      (operation/do-test
         (cloud-target/provider (:context target-config))
         (integrated-group-spec domain-config (:node-spec target-config) count)
         :summarize-session true))))
-
-;(defn server-test
-;  ([count]
-;   (pr/session-summary
-;    (operation/do-server-test (cloud-target/provider) (integrated-group-spec count))))
-;  ([key-id key-passphrase count]
-;   (pr/session-summary
-;    (operation/do-server-test (cloud-target/provider key-id key-passphrase) (integrated-group-spec count)))))

@@ -29,11 +29,12 @@
   [domains :- [s/Str]
    email :- s/Str]
   (let [domains-param (str "-d "(apply str (interpose " -d " domains)))]
-    (actions/exec-script
-        ("letsencrypt" "certonly"
-                       "--standalone" "--agree-tos" "--force-renew" "--non-interactive"
-                       "--email" ~email
-                       ~domains-param))))
+;    (actions/exec-script
+;        ("letsencrypt" "certonly"
+;                       "--standalone" "--agree-tos" "--force-renew" "--non-interactive"
+;                       "--email" ~email
+;                       ~domains-param))
+0))
 
 (s/defn renew-letsencrypt-cron-lines
   "add cron job running at 1:?? AM."
