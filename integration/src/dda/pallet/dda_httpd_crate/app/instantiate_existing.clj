@@ -23,13 +23,8 @@
     [dda.pallet.commons.pallet-schema :as ps]
     [dda.pallet.commons.operation :as operation]
     [dda.pallet.commons.existing :as existing]
-    [dda.pallet.dda-httpd-crate.app :as app]))
-
-(def provisioning-ip
-  "78.47.55.114")
-
-(def provisioning-user
-  {:login "root"})
+    [dda.pallet.dda-httpd-crate.app :as app]
+    [dda.pallet.dda-httpd-crate.infra :as infra]))
 
 (def single-config {:domain-name "test1.meissa-gmbh.de"
                     :settings #{:test}})
@@ -42,24 +37,37 @@
    {:example-vhost
     {:domain-name "my-domain"}}})
 
-(defn provider []
-  (existing/provider provisioning-ip "node-id" "dda-httpd-group"))
+(defn provisioning-spec [target-config domain-config]
+  (app/existing-provisioning-spec
+    domain-config
+    (:provisioning-user target-config)))
 
-(defn integrated-group-spec []
-  (merge
-    (app/dda-httpd-group (app/multi-app-configuration multi-config))
-    (existing/node-spec provisioning-user)))
+(defn provider [target-config]
+  (let [{:keys [existing]} target-config]
+    (existing/provider
+     {infra/facility existing})))
 
 (defn apply-install []
-  (pa/set-force-overwrite true)
-  (pr/session-summary
-    (operation/do-apply-install (provider) (integrated-group-spec))))
+  (let [target-config (existing/load-targets "targets.edn")
+        domain-config (app/load-domain "httpd.edn")]
+    (operation/do-apply-install
+     (provider target-config)
+     (provisioning-spec target-config domain-config)
+     :summarize-session true)))
 
-(defn apply-config []
-  (pa/set-force-overwrite true)
-  (pr/session-summary
-    (operation/do-apply-configure (provider) (integrated-group-spec))))
+(defn apply-configure []
+  (let [target-config (existing/load-targets "targets.edn")
+        domain-config (app/load-domain "httpd.edn")]
+    (operation/do-apply-configure
+     (provider target-config)
+     (provisioning-spec target-config domain-config)
+     :summarize-session true)))
 
-(defn server-test []
-  (pr/session-summary
-    (operation/do-server-test (provider) (integrated-group-spec))))
+(defn apply-test []
+  (let [target-config (existing/load-targets "targets.edn")
+        domain-config (app/load-domain "httpd.edn")]
+    (operation/do-test
+     (provider target-config)
+     (provisioning-spec target-config domain-config)
+     :summarize-session true)))
+

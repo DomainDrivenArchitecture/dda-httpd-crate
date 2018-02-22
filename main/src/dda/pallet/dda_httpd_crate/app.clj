@@ -18,16 +18,43 @@
   (:require
    [schema.core :as s]
    [pallet.api :as api]
+   [dda.pallet.commons.existing :as existing]
+   [dda.pallet.commons.external-config :as ext-config]
    [dda.pallet.core.dda-crate :as dda-crate]
    [dda.pallet.dda-config-crate.infra :as config-crate]
+   [dda.pallet.commons.secret :as secret]
    [dda.pallet.dda-httpd-crate.infra :as infra]
    [dda.pallet.dda-httpd-crate.domain :as domain]))
 
 (def InfraResult infra/InfraResult)
 
+(def Targets existing/Targets)
+
+(def TargetsResolved existing/TargetsResolved)
+
+(def ProvisioningUser existing/ProvisioningUser)
+
+(def HttpdDomainConfig
+  (s/either
+    domain/SingleStaticConfig
+    domain/MultiStaticConfig
+    domain/JkConfig
+    domain/CompatibilityConfig
+    domain/TomcatConfig))
+    
+
 (def HttpdAppConfig
  {:group-specific-config
   {s/Keyword InfraResult}})
+
+(s/defn ^:always-validate
+  load-targets :- TargetsResolved
+  [file-name :- s/Str]
+  (existing/load-targets file-name))
+
+(s/defn ^:always-validate load-domain :- HttpdDomainConfig
+  [file-name :- s/Str]
+  (ext-config/parse-config file-name))
 
 (s/defn ^:always-validate create-app-configuration :- HttpdAppConfig
   [config :- infra/InfraResult
@@ -38,13 +65,15 @@
 (def with-httpd infra/with-httpd)
 
 (defn multi-app-configuration
-  [domain-config & {:keys [group-key] :or {group-key :dda-httpd-group}}]
+  [domain-config
+   & {:keys [group-key] :or {group-key :dda-httpd-group}}]
   (s/validate domain/MultiStaticConfig domain-config)
   (create-app-configuration
    (domain/multi-static-configuration domain-config) group-key))
 
 (defn single-app-configuration
-  [domain-config & {:keys [group-key] :or {group-key :dda-httpd-group}}]
+  [domain-config
+   & {:keys [group-key] :or {group-key :dda-httpd-group}}]
   (s/validate domain/SingleStaticConfig domain-config)
   (create-app-configuration
    (domain/single-static-configuration domain-config) group-key))
@@ -58,12 +87,13 @@
         (domain/jk-configuration domain-config)}}))
 
 (defn compatibility-app-configuration
-  [domain-config & {:keys [group-key] :or {group-key :dda-httpd-group}}]
+  [domain-config
+   & {:keys [group-key] :or {group-key :dda-httpd-group}}]
   (s/validate domain/CompatibilityConfig domain-config)
   (create-app-configuration
    (domain/compat-configuration domain-config) group-key))
 
-(s/defn ^:always-validate dda-httpd-group
+(s/defn ^:always-validate dda-httpd-group-spec
    [app-config :- HttpdAppConfig]
    (let [group-name (name (key (first (:group-specific-config app-config))))]
      (api/group-spec
@@ -79,3 +109,21 @@
     {:group-specific-config
        {group-key
         (domain/tomcat-configuration domain-config)}}))
+
+(defn app-configuration
+  [domain-config]
+  (cond
+    (= nil (s/check domain/SingleStaticConfig domain-config)) (single-app-configuration domain-config)
+    (= nil (s/check domain/MultiStaticConfig domain-config)) (multi-app-configuration domain-config)
+    (= nil (s/check domain/JkConfig domain-config)) (jk-app-configuration domain-config)
+    (= nil (s/check domain/CompatibilityConfig domain-config)) (compatibility-app-configuration domain-config)
+    (= nil (s/check domain/TomcatConfig domain-config)) (tomcat-app-configuration domain-config)
+    :else (s/validate HttpdDomainConfig domain-config)))
+
+(s/defn ^:always-validate existing-provisioning-spec
+  "Creates an integrated group spec from a domain config and a provisioning user."
+  [domain-config :- HttpdDomainConfig
+   provisioning-user :- ProvisioningUser]
+  (merge
+   (dda-httpd-group-spec (app-configuration domain-config))
+   (existing/node-spec (secret/resolve-secrets provisioning-user ProvisioningUser))))
