@@ -28,18 +28,19 @@
   "installs letsencrypt certificate."
   [domains :- [s/Str]
    email :- s/Str]
-  (let [domains-param (str "-d "(apply str (interpose " -d " domains)))]
-;    (actions/exec-script
-;        ("letsencrypt" "certonly"
-;                       "--standalone" "--agree-tos" "--force-renew" "--non-interactive"
-;                       "--email" ~email
-;                       ~domains-param))
-0))
+  (let [domains-param (apply str (interpose " " (map (fn [d] 
+                                                       (str "-w " "/var/www/html"
+                                                            " -d " d)) domains)))]
+    (actions/exec-script
+        ("letsencrypt" "certonly" "--webroot"
+                       ~domains-param
+                       "--agree-tos" "--non-interactive" "--staging"
+                       "--email" ~email))))
 
 (s/defn renew-letsencrypt-cron-lines
   "add cron job running at 1:?? AM."
   []
-  ["54 1 * * * root /usr/bin/letsencrypt renew --apache --non-interactive --quiet"])
+  ["54 1 * * * root /usr/bin/letsencrypt renew --staging --non-interactive"])
 
 (defn configure-renew-cron
   "write renew script."
