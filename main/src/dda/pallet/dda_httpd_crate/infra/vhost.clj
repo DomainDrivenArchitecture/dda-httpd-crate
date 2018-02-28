@@ -243,13 +243,13 @@
       :domain-name (get-in vhost-config [:domain-name])
       :server-admin-email (get-in vhost-config [:server-admin-email]))
     apache-version)
+  (apache2/configure-and-enable-vhost
+    (str "000-" vhost-name "-ssl") (vhost vhost-config) apache-version)
   (when (contains? vhost-config :cert-letsencrypt)
     (letsencrypt/configure-letsencrypt-certs
       (get-in vhost-config [:cert-letsencrypt :domains])
       (get-in vhost-config [:cert-letsencrypt :email]))
-    (letsencrypt/configure-renew-cron))
-  (apache2/configure-and-enable-vhost
-    (str "000-" vhost-name "-ssl") (vhost vhost-config) apache-version))
+    (letsencrypt/configure-renew-cron)))
 
 (s/defn configure
   [config :- schema/HttpdConfig]
