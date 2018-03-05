@@ -21,13 +21,14 @@
     [clojure.tools.cli :as cli]
     [dda.pallet.commons.existing :as existing]
     [dda.pallet.commons.operation :as operation]
-    [dda.pallet.dda-httpd-crate.app :as app]))
+    [dda.pallet.dda-httpd-crate.app :as app]
+    [dda.pallet.dda-httpd-crate.infra :as infra]))
 
-(defn execute-test
+(defn execute-server-test
   [domain-config targets]
   (let [{:keys [existing provisioning-user]} targets]
     (operation/do-test
-     (existing/provider {:dda-httpd-crate existing})
+     (existing/provider {infra/facility existing})
      (app/existing-provisioning-spec
        domain-config
        provisioning-user)
@@ -37,7 +38,7 @@
   [domain-config targets]
   (let [{:keys [existing provisioning-user]} targets]
     (operation/do-apply-configure
-     (existing/provider {:dda-httpd-crate existing})
+     (existing/provider {infra/facility existing})
      (app/existing-provisioning-spec
        domain-config
        provisioning-user)
@@ -47,7 +48,7 @@
   [domain-config targets]
   (let [{:keys [existing provisioning-user]} targets]
     (operation/do-apply-install
-     (existing/provider {:dda-httpd-crate existing})
+     (existing/provider {infra/facility existing})
      (app/existing-provisioning-spec
        domain-config
        provisioning-user)
@@ -89,12 +90,14 @@
       help (exit 0 (usage summary))
       errors (exit 1 (error-msg errors))
       (not= (count arguments) 1) (exit 1 (usage summary))
-      (:server-test options) (execute-test
+      (:server-test options) (execute-server-test
                                (app/load-domain (first arguments))
-                               (app/load-targets (:targets options)))
+                               (existing/load-targets (:targets options)))
       (:configure options) (execute-configure
                              (app/load-domain (first arguments))
-                             (app/load-targets (:targets options)))
+                             (existing/load-targets (:targets options)))
       :default (execute-install
                  (app/load-domain (first arguments))
-                 (app/load-targets (:targets options))))))
+                 (existing/load-targets (:targets options))))))
+
+

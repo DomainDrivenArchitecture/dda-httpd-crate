@@ -47,11 +47,6 @@
  {:group-specific-config
   {s/Keyword InfraResult}})
 
-(s/defn ^:always-validate
-  load-targets :- TargetsResolved
-  [file-name :- s/Str]
-  (existing/load-targets file-name))
-
 (s/defn ^:always-validate load-domain :- HttpdDomainConfig
   [file-name :- s/Str]
   (ext-config/parse-config file-name))
@@ -66,14 +61,14 @@
 
 (defn multi-app-configuration
   [domain-config
-   & {:keys [group-key] :or {group-key :dda-httpd}}]
+   & {:keys [group-key] :or {group-key infra/facility}}]
   (s/validate domain/MultiStaticConfig domain-config)
   (create-app-configuration
    (domain/multi-static-configuration domain-config) group-key))
 
 (defn single-app-configuration
   [domain-config
-   & {:keys [group-key] :or {group-key :dda-httpd}}]
+   & {:keys [group-key] :or {group-key infra/facility}}]
   (s/validate domain/SingleStaticConfig domain-config)
   (create-app-configuration
    (domain/single-static-configuration domain-config) group-key))
@@ -81,14 +76,14 @@
 (s/defn ^:always-validate jk-app-configuration :- HttpdAppConfig
   [domain-config :- domain/JkConfig
    & options]
-  (let [{:keys [group-key] :or {group-key :dda-httpd}} options]
+  (let [{:keys [group-key] :or {group-key infra/facility}} options]
     {:group-specific-config
        {group-key
         (domain/jk-configuration domain-config)}}))
 
 (defn compatibility-app-configuration
   [domain-config
-   & {:keys [group-key] :or {group-key :dda-httpd}}]
+   & {:keys [group-key] :or {group-key infra/facility}}]
   (s/validate domain/CompatibilityConfig domain-config)
   (create-app-configuration
    (domain/compat-configuration domain-config) group-key))
@@ -105,7 +100,7 @@
 (s/defn ^:always-validate tomcat-app-configuration :- HttpdAppConfig
   [domain-config :- domain/TomcatConfig
    & options]
-  (let [{:keys [group-key] :or {group-key :dda-httpd}} options]
+  (let [{:keys [group-key] :or {group-key infra/facility}} options]
     {:group-specific-config
        {group-key
         (domain/tomcat-configuration domain-config)}}))
