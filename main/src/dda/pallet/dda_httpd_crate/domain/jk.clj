@@ -32,7 +32,7 @@
    :jk-configuration {:jkStripSession "On",
                       :jkWatchdogInterval 120}})
 
-(s/defn ^:always-validate
+(s/defn
   infra-vhost-configuration :- infra/VhostConfig
   [jk-config :- domain-schema/JkConfig]
   (let [domain-config (:jk jk-config)
@@ -62,7 +62,7 @@
           {:cert-letsencrypt {:domains (domain-name/calculate-domains domain-name)
                               :email (str "admin@" (domain-name/calculate-root-domain domain-name))}}))))
 
-(s/defn ^:always-validate
+(s/defn
   infra-configuration :- infra/HttpdConfig
   [jk-config :- domain-schema/JkConfig]
   (merge
