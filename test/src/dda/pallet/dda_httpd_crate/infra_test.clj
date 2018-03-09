@@ -18,7 +18,6 @@
   (:require
     [clojure.test :refer :all]
     [schema.core :as s]
-    [dda.pallet.core.dda-crate :as dda-crate]
     [dda.pallet.dda-httpd-crate.infra :as sut]))
 
 
