@@ -16,7 +16,6 @@
 (ns dda.pallet.dda-httpd-crate.domain
   (:require
     [schema.core :as s]
-    [dda.pallet.core.dda-crate :as dda-crate]
     [dda.pallet.dda-httpd-crate.infra :as infra]
     [dda.pallet.dda-httpd-crate.domain.schema :as domain-schema]
     [dda.pallet.dda-httpd-crate.domain.compatibility-domain :as compat]
@@ -35,6 +34,14 @@
 (def CompatibilityConfig compat/HttpdDomainConfig)
 
 (def TomcatConfig domain-schema/TomcatConfig)
+
+(def HttpdDomainConfig
+  (s/either
+    SingleStaticConfig
+    MultiStaticConfig
+    JkConfig
+    CompatibilityConfig
+    TomcatConfig))
 
 ; ------- functions to create configs from specific domain configs -----
 (s/defn ^:always-validate compat-configuration
