@@ -17,54 +17,36 @@
 (ns dda.pallet.dda-httpd-crate.app.instantiate-aws
   (:require
     [clojure.inspector :as inspector]
-    [pallet.repl :as pr]
-    [dda.pallet.commons.session-tools :as session-tools]
-    [dda.pallet.commons.pallet-schema :as ps]
-    [dda.pallet.commons.operation :as operation]
-    [dda.pallet.commons.aws :as cloud-target]
+    [schema.core :as s]
+    [dda.pallet.core.app :as core-app]
     [dda.pallet.dda-httpd-crate.app :as app]))
 
-(def single-config {:domain-name "test0.meissa-gmbh.de"
-                    :settings #{:test}})
-
-(def multi-config {:test1.meissa-gmbh.de {:settings #{:test}}
-                   :test2.meissa-gmbh.de {:settings #{:test}}})
-
-(defn integrated-group-spec [domain-config target-config count]
-  (merge
-    (app/dda-httpd-group-spec (app/app-configuration domain-config))
-    (cloud-target/node-spec target-config)
-    {:count count}))
-
 (defn converge-install
-  [domain-config count & options]
-  (let [{:keys [gpg-key-id gpg-passphrase domain targets]
-       :or {targets "integration/resources/gec-aws-target.edn"}} options
-      target-config (cloud-target/load-targets targets)]
-    (pr/session-summary
-      (operation/do-converge-install
-        (cloud-target/provider (:context target-config))
-        (integrated-group-spec domain-config (:node-spec target-config) count)
-        :summarize-session true))))
+  [count & options]
+  (let [{:keys [domain targets summarize-session]
+         :or {domain "integration/resources/http-single.edn"
+              targets "integration/resources/gec-aws-target.edn"
+              summarize-session true}} options]
+    (core-app/aws-install app/crate-app count
+                          {:domain domain
+                           :targets targets})))
 
-(defn apply-configure
-  [domain-config count & options]
-  (let [{:keys [gpg-key-id gpg-passphrase domain targets]
-       :or {targets "integration/resources/gec-aws-target.edn"}} options
-      target-config (cloud-target/load-targets targets)]
-    (pr/session-summary
-      (operation/do-apply-configure
-        (cloud-target/provider (:context target-config))
-        (integrated-group-spec domain-config (:node-spec target-config) count)
-        :summarize-session true))))
+(defn configure
+ [& options]
+ (let [{:keys [domain targets summarize-session]
+        :or {domain "integration/resources/http-single.edn"
+             targets "integration/resources/gec-aws-target.edn"
+             summarize-session true}} options]
+  (core-app/aws-configure app/crate-app
+                          {:domain domain
+                           :targets targets})))
 
-(defn server-test
-  [domain-config count & options]
-  (let [{:keys [gpg-key-id gpg-passphrase domain targets]
-       :or {targets "integration/resources/gec-aws-target.edn"}} options
-      target-config (cloud-target/load-targets targets)]
-    (pr/session-summary
-      (operation/do-test
-        (cloud-target/provider (:context target-config))
-        (integrated-group-spec domain-config (:node-spec target-config) count)
-        :summarize-session true))))
+(defn serverspec
+  [& options]
+  (let [{:keys [domain targets summarize-session]
+         :or {domain "integration/resources/http-single.edn"
+              targets "integration/resources/gec-aws-target.edn"
+              summarize-session true}} options]
+    (core-app/aws-serverspec app/crate-app
+                             {:domain domain
+                              :targets targets})))

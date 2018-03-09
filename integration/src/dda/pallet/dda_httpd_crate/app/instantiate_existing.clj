@@ -17,57 +17,35 @@
 (ns dda.pallet.dda-httpd-crate.app.instantiate-existing
   (:require
     [clojure.inspector :as inspector]
-    [pallet.repl :as pr]
-    [pallet.actions :as pa]
-    [dda.pallet.commons.session-tools :as session-tools]
-    [dda.pallet.commons.pallet-schema :as ps]
-    [dda.pallet.commons.operation :as operation]
-    [dda.pallet.commons.existing :as existing]
-    [dda.pallet.dda-httpd-crate.app :as app]
-    [dda.pallet.dda-httpd-crate.infra :as infra]))
+    [dda.pallet.core.app :as core-app]
+    [dda.pallet.dda-httpd-crate.app :as app]))
 
-(def single-config {:domain-name "test1.meissa-gmbh.de"
-                    :settings #{:test}})
+(defn install
+  [& options]
+  (let [{:keys [domain targets summarize-session]
+         :or {domain "integration/resources/http-single.edn"
+              targets "targets.edn"
+              summarize-session true}} options]
+    (core-app/existing-install app/crate-app
+                          {:domain domain
+                           :targets targets})))
 
-(def multi-config {:test1.meissa-gmbh.de {:settings #{:test}}
-                   :test2.meissa-gmbh.de {:settings #{:test}}})
+(defn configure
+ [& options]
+ (let [{:keys [domain targets summarize-session]
+        :or {domain "integration/resources/http-single.edn"
+             targets "targets.edn"
+             summarize-session true}} options]
+  (core-app/existing-configure app/crate-app
+                          {:domain domain
+                           :targets targets})))
 
-(def domain-config-compatibility
-  {:vhosts
-   {:example-vhost
-    {:domain-name "my-domain"}}})
-
-(defn provisioning-spec [target-config domain-config]
-  (app/existing-provisioning-spec
-    domain-config
-    (:provisioning-user target-config)))
-
-(defn provider [target-config]
-  (let [{:keys [existing]} target-config]
-    (existing/provider
-     {infra/facility existing})))
-
-(defn apply-install []
-  (let [target-config (existing/load-targets "targets.edn")
-        domain-config (app/load-domain "httpd.edn")]
-    (operation/do-apply-install
-     (provider target-config)
-     (provisioning-spec target-config domain-config)
-     :summarize-session true)))
-
-(defn apply-configure []
-  (let [target-config (existing/load-targets "targets.edn")
-        domain-config (app/load-domain "httpd.edn")]
-    (operation/do-apply-configure
-     (provider target-config)
-     (provisioning-spec target-config domain-config)
-     :summarize-session true)))
-
-(defn apply-test []
-  (let [target-config (existing/load-targets "targets.edn")
-        domain-config (app/load-domain "httpd.edn")]
-    (operation/do-test
-     (provider target-config)
-     (provisioning-spec target-config domain-config)
-     :summarize-session true)))
-
+(defn serverspec
+  [& options]
+  (let [{:keys [domain targets summarize-session]
+         :or {domain "integration/resources/http-single.edn"
+              targets "targets.edn"
+              summarize-session true}} options]
+    (core-app/existing-serverspec app/crate-app
+                             {:domain domain
+                              :targets targets})))

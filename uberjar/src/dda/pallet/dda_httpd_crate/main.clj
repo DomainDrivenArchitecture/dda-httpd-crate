@@ -19,47 +19,17 @@
   (:require
     [clojure.string :as str]
     [clojure.tools.cli :as cli]
-    [dda.pallet.commons.existing :as existing]
-    [dda.pallet.commons.operation :as operation]
-    [dda.pallet.dda-httpd-crate.app :as app]
-    [dda.pallet.dda-httpd-crate.infra :as infra]))
-
-(defn execute-server-test
-  [domain-config targets]
-  (let [{:keys [existing provisioning-user]} targets]
-    (operation/do-test
-     (existing/provider {infra/facility existing})
-     (app/existing-provisioning-spec
-       domain-config
-       provisioning-user)
-     :summarize-session true)))
-
-(defn execute-configure
-  [domain-config targets]
-  (let [{:keys [existing provisioning-user]} targets]
-    (operation/do-apply-configure
-     (existing/provider {infra/facility existing})
-     (app/existing-provisioning-spec
-       domain-config
-       provisioning-user)
-     :summarize-session true)))
-
-(defn execute-install
-  [domain-config targets]
-  (let [{:keys [existing provisioning-user]} targets]
-    (operation/do-apply-install
-     (existing/provider {infra/facility existing})
-     (app/existing-provisioning-spec
-       domain-config
-       provisioning-user)
-     :summarize-session true)))
+    [dda.config.commons.styled-output :as styled]
+    [dda.pallet.core.app :as core-app]
+    [dda.pallet.dda-httpd-crate.app :as app]))
 
 (def cli-options
   [["-h" "--help"]
    ["-s" "--test" "Applies settings and test phase on the targets."]
    ["-c" "--configure" "Applies settings and configure phase on the targets."]
    ["-t" "--targets TARGETS.edn" "edn file containing the targets to install on."
-    :default "targets.edn"]])
+    :default "localhost-target.edn"]
+   ["-v" "--verbose"]])
 
 (defn usage [options-summary]
   (str/join
@@ -90,14 +60,18 @@
       help (exit 0 (usage summary))
       errors (exit 1 (error-msg errors))
       (not= (count arguments) 1) (exit 1 (usage summary))
-      (:server-test options) (execute-server-test
-                               (app/load-domain (first arguments))
-                               (existing/load-targets (:targets options)))
-      (:configure options) (execute-configure
-                             (app/load-domain (first arguments))
-                             (existing/load-targets (:targets options)))
-      :default (execute-install
-                 (app/load-domain (first arguments))
-                 (existing/load-targets (:targets options))))))
-
-
+      (:server-test options) (if (core-app/existing-serverspec
+                                   app/crate-app
+                                   {:domain (first arguments)
+                                    :targets (:targets options)
+                                    :verbosity verbose})
+                                 (exit 0 (styled/styled "ALL TESTS PASSED" :green))
+                                 (exit 2 (styled/styled "SOME TESTS FAILED" :red)))
+      (:configure options) (core-app/existing-configure
+                             app/crate-app
+                             {:domain (first arguments)
+                              :targets (:targets options)})
+      :default (core-app/existing-install
+                 app/crate-app
+                 {:domain (first arguments)
+                  :targets (:targets options)}))))
