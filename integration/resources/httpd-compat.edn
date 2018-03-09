@@ -1,0 +1,4 @@
+{:compat
+ {:vhosts
+  {:example-vhost
+   {:domain-name "my-domain"}}}}

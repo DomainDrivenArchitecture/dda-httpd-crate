@@ -1,0 +1,3 @@
+{:single-static}
+ {:domain-name "test0.meissa-gmbh.de"
+  :settings #{:test}}
