@@ -19,15 +19,31 @@
               :access-control ["Override" "Access" "Control"]
               :server-admin-email "admin@localdomain"}})
 
-(def domain-config
-  {:vhosts
-   {:example-vhost
-    {:domain-name "my-domain"}}})
+(def pair-domain-config-1
+  {:input-config {:compat
+                  {:vhosts
+                   {:example-vhost
+                    {:domain-name "my-domain"}}}}
+   :expected {:vhosts
+              {:example-vhost
+               {:domain-name "my-domain",
+                :listening-port "443",
+                :server-admin-email "admin@localdomain",
+                :access-control
+                ["Order allow,deny" "Allow from all" ""]}},
+              :apache-version "2.4",
+              :jk-configuration {:jkStripSession "On", :jkWatchdogInterval 120},
+              :limits {:server-limit 150, :max-clients 150}}})
 
-(deftest config-test
-  (is (= (sut/create-vhost-stack-config-from-domain
-          (:input-config pair-vhost-test-convention-config-1))
-         (:expected pair-vhost-test-convention-config-1)))
-  (is (= (sut/create-vhost-stack-config-from-domain
-          (:input-config pair-vhost-test-convention-config-2))
-         (:expected pair-vhost-test-convention-config-2))))
+(deftest vhost-test
+  (is (= (:expected pair-vhost-test-convention-config-1)
+         (sut/create-vhost-stack-config-from-domain
+          (:input-config pair-vhost-test-convention-config-1))))
+  (is (= (:expected pair-vhost-test-convention-config-2)
+         (sut/create-vhost-stack-config-from-domain
+          (:input-config pair-vhost-test-convention-config-2)))))
+
+(deftest crate-config-test
+  (is (= (:expected pair-domain-config-1)
+         (sut/crate-configuration
+          (:input-config pair-domain-config-1)))))
