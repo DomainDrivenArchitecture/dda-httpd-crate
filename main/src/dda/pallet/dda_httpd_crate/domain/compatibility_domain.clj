@@ -32,12 +32,13 @@
    (s/optional-key :mod-jk) httpd-schema/mod-jk-configuration})
 
 (def HttpdDomainConfig
-  {(s/optional-key :apache-version) s/Str
-   (s/optional-key :jk-configuration) httpd-schema/jk-configuration
-   :vhosts {s/Keyword VhostDomainConfig}
-   (s/optional-key :limits) {(s/optional-key :server-limit) s/Int
-                             (s/optional-key :max-clients) s/Int}
-   (s/optional-key :apache-modules) {(s/optional-key :a2enmod) [s/Str]}})
+  {:compat
+   {(s/optional-key :apache-version) s/Str
+    (s/optional-key :jk-configuration) httpd-schema/jk-configuration
+    :vhosts {s/Keyword VhostDomainConfig}
+    (s/optional-key :limits) {(s/optional-key :server-limit) s/Int
+                              (s/optional-key :max-clients) s/Int}
+    (s/optional-key :apache-modules) {(s/optional-key :a2enmod) [s/Str]}}})
 
 (defn create-vhost-stack-config-from-domain
   "Creates a vhost stack configuration from a vhost-convention config."
@@ -74,8 +75,9 @@
 
 (s/defn crate-configuration :- infra/HttpdConfig
   "Creates a complete infrastructure config from a domain-config."
-  [convention-config :- HttpdDomainConfig]
-  (let [vhosts (:vhosts convention-config)]
+  [domain-config :- HttpdDomainConfig]
+  (let [convention-config (:compat domain-config)
+        vhosts (:vhosts convention-config)]
     (-> convention-config
         (assoc :apache-version (or (:apache-version convention-config) "2.4"))
         (assoc :jk-configuration (create-stack-jk-configuration convention-config))
