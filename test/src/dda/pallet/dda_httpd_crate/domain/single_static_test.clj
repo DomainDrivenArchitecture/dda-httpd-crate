@@ -21,7 +21,40 @@
 
 (def pair1
   {:input {:single-static {:domain-name "test.domaindrivenarchitecture.org"}}
-   :expected {}})
+   :expected {:apache-version "2.4",
+              :limits {:server-limit 150, :max-clients 150},
+              :settings #{:name-based},
+              :vhosts
+              {:default
+               {:domain-name "test.domaindrivenarchitecture.org",
+                :listening-port "443",
+                :document-root
+                "/var/www/test.domaindrivenarchitecture.org",
+                :server-admin-email "admin@domaindrivenarchitecture.org",
+                :maintainance-page-content
+                ["<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\" \"http://www.w3.org/TR/html4/strict.dtd\">"
+                 "<html>"
+                 "<head>"
+                 "<title>test.domaindrivenarchitecture.org maintainance</title>"
+                 "<meta name=\"ROBOTS\" content=\"NOINDEX, NOFOLLOW\">"
+                 "<meta http-equiv=\"content-type\" content=\"text/html; charset=UTF-8\">"
+                 "<meta http-equiv=\"content-type\" content=\"application/xhtml+xml; charset=UTF-8\">"
+                 "<meta http-equiv=\"content-style-type\" content=\"text/css\">"
+                 "<meta http-equiv=\"expires\" content=\"0\">"
+                 "  <style type=\"text/css\">"
+                 "    * {background-color: #EEF0F2}"
+                 "  </style>"
+                 "</head>"
+                 "<body>"
+                 "  <center>"
+                 "    <h1>Maintainance ongoing</h1>"
+                 "    <h2>At the moment we're down due to do some maintainance. Please retry in a view moments.</h2>"
+                 "  </center>"
+                 "</body>"
+                 "</html>"],
+                :cert-letsencrypt
+                {:domains ["test.domaindrivenarchitecture.org"],
+                 :email "admin@domaindrivenarchitecture.org"}}}}})
 
 (def pair2
   {:input {:single-static {:domain-name "test.domaindrivenarchitecture.org"
@@ -44,7 +77,8 @@
 (deftest config-test
   (s/set-fn-validation! true)
   (testing
-    (is (sut/infra-configuration (:input pair1)))
+    (is (= (:expected pair1)
+           (sut/infra-configuration (:input pair1))))
 
     (is (= (:expected pair2)
            (sut/infra-configuration (:input pair2))))))
