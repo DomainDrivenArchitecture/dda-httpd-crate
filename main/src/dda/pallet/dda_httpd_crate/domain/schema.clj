@@ -23,24 +23,3 @@
    (hash-set (s/enum :test
                      :without-maintainance
                      :with-php))})
-
-(def JkConfig
-  {:jk
-   (merge
-     VhostConfig
-     {:domain-name s/Str
-      (s/optional-key :settings)
-      (hash-set (s/enum :test
-                        :without-maintainance))})})
-
-(def TomcatConfig
-  {:tomcat
-   (merge
-     VhostConfig
-     {:domain-name s/Str
-      (s/optional-key :alias) [{:url s/Str :path s/Str}]
-      (s/optional-key :jk-mount) [{:path s/Str :worker s/Str}]
-      (s/optional-key :jk-unmount) [{:path s/Str :worker s/Str}]
-      (s/optional-key :settings)
-      (hash-set (s/enum :test
-                        :without-maintainance))})})

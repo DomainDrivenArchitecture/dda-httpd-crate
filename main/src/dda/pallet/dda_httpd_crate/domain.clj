@@ -29,11 +29,11 @@
 
 (def MultiStaticConfig multi-static/MultiStaticConfig)
 
-(def JkConfig domain-schema/JkConfig)
+(def JkConfig jk/JkConfig)
 
 (def CompatibilityConfig compat/HttpdDomainConfig)
 
-(def TomcatConfig domain-schema/TomcatConfig)
+(def TomcatConfig tomcat/TomcatConfig)
 
 (def HttpdDomainConfig
   (s/either

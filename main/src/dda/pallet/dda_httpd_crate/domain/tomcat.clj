@@ -24,6 +24,18 @@
     [dda.pallet.dda-httpd-crate.domain.domain-name :as domain-name]
     [dda.pallet.dda-httpd-crate.domain.schema :as domain-schema]))
 
+(def TomcatConfig
+  {:tomcat
+   (merge
+     domain-schema/VhostConfig
+     {:domain-name s/Str
+      (s/optional-key :alias) [{:url s/Str :path s/Str}]
+      (s/optional-key :jk-mount) [{:path s/Str :worker s/Str}]
+      (s/optional-key :jk-unmount) [{:path s/Str :worker s/Str}]
+      (s/optional-key :settings)
+      (hash-set (s/enum :test
+                        :without-maintainance))})})
+
 (def server-config
   {:apache-version "2.4"
    :limits {:server-limit 150
@@ -34,7 +46,7 @@
 
 (s/defn
   infra-vhost-configuration :- infra/VhostConfig
-  [tomcat-config :- domain-schema/TomcatConfig]
+  [tomcat-config :- TomcatConfig]
   (let [domain-config (:tomcat tomcat-config)
         {:keys [domain-name google-id alias jk-mount jk-unmount settings]} domain-config]
       (merge
@@ -74,7 +86,7 @@
 
 (s/defn
   infra-configuration :- infra/HttpdConfig
-  [domain-config :- domain-schema/TomcatConfig]
+  [domain-config :- TomcatConfig]
   (merge
       server-config
       {:vhosts
