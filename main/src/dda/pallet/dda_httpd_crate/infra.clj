@@ -2,14 +2,13 @@
   (:require
    [schema.core :as s]
    [pallet.actions :as actions]
-   [dda.pallet.core.dda-crate :as dda-crate]
+   [dda.pallet.core.infra :as core-infra]
    [dda.pallet.dda-httpd-crate.infra.schema :as httpd-schema]
    [dda.pallet.dda-httpd-crate.infra.server :as server]
    [dda.pallet.dda-httpd-crate.infra.vhost :as vhost]))
 
 
 (def facility :dda-httpd)
-(def version [0 1 5])
 
 (def VhostConfig httpd-schema/VhostConfig)
 
@@ -27,23 +26,22 @@
   (server/configure config)
   (vhost/configure config))
 
-(defmethod dda-crate/dda-init facility
-  [dda-crate config]
+(defmethod core-infra/dda-init facility
+  [core-infra config]
   (actions/package-manager :update))
 
-(defmethod dda-crate/dda-install facility
-  [dda-crate config]
+(defmethod core-infra/dda-install facility
+  [core-infra config]
   (install-httpd config))
 
-(defmethod dda-crate/dda-configure facility
-  [dda-crate config]
+(defmethod core-infra/dda-configure facility
+  [core-infra config]
   (server/configure config)
   (vhost/configure config))
 
 (def httpd-crate
-  (dda-crate/make-dda-crate
-   :facility facility
-   :version version))
+  (core-infra/make-dda-crate-infra
+   :facility facility))
 
 (def with-httpd
-  (dda-crate/create-server-spec httpd-crate))
+  (core-infra/create-infra-plan httpd-crate))
