@@ -16,6 +16,7 @@
 (ns dda.pallet.dda-httpd-crate.domain.jk-test
   (:require
    [clojure.test :refer :all]
+   [schema.core :as s]
    [dda.pallet.dda-httpd-crate.domain.jk :as sut]))
 
 (def pair1
@@ -94,6 +95,7 @@
        :jkWatchdogInterval 120}}})
 
 (deftest config-test
+  (s/set-fn-validation! true)
   (testing
     (is (= (:expected pair1)
            (sut/infra-configuration (:input pair1))))

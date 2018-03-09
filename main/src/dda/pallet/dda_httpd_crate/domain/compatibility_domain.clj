@@ -91,7 +91,8 @@
   {:jkStripSession (or (-> convention-config :jk-configuration :jkStripSession) "On")
    :jkWatchdogInterval (or (-> convention-config :jk-configuration :jkWatchdogInterval) 120)})
 
-(s/defn crate-configuration :- infra/HttpdConfig
+(s/defn
+  crate-configuration :- infra/HttpdConfig
   "Creates a complete infrastructure config from a domain-config."
   [domain-config :- HttpdDomainConfig]
   (let [convention-config (:compat domain-config)

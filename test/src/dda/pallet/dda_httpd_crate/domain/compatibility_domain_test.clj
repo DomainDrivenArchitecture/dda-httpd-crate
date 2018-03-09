@@ -16,6 +16,7 @@
 (ns dda.pallet.dda-httpd-crate.domain.compatibility-domain-test
   (:require
    [clojure.test :refer :all]
+   [schema.core :as s]
    [dda.pallet.dda-httpd-crate.domain.compatibility-domain :as sut]))
 
 (def pair-vhost-test-convention-config-1
@@ -51,6 +52,7 @@
               :limits {:server-limit 150, :max-clients 150}}})
 
 (deftest vhost-test
+  (s/set-fn-validation! true)
   (is (= (:expected pair-vhost-test-convention-config-1)
          (sut/create-vhost-stack-config-from-domain
           (:input-config pair-vhost-test-convention-config-1))))
@@ -59,6 +61,7 @@
           (:input-config pair-vhost-test-convention-config-2)))))
 
 (deftest crate-config-test
+  (s/set-fn-validation! true)
   (is (= (:expected pair-domain-config-1)
          (sut/crate-configuration
           (:input-config pair-domain-config-1)))))
