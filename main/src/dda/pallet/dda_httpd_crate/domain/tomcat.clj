@@ -32,9 +32,11 @@
    :jk-configuration {:jkStripSession "On",
                       :jkWatchdogInterval 120}})
 
-(s/defn ^:always-validate infra-vhost-configuration :- infra/VhostConfig
-  [domain-config :- domain-schema/TomcatConfig]
-  (let [{:keys [domain-name google-id alias jk-mount jk-unmount settings]} domain-config]
+(s/defn
+  infra-vhost-configuration :- infra/VhostConfig
+  [tomcat-config :- domain-schema/TomcatConfig]
+  (let [domain-config (:tomcat tomcat-config)
+        {:keys [domain-name google-id alias jk-mount jk-unmount settings]} domain-config]
       (merge
         {:domain-name domain-name}
         (if (domain-name/root-domain? domain-name)
@@ -70,10 +72,10 @@
           {:cert-letsencrypt {:domains (domain-name/calculate-domains domain-name)
                               :email (str "admin@" (domain-name/calculate-root-domain domain-name))}}))))
 
-(s/defn ^:always-validate infra-configuration :- infra/HttpdConfig
+(s/defn
+  infra-configuration :- infra/HttpdConfig
   [domain-config :- domain-schema/TomcatConfig]
-  (let [{:keys [domain-name google-id settings]} domain-config]
-    (merge
+  (merge
       server-config
       {:vhosts
-       {:default (infra-vhost-configuration domain-config)}})))
+       {:default (infra-vhost-configuration domain-config)}}))
