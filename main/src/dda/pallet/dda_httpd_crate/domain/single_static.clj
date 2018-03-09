@@ -30,8 +30,9 @@
    :settings #{:name-based}})
 
 (s/defn infra-vhost-configuration :- infra/VhostConfig
-  [domain-config :- domain-schema/SingleStaticConfig]
-  (let [{:keys [domain-name google-id settings alias alias-match]} domain-config]
+  [single-config :- domain-schema/SingleStaticConfig]
+  (let [domain-config (:single-static single-config)
+        {:keys [domain-name google-id settings alias alias-match]} domain-config]
       (merge
         {:domain-name domain-name}
         (if (domain-name/root-domain? domain-name)
@@ -61,9 +62,11 @@
           {:cert-letsencrypt {:domains (domain-name/calculate-domains domain-name)
                               :email (str "admin@" (domain-name/calculate-root-domain domain-name))}}))))
 
-(s/defn infra-configuration :- infra/HttpdConfig
-  [domain-config :- domain-schema/SingleStaticConfig]
-  (let [{:keys [domain-name google-id settings]} domain-config]
+(s/defn
+  infra-configuration :- infra/HttpdConfig
+  [single-config :- domain-schema/SingleStaticConfig]
+  (let [domain-config (:single-static single-config)
+        {:keys [domain-name google-id settings]} domain-config]
     (merge
       server-config
       (if (contains? settings :with-php)
@@ -71,4 +74,4 @@
                           :a2enmod ["php7.0"]}}
         {})
       {:vhosts
-       {:default (infra-vhost-configuration domain-config)}})))
+       {:default (infra-vhost-configuration single-config)}})))
