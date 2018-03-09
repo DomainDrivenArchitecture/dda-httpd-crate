@@ -24,6 +24,15 @@
     [dda.pallet.dda-httpd-crate.domain.domain-name :as domain-name]
     [dda.pallet.dda-httpd-crate.domain.schema :as domain-schema]))
 
+(def JkConfig
+  {:jk
+   (merge
+     domain-schema/VhostConfig
+     {:domain-name s/Str
+      (s/optional-key :settings)
+      (hash-set (s/enum :test
+                        :without-maintainance))})})
+
 (def server-config
   {:apache-version "2.4"
    :limits {:server-limit 150
@@ -34,7 +43,7 @@
 
 (s/defn
   infra-vhost-configuration :- infra/VhostConfig
-  [jk-config :- domain-schema/JkConfig]
+  [jk-config :- JkConfig]
   (let [domain-config (:jk jk-config)
         {:keys [domain-name google-id settings]} domain-config]
       (merge
@@ -64,7 +73,7 @@
 
 (s/defn
   infra-configuration :- infra/HttpdConfig
-  [jk-config :- domain-schema/JkConfig]
+  [jk-config :- JkConfig]
   (merge
     server-config
     {:vhosts
