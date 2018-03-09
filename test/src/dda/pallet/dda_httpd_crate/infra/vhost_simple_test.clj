@@ -129,7 +129,8 @@
    :proxy {:target-port "8080"
            :additional-directives ["ProxyPreserveHost On"
                                    "ProxyRequests     Off"]}
-   :cert-letsencrypt {:letsencrypt-mail "test.mail@m.de"}})
+   :cert-letsencrypt {:domains ["jira.meissa-gmbh.de"]
+                      :letsencrypt-mail "test.mail@m.de"}})
 
 (def etc-apache2-politaktiv-config
   {:domain-name "jira.politaktiv.org"
@@ -163,9 +164,9 @@
           (vhost/vhost-conf-default-redirect-to-https-only
             :domain-name (get-in etc-apache2-politaktiv-config [:domain-name])
             :server-admin-email (get-in etc-apache2-politaktiv-config [:server-admin-email]))))
-    (is (= (sut/vhost etc-apache2-meissa-config)
-           etc-apache2-sites-enabled-000-meissa-ssl-conf))
-    (is (= (sut/vhost etc-apache2-politaktiv-config)
-           etc-apache2-sites-enabled-000-politaktiv-ssl-conf))
+    (is (= etc-apache2-sites-enabled-000-meissa-ssl-conf
+           (sut/vhost etc-apache2-meissa-config)))
+    (is (= etc-apache2-sites-enabled-000-politaktiv-ssl-conf
+           (sut/vhost etc-apache2-politaktiv-config)))
     (is (= simple-with-directory-000-default-ssl-conf
            (sut/vhost simple-with-directory)))))
