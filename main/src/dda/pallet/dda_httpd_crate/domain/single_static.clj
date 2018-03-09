@@ -23,16 +23,26 @@
     [dda.pallet.dda-httpd-crate.domain.domain-name :as domain-name]
     [dda.pallet.dda-httpd-crate.domain.schema :as domain-schema]))
 
+(def SingleStaticValueConfig
+  (merge
+    {:domain-name s/Str
+     (s/optional-key :alias) [{:url s/Str :path s/Str}]
+     (s/optional-key :alias-match) [{:regex s/Str :path s/Str}]}
+    domain-schema/VhostConfig))
+
+(def SingleStaticConfig
+  {:single-static SingleStaticValueConfig})
+
 (def server-config
   {:apache-version "2.4"
    :limits {:server-limit 150
             :max-clients 150}
    :settings #{:name-based}})
 
-(s/defn infra-vhost-configuration :- infra/VhostConfig
-  [single-config :- domain-schema/SingleStaticConfig]
-  (let [domain-config (:single-static single-config)
-        {:keys [domain-name google-id settings alias alias-match]} domain-config]
+(s/defn
+  infra-vhost-configuration :- infra/VhostConfig
+  [domain-config :- SingleStaticValueConfig]
+  (let [{:keys [domain-name google-id settings alias alias-match]} domain-config]
       (merge
         {:domain-name domain-name}
         (if (domain-name/root-domain? domain-name)
@@ -64,7 +74,7 @@
 
 (s/defn
   infra-configuration :- infra/HttpdConfig
-  [single-config :- domain-schema/SingleStaticConfig]
+  [single-config :- SingleStaticConfig]
   (let [domain-config (:single-static single-config)
         {:keys [domain-name google-id settings]} domain-config]
     (merge
@@ -74,4 +84,4 @@
                           :a2enmod ["php7.0"]}}
         {})
       {:vhosts
-       {:default (infra-vhost-configuration single-config)}})))
+       {:default (infra-vhost-configuration domain-config)}})))

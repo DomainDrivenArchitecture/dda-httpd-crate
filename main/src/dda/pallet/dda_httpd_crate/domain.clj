@@ -25,9 +25,9 @@
     [dda.pallet.dda-httpd-crate.domain.tomcat :as tomcat]))
 
 ; ----------------------- schemas --------------------------
-(def SingleStaticConfig domain-schema/SingleStaticConfig)
+(def SingleStaticConfig single-static/SingleStaticConfig)
 
-(def MultiStaticConfig domain-schema/MultiStaticConfig)
+(def MultiStaticConfig multi-static/MultiStaticConfig)
 
 (def JkConfig domain-schema/JkConfig)
 

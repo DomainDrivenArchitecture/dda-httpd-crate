@@ -24,18 +24,6 @@
                      :without-maintainance
                      :with-php))})
 
-(def SingleStaticConfig
-  {:single-static
-   (merge
-     {:domain-name s/Str
-      (s/optional-key :alias) [{:url s/Str :path s/Str}]
-      (s/optional-key :alias-match) [{:regex s/Str :path s/Str}]}
-     VhostConfig)})
-
-(def MultiStaticConfig
-  {:multi-static
-   {s/Keyword VhostConfig}})
-
 (def JkConfig
   {:jk
    (merge

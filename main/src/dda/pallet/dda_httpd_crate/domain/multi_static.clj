@@ -21,22 +21,30 @@
     [dda.pallet.dda-httpd-crate.domain.single-static :as single]
     [dda.pallet.dda-httpd-crate.domain.schema :as domain-schema]))
 
-(s/defn transform-static-vhost
-  [element :- [s/Keyword domain-schema/VhostConfig]]
+(def MultiStaticConfig
+  {:multi-static
+   {s/Keyword domain-schema/VhostConfig}})
+
+(s/defn
+  transform-static-vhost
+  [element]
+  ;[element :- [s/Keyword domain-schema/VhostConfig]]
   (let [[domain-key vhost-config] element
         domain-name (name domain-key)
         {:keys [google-id settings]} vhost-config]
     {domain-key
      (single/infra-vhost-configuration (merge
                                           {:domain-name domain-name}
-                                          element))}))
+                                          vhost-config))}))
 
-(s/defn infra-configuration :- infra/HttpdConfig
-  [domain-config :- domain-schema/MultiStaticConfig]
-  (merge
-    single/server-config
-    {:vhosts
-     (reduce-kv
-      (fn [m k v] (merge m v))
-      {}
-      (into [] (map transform-static-vhost domain-config)))}))
+(s/defn
+  infra-configuration :- infra/HttpdConfig
+  [multi-config :- MultiStaticConfig]
+  (let [domain-config (:multi-static multi-config)]
+    (merge
+      single/server-config
+      {:vhosts
+       (reduce-kv
+        (fn [m k v] (merge m v))
+        {}
+        (into [] (map transform-static-vhost domain-config)))})))
