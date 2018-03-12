@@ -117,14 +117,3 @@
                   :domain-schema HttpdDomainConfig
                   :domain-schema-resolved HttpdDomainConfig
                   :default-domain-file "httpd.edn"))
-
-; todo - thats a schema prediccate & should reside in domain ns.
-(defn app-configuration
-  [domain-config]
-  (cond
-    (= nil (s/check domain/SingleStaticConfig domain-config)) (single-app-configuration domain-config)
-    (= nil (s/check domain/MultiStaticConfig domain-config)) (multi-app-configuration domain-config)
-    (= nil (s/check domain/JkConfig domain-config)) (jk-app-configuration domain-config)
-    (= nil (s/check domain/CompatibilityConfig domain-config)) (compatibility-app-configuration domain-config)
-    (= nil (s/check domain/TomcatConfig domain-config)) (tomcat-app-configuration domain-config)
-    :else (s/validate HttpdDomainConfig domain-config)))

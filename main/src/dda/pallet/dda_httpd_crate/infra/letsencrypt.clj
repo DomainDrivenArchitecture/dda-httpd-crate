@@ -34,7 +34,7 @@
     (actions/exec-script
         ("letsencrypt" "certonly" "--webroot"
                        ~domains-param
-                       "--agree-tos" "--non-interactive" "--staging"
+                       "--agree-tos" "--non-interactive"
                        "--email" ~email))
     (actions/exec-script
       ("/etc/init.d/apache2" "graceful"))))
@@ -42,7 +42,7 @@
 (s/defn renew-letsencrypt-cron-lines
   "add cron job running at 1:?? AM."
   []
-  ["54 1 * * * root /usr/bin/letsencrypt renew --staging --non-interactive"])
+  ["54 1 * * * root /usr/bin/letsencrypt renew --non-interactive"])
 
 (defn configure-renew-cron
   "write renew script."
