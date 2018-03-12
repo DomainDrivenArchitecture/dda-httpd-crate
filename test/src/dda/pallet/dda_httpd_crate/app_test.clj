@@ -31,6 +31,9 @@
      (contains?
       (:group-specific-config
         (sut/multi-app-configuration
-         {:test.de {}}
+          {:multi-static {:test1.domaindrivenarchitecture.org
+                          {:settings #{:without-maintainance}}
+                          :test2.domaindrivenarchitecture.org
+                          {:settings #{:without-maintainance}}}}
          :group-key :test-key))
       :test-key))))
