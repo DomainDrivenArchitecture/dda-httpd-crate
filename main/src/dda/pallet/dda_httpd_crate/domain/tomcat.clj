@@ -24,6 +24,18 @@
     [dda.pallet.dda-httpd-crate.domain.domain-name :as domain-name]
     [dda.pallet.dda-httpd-crate.domain.schema :as domain-schema]))
 
+(def TomcatConfig
+  {:tomcat
+   (merge
+     domain-schema/VhostConfig
+     {:domain-name s/Str
+      (s/optional-key :alias) [{:url s/Str :path s/Str}]
+      (s/optional-key :jk-mount) [{:path s/Str :worker s/Str}]
+      (s/optional-key :jk-unmount) [{:path s/Str :worker s/Str}]
+      (s/optional-key :settings)
+      (hash-set (s/enum :test
+                        :without-maintainance))})})
+
 (def server-config
   {:apache-version "2.4"
    :limits {:server-limit 150
@@ -32,9 +44,11 @@
    :jk-configuration {:jkStripSession "On",
                       :jkWatchdogInterval 120}})
 
-(s/defn ^:always-validate infra-vhost-configuration :- infra/VhostConfig
-  [domain-config :- domain-schema/TomcatConfig]
-  (let [{:keys [domain-name google-id alias jk-mount jk-unmount settings]} domain-config]
+(s/defn
+  infra-vhost-configuration :- infra/VhostConfig
+  [tomcat-config :- TomcatConfig]
+  (let [domain-config (:tomcat tomcat-config)
+        {:keys [domain-name google-id alias jk-mount jk-unmount settings]} domain-config]
       (merge
         {:domain-name domain-name}
         (if (domain-name/root-domain? domain-name)
@@ -70,10 +84,10 @@
           {:cert-letsencrypt {:domains (domain-name/calculate-domains domain-name)
                               :email (str "admin@" (domain-name/calculate-root-domain domain-name))}}))))
 
-(s/defn ^:always-validate infra-configuration :- infra/HttpdConfig
-  [domain-config :- domain-schema/TomcatConfig]
-  (let [{:keys [domain-name google-id settings]} domain-config]
-    (merge
+(s/defn
+  infra-configuration :- infra/HttpdConfig
+  [domain-config :- TomcatConfig]
+  (merge
       server-config
       {:vhosts
-       {:default (infra-vhost-configuration domain-config)}})))
+       {:default (infra-vhost-configuration domain-config)}}))

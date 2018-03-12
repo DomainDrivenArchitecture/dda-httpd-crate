@@ -18,10 +18,20 @@
     [clojure.string :as st]
     [schema.core :as s]
     [pallet.api :as api]
+    [dda.config.commons.map-utils :as mu]
     [dda.pallet.dda-httpd-crate.infra :as infra]
     [dda.pallet.dda-httpd-crate.domain.maintainance :as maintain]
     [dda.pallet.dda-httpd-crate.domain.domain-name :as domain-name]
     [dda.pallet.dda-httpd-crate.domain.schema :as domain-schema]))
+
+(def JkConfig
+  {:jk
+   (merge
+     domain-schema/VhostConfig
+     {:domain-name s/Str
+      (s/optional-key :settings)
+      (hash-set (s/enum :test
+                        :without-maintainance))})})
 
 (def server-config
   {:apache-version "2.4"
@@ -31,9 +41,11 @@
    :jk-configuration {:jkStripSession "On",
                       :jkWatchdogInterval 120}})
 
-(s/defn infra-vhost-configuration :- infra/VhostConfig
-  [domain-config :- domain-schema/JkConfig]
-  (let [{:keys [domain-name google-id settings]} domain-config]
+(s/defn
+  infra-vhost-configuration :- infra/VhostConfig
+  [jk-config :- JkConfig]
+  (let [domain-config (:jk jk-config)
+        {:keys [domain-name google-id settings]} domain-config]
       (merge
         {:domain-name domain-name}
         (if (domain-name/root-domain? domain-name)
@@ -59,10 +71,10 @@
           {:cert-letsencrypt {:domains (domain-name/calculate-domains domain-name)
                               :email (str "admin@" (domain-name/calculate-root-domain domain-name))}}))))
 
-(s/defn infra-configuration :- infra/HttpdConfig
-  [domain-config :- domain-schema/JkConfig]
-  (let [{:keys [domain-name google-id settings]} domain-config]
-    (merge
-      server-config
-      {:vhosts
-       {:default (infra-vhost-configuration domain-config)}})))
+(s/defn
+  infra-configuration :- infra/HttpdConfig
+  [jk-config :- JkConfig]
+  (merge
+    server-config
+    {:vhosts
+      {:default (infra-vhost-configuration jk-config)}}))

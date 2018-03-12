@@ -23,14 +23,25 @@
     [dda.pallet.dda-httpd-crate.domain.domain-name :as domain-name]
     [dda.pallet.dda-httpd-crate.domain.schema :as domain-schema]))
 
+(def SingleStaticValueConfig
+  (merge
+    {:domain-name s/Str
+     (s/optional-key :alias) [{:url s/Str :path s/Str}]
+     (s/optional-key :alias-match) [{:regex s/Str :path s/Str}]}
+    domain-schema/VhostConfig))
+
+(def SingleStaticConfig
+  {:single-static SingleStaticValueConfig})
+
 (def server-config
   {:apache-version "2.4"
    :limits {:server-limit 150
             :max-clients 150}
    :settings #{:name-based}})
 
-(s/defn infra-vhost-configuration :- infra/VhostConfig
-  [domain-config :- domain-schema/SingleStaticConfig]
+(s/defn
+  infra-vhost-configuration :- infra/VhostConfig
+  [domain-config :- SingleStaticValueConfig]
   (let [{:keys [domain-name google-id settings alias alias-match]} domain-config]
       (merge
         {:domain-name domain-name}
@@ -61,9 +72,11 @@
           {:cert-letsencrypt {:domains (domain-name/calculate-domains domain-name)
                               :email (str "admin@" (domain-name/calculate-root-domain domain-name))}}))))
 
-(s/defn infra-configuration :- infra/HttpdConfig
-  [domain-config :- domain-schema/SingleStaticConfig]
-  (let [{:keys [domain-name google-id settings]} domain-config]
+(s/defn
+  infra-configuration :- infra/HttpdConfig
+  [single-config :- SingleStaticConfig]
+  (let [domain-config (:single-static single-config)
+        {:keys [domain-name google-id settings]} domain-config]
     (merge
       server-config
       (if (contains? settings :with-php)

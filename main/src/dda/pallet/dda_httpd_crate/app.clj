@@ -12,99 +12,113 @@
 ; distributed under the License is distributed on an "AS IS" BASIS,
 ; WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 ; See the License for the specific language governing permissions and
-; limitations under the License.(ns dda.pallet.dda-httpd-crate.app
-
+; limitations under the License.
 (ns dda.pallet.dda-httpd-crate.app
   (:require
    [schema.core :as s]
    [pallet.api :as api]
-   [dda.pallet.commons.existing :as existing]
-   [dda.pallet.commons.external-config :as ext-config]
-   [dda.pallet.core.dda-crate :as dda-crate]
+   [dda.cm.group :as group]
+   [dda.pallet.core.app :as core-app]
    [dda.pallet.dda-config-crate.infra :as config-crate]
-   [dda.pallet.commons.secret :as secret]
    [dda.pallet.dda-httpd-crate.infra :as infra]
    [dda.pallet.dda-httpd-crate.domain :as domain]))
 
+(def with-httpd infra/with-httpd)
+
 (def InfraResult infra/InfraResult)
 
-(def Targets existing/Targets)
-
-(def TargetsResolved existing/TargetsResolved)
-
-(def ProvisioningUser existing/ProvisioningUser)
-
-(def HttpdDomainConfig
-  (s/either
-    domain/SingleStaticConfig
-    domain/MultiStaticConfig
-    domain/JkConfig
-    domain/CompatibilityConfig
-    domain/TomcatConfig))
-    
+(def HttpdDomainConfig domain/HttpdDomainConfig)
 
 (def HttpdAppConfig
  {:group-specific-config
   {s/Keyword InfraResult}})
 
-(s/defn ^:always-validate load-domain :- HttpdDomainConfig
-  [file-name :- s/Str]
-  (ext-config/parse-config file-name))
-
-(s/defn ^:always-validate create-app-configuration :- HttpdAppConfig
-  [config :- infra/InfraResult
-   group-key :- s/Keyword]
-  {:group-specific-config
-     {group-key config}})
+(defn- create-app-configuration
+  [config group-key]
+  {:group-specific-config {group-key config}})
 
 (def with-httpd infra/with-httpd)
 
-(defn multi-app-configuration
-  [domain-config
-   & {:keys [group-key] :or {group-key infra/facility}}]
-  (s/validate domain/MultiStaticConfig domain-config)
-  (create-app-configuration
-   (domain/multi-static-configuration domain-config) group-key))
-
-(defn single-app-configuration
-  [domain-config
-   & {:keys [group-key] :or {group-key infra/facility}}]
-  (s/validate domain/SingleStaticConfig domain-config)
-  (create-app-configuration
-   (domain/single-static-configuration domain-config) group-key))
-
-(s/defn ^:always-validate jk-app-configuration :- HttpdAppConfig
-  [domain-config :- domain/JkConfig
+(s/defn ^:always-validate
+  multi-app-configuration :- HttpdAppConfig
+  [domain-config :- HttpdDomainConfig
    & options]
-  (let [{:keys [group-key] :or {group-key infra/facility}} options]
-    {:group-specific-config
-       {group-key
-        (domain/jk-configuration domain-config)}}))
+  (let [{:keys [group-key]
+         :or  {group-key infra/facility}} options]
+    (create-app-configuration
+     (domain/multi-static-configuration domain-config) group-key)))
 
-(defn compatibility-app-configuration
-  [domain-config
-   & {:keys [group-key] :or {group-key infra/facility}}]
-  (s/validate domain/CompatibilityConfig domain-config)
-  (create-app-configuration
-   (domain/compat-configuration domain-config) group-key))
-
-(s/defn ^:always-validate dda-httpd-group-spec
-   [app-config :- HttpdAppConfig]
-   (let [group-name (name (key (first (:group-specific-config app-config))))]
-     (api/group-spec
-      group-name
-      :extends [(config-crate/with-config app-config)
-                with-httpd])))
-
-; ------ returns a HttpdAppConfig which provides support for tomcat -----
-(s/defn ^:always-validate tomcat-app-configuration :- HttpdAppConfig
-  [domain-config :- domain/TomcatConfig
+(s/defn ^:always-validate
+  single-app-configuration :- HttpdAppConfig
+  [domain-config :- HttpdDomainConfig
    & options]
-  (let [{:keys [group-key] :or {group-key infra/facility}} options]
-    {:group-specific-config
-       {group-key
-        (domain/tomcat-configuration domain-config)}}))
+  (let [{:keys [group-key]
+         :or  {group-key infra/facility}} options]
+    (create-app-configuration
+     (domain/single-static-configuration domain-config) group-key)))
 
+(s/defn ^:always-validate
+  jk-app-configuration :- HttpdAppConfig
+  [domain-config :- HttpdDomainConfig
+   & options]
+  (let [{:keys [group-key]
+         :or  {group-key infra/facility}} options]
+    (create-app-configuration
+      (domain/jk-configuration domain-config) group-key)))
+
+(s/defn ^:always-validate
+  tomcat-app-configuration :- HttpdAppConfig
+  [domain-config :- HttpdDomainConfig
+   & options]
+  (let [{:keys [group-key]
+         :or  {group-key infra/facility}} options]
+    (create-app-configuration
+        (domain/tomcat-configuration domain-config) group-key)))
+
+(s/defn ^:always-validate
+  compatibility-app-configuration :- HttpdAppConfig
+  [domain-config :- HttpdDomainConfig
+   & options]
+  (let [{:keys [group-key]
+         :or  {group-key infra/facility}} options]
+    (create-app-configuration
+     (domain/compat-configuration domain-config) group-key)))
+
+(s/defn ^:always-validate
+  app-configuration :- HttpdAppConfig
+  [domain-config :- HttpdDomainConfig
+   & options]
+  (let [{:keys [group-key]
+         :or  {group-key infra/facility}} options
+        switch (first (keys domain-config))]
+    (cond
+      (= switch :single-static) (single-app-configuration
+                                  domain-config :group-key group-key)
+      (= switch :multi-static) (multi-app-configuration
+                                  domain-config :group-key group-key)
+      (= switch :jk) (jk-app-configuration
+                                  domain-config :group-key group-key)
+      (= switch :tomcat) (tomcat-app-configuration
+                                  domain-config :group-key group-key)
+      (= switch :compat) (compatibility-app-configuration
+                                  domain-config :group-key group-key))))
+
+(s/defmethod ^:always-validate
+  core-app/group-spec infra/facility
+  [crate-app
+   domain-config :- HttpdDomainConfig]
+  (let [app-config (app-configuration domain-config)]
+    (group/group-spec
+      app-config [(config-crate/with-config app-config)
+                  with-httpd])))
+
+(def crate-app (core-app/make-dda-crate-app
+                  :facility infra/facility
+                  :domain-schema HttpdDomainConfig
+                  :domain-schema-resolved HttpdDomainConfig
+                  :default-domain-file "httpd.edn"))
+
+; todo - thats a schema prediccate & should reside in domain ns.
 (defn app-configuration
   [domain-config]
   (cond
@@ -114,11 +128,3 @@
     (= nil (s/check domain/CompatibilityConfig domain-config)) (compatibility-app-configuration domain-config)
     (= nil (s/check domain/TomcatConfig domain-config)) (tomcat-app-configuration domain-config)
     :else (s/validate HttpdDomainConfig domain-config)))
-
-(s/defn ^:always-validate existing-provisioning-spec
-  "Creates an integrated group spec from a domain config and a provisioning user."
-  [domain-config :- HttpdDomainConfig
-   provisioning-user :- ProvisioningUser]
-  (merge
-   (dda-httpd-group-spec (app-configuration domain-config))
-   (existing/node-spec (secret/resolve-secrets provisioning-user ProvisioningUser))))
