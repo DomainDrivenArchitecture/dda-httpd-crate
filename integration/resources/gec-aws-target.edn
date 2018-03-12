@@ -1,0 +1,11 @@
+{:context {:key-id {:password-store-single "meissa/gec/web/aws/aws-key-id"}
+           :key-secret {:password-store-single "meissa/gec/web/aws/aws-key-secret"}
+           :region "eu-central-1"
+           :subnet-ids ["subnet-f929df91"]}
+ :node-spec {:region "eu-central-1a"
+             :ami-id "ami-5055cd3f"
+             :hardware-id "t2.micro"
+             :security-group-ids ["sg-a5d840ce"]
+             :subnet-id "subnet-f929df91"
+             :provisioning-user {:login "ubuntu"
+                                 :ssh-key-name "gec"}}}
