@@ -129,8 +129,8 @@
    :proxy {:target-port "8080"
            :additional-directives ["ProxyPreserveHost On"
                                    "ProxyRequests     Off"]}
-   :cert-letsencrypt {:domains ["jira.meissa-gmbh.de"]
-                      :letsencrypt-mail "test.mail@m.de"}})
+   :cert-letsencrypt {:email "test.mail@m.de"
+                      :domains ["jira.meissa-gmbh.de"]}})
 
 (def etc-apache2-politaktiv-config
   {:domain-name "jira.politaktiv.org"
