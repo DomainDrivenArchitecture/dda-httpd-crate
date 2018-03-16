@@ -17,7 +17,6 @@
   (:require
    [schema.core :as s]
    [pallet.api :as api]
-   [dda.cm.group :as group]
    [dda.pallet.core.app :as core-app]
    [dda.pallet.dda-config-crate.infra :as config-crate]
    [dda.pallet.dda-httpd-crate.infra :as infra]
@@ -108,7 +107,7 @@
   [crate-app
    domain-config :- HttpdDomainConfig]
   (let [app-config (app-configuration domain-config)]
-    (group/group-spec
+    (core-app/pallet-group-spec
       app-config [(config-crate/with-config app-config)
                   with-httpd])))
 
