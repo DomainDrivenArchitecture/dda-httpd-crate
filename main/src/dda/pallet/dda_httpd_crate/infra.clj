@@ -22,7 +22,6 @@
    [dda.pallet.dda-httpd-crate.infra.server :as server]
    [dda.pallet.dda-httpd-crate.infra.vhost :as vhost]))
 
-
 (def facility :dda-httpd)
 
 (def VhostConfig httpd-schema/VhostConfig)
