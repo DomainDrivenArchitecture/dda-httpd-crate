@@ -36,7 +36,7 @@ The dda-httpd-crate allows you to specify target-systems and a desired configura
                 :settings #{ ;specify some optional settings as keywords such as
                             :test :without-maintenance :with-php}
   ```
-Please note,## the keywords marked optional do not have to be specified only if you need them. For documentation on creating regular expressions for alias-match please see the
+Please note, the keywords marked optional do not have to be specified only if you need them. For documentation on creating regular expressions for alias-match please see the
 [apache2 documentation](https://httpd.apache.org/docs/2.4/mod/mod_alias.html).
 
 3. (optional) If you want to install and configure the apache2 server on a remote machine, please create additionally a `targets.edn` file. In this file you define which server(s) the apache2 server should be installed and configured upon. You may use and adjust the following example config:
