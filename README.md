@@ -25,7 +25,7 @@ The dda-httpd-crate allows you to specify target-systems and a desired configura
 * Forward http requests to https
 
 ## Usage
-1. **Download the jar-file** from the releases page of this repository (e.g. `curl -L -o /httpd.jar https://github.com/DomainDrivenArchitecture/dda-httpd-crate/releases/download/1.0.0/dda-httpd-crate-1.0.0-standalone.jar`)
+1. **Download the jar-file** from the releases page of this repository (e.g. `curl -L -o /httpd.jar https://github.com/DomainDrivenArchitecture/dda-httpd-crate/releases/download/2.0.1/dda-httpd-crate-2.0.1-standalone.jar`)
 1. **Create the ```httpd.edn``` configruration** file in the same folder where you saved the jar-file. The ```httpd.edn``` file specifies the configuration used to configure the apache2 server. You may use the following example as a starting point and adjust it according to your own needs:
 
 ```clojure
@@ -215,6 +215,53 @@ On an infra level the dda-http-crate provides all the functions for generating v
 
 The schema is:
 ```clojure
+(def mod-jk-configuration
+  {:tomcat-forwarding-configuration
+   {:mount [{:path s/Str :worker s/Str}]
+    (s/optional-key :unmount) [{:path s/Str :worker s/Str}]}
+   :worker-properties [{:worker s/Str
+                        :host s/Str
+                        :port s/Str
+                        :maintain-timout-sec s/Int
+                        :socket-connect-timeout-ms s/Int}]})
+
+(def VhostConfig
+  "defines a schema for a httpdConfig"
+  {:domain-name s/Str
+   :listening-port s/Str
+   :server-admin-email s/Str
+   (s/optional-key :server-aliases) [s/Str]
+   (s/optional-key :access-control) [s/Str]
+   (s/optional-key :document-root) s/Str
+   (s/optional-key :rewrite-rules) [s/Str]
+   (s/optional-key :user-credentials) [s/Str]
+   (s/optional-key :alias) [{:url s/Str :path s/Str}]
+   (s/optional-key :alias-match) [{:regex s/Str :path s/Str}]
+   (s/optional-key :location) {(s/optional-key :basic-auth) s/Bool
+                               (s/optional-key :locations-override) [s/Str]
+                               (s/optional-key :path) s/Str}
+   ; either letsencrypt or manual certificates
+   (s/optional-key :cert-letsencrypt) {:domains [s/Str]
+     ; TODO: apply rename refactoring:letsencrypt-mail -> email
+                                       :email s/Str}
+   (s/optional-key :cert-manual) {:domain-cert s/Str
+                                  :domain-key s/Str
+                                  (s/optional-key :ca-cert) s/Str}
+   (s/optional-key :cert-file) {:domain-cert s/Str
+                                :domain-key s/Str
+                                (s/optional-key :ca-cert) s/Str}
+   ; mod_jk
+   (s/optional-key :mod-jk) mod-jk-configuration
+   ;proxy
+   (s/optional-key :proxy) {:target-port s/Str
+                            :additional-directives [s/Str]}
+
+   ; other stuff
+   (s/optional-key :maintainance-page-content) [s/Str]
+   (s/optional-key :maintainance-page-worker) s/Str
+   (s/optional-key :google-id) s/Str
+   (s/optional-key :google-worker) s/Str})
+
 (def HttpdConfig
   {:apache-version (s/enum "2.2" "2.4")
    :vhosts {s/Keyword VhostConfig}
