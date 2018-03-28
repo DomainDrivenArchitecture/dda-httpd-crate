@@ -55,7 +55,8 @@
   (System/exit status))
 
 (defn -main [& args]
-  (let [{:keys [options arguments errors summary help]} (cli/parse-opts args cli-options)]
+  (let [{:keys [options arguments errors summary help]}
+        (cli/parse-opts args cli-options)]
     (cond
       help (exit 0 (usage summary))
       errors (exit 1 (error-msg errors))
@@ -64,7 +65,7 @@
                                    app/crate-app
                                    {:domain (first arguments)
                                     :targets (:targets options)
-                                    :verbosity verbose})
+                                    :verbosity (:verbose options)})
                                  (exit 0 (styled/styled "ALL TESTS PASSED" :green))
                                  (exit 2 (styled/styled "SOME TESTS FAILED" :red)))
       (:configure options) (core-app/existing-configure
