@@ -262,6 +262,11 @@ The schema is:
    (s/optional-key :google-id) s/Str
    (s/optional-key :google-worker) s/Str})
 
+(def jk-configuration
+ "Defines the schema for a jk-configuration, not mod-jk!"
+ {:jkStripSession s/Str
+  :jkWatchdogInterval s/Int})
+
 (def HttpdConfig
   {:apache-version (s/enum "2.2" "2.4")
    :vhosts {s/Keyword VhostConfig}
