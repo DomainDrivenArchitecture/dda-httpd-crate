@@ -25,7 +25,7 @@ The dda-httpd-crate allows you to specify target-systems and a desired configura
 * Forward http requests to https
 
 ## Usage
-1. **Download the jar-file** from the releases page of this repository (e.g. `curl -L -o /httpd.jar https://github.com/DomainDrivenArchitecture/dda-httpd-crate/releases/download/2.0.1/dda-httpd-crate-2.0.1-standalone.jar`)
+1. **Download the jar-file** from the releases page of this repository (e.g. `curl -L -o httpd.jar https://github.com/DomainDrivenArchitecture/dda-httpd-crate/releases/download/2.0.3/dda-httpd-crate-2.0.3-standalone.jar`)
 1. **Create the ```httpd.edn``` configruration** file in the same folder where you saved the jar-file. The ```httpd.edn``` file specifies the configuration used to configure the apache2 server. You may use the following example as a starting point and adjust it according to your own needs:
 
 ```clojure
@@ -261,6 +261,11 @@ The schema is:
    (s/optional-key :maintainance-page-worker) s/Str
    (s/optional-key :google-id) s/Str
    (s/optional-key :google-worker) s/Str})
+
+(def jk-configuration
+ "Defines the schema for a jk-configuration, not mod-jk!"
+ {:jkStripSession s/Str
+  :jkWatchdogInterval s/Int})
 
 (def HttpdConfig
   {:apache-version (s/enum "2.2" "2.4")

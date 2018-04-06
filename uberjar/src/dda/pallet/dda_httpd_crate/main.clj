@@ -35,7 +35,8 @@
   (str/join
    \newline
    ["dda-httpd-crate installs a working apache2 server & manages configuration of"
-    "http->https, letsencrypt, mod-jk, timeouts, google id, maintainance page and much more ..."
+    "http->https, letsencrypt, mod-jk, timeouts, google id, maintainance page and"
+    "much more ..."
     ""
     "Usage: java -jar dda-httpd-crate-[version]-standalone.jar [options] httpd.edn"
     ""
