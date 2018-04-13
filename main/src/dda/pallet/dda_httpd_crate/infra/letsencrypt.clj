@@ -24,25 +24,27 @@
   []
   (actions/package "python-letsencrypt-apache"))
 
-(s/defn configure-letsencrypt-certs
+(s/defn install-letsencrypt-certs
   "installs letsencrypt certificate."
   [domains :- [s/Str]
    email :- s/Str]
-  (let [domains-param (apply str (interpose " " (map (fn [d] 
+  (let [domains-param (apply str (interpose " " (map (fn [d]
                                                        (str "-w " "/var/www/html"
                                                             " -d " d)) domains)))]
     (actions/exec-script
-        ("letsencrypt" "certonly" "--webroot"
+      ("/etc/init.d/apache2" "stop"))
+    (actions/exec-script
+        ("letsencrypt" "certonly" "--standalone"
                        ~domains-param
                        "--agree-tos" "--non-interactive"
                        "--email" ~email))
     (actions/exec-script
-      ("/etc/init.d/apache2" "graceful"))))
+      ("/etc/init.d/apache2" "start"))))
 
 (s/defn renew-letsencrypt-cron-lines
   "add cron job running at 1:?? AM."
   []
-  ["54 1 * * * root /usr/bin/letsencrypt renew --non-interactive"])
+  ["54 1 * * * root /usr/bin/letsencrypt renew --webroot -w /var/www/html --non-interactive"])
 
 (defn configure-renew-cron
   "write renew script."
