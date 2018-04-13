@@ -27,7 +27,8 @@
   (merge
     {:domain-name s/Str
      (s/optional-key :alias) [{:url s/Str :path s/Str}]
-     (s/optional-key :alias-match) [{:regex s/Str :path s/Str}]}
+     (s/optional-key :alias-match) [{:regex s/Str :path s/Str}]
+     (s/optional-key :allow-origin) s/Str}
     domain-schema/VhostConfig))
 
 (def SingleStaticConfig
@@ -42,7 +43,8 @@
 (s/defn
   infra-vhost-configuration :- infra/VhostConfig
   [domain-config :- SingleStaticValueConfig]
-  (let [{:keys [domain-name google-id settings alias alias-match]} domain-config]
+  (let [{:keys [domain-name google-id settings alias alias-match
+                allow-origin]} domain-config]
       (merge
         {:domain-name domain-name}
         (if (domain-name/root-domain? domain-name)
@@ -65,6 +67,9 @@
           {})
         (if (contains? domain-config :alias-match)
           {:alias-match alias-match}
+          {})
+        (if (contains? domain-config :allow-origin)
+          {:allow-origin allow-origin}
           {})
         (if (contains? settings :test)
           {:cert-file {:domain-cert "/etc/ssl/certs/ssl-cert-snakeoil.pem"
