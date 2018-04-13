@@ -80,6 +80,13 @@
     (for [x (-> vhost-config :alias)]
       (str "Alias " "\"" (-> x :url) "\"" " " "\""(-> x :path)"\"")))))
 
+(s/defn
+  create-allow-origin
+  "Creates the alias for the vhost-function."
+  [allow-origin :- s/Str]
+  [(str "Header set Access-Control-Allow-Origin \"" allow-origin "\"")
+   ""])
+
 (s/defn create-alias-match
   "Creates the alias match for regex for the vhost-function."
   [vhost-config :- schema/VhostConfig]
@@ -195,6 +202,8 @@
          (location vhost-config)
          (create-alias vhost-config)
          (create-alias-match vhost-config)
+         (when (contains? vhost-config :allow-origin)
+           (create-allow-origin (:allow-origin vhost-config)))
          (create-mount vhost-config)
          (create-unmount vhost-config)
          (create-google-id vhost-config)
@@ -209,6 +218,17 @@
             (create-gnutls-cert-file vhost-config)))))
       vhost/vhost-tail
       (create-tomcat-forwarding-configuration vhost-config)))))
+
+(s/defn install-vhost
+  "Takes a vhost-name and vhost-config and generates vhost-config files"
+  [vhost-name :- s/Str
+   vhost-config :- schema/VhostConfig
+   apache-version :- s/Str]
+  (when (contains? vhost-config :cert-letsencrypt)
+    (letsencrypt/install-letsencrypt-certs
+      (get-in vhost-config [:cert-letsencrypt :domains])
+      (get-in vhost-config [:cert-letsencrypt :email]))
+    (letsencrypt/configure-renew-cron)))
 
 (s/defn configure-vhost
   "Takes a vhost-name and vhost-config and generates vhost-config files"
@@ -244,12 +264,13 @@
       :server-admin-email (get-in vhost-config [:server-admin-email]))
     apache-version)
   (apache2/configure-and-enable-vhost
-    (str "000-" vhost-name "-ssl") (vhost vhost-config) apache-version)
-  (when (contains? vhost-config :cert-letsencrypt)
-    (letsencrypt/configure-letsencrypt-certs
-      (get-in vhost-config [:cert-letsencrypt :domains])
-      (get-in vhost-config [:cert-letsencrypt :email]))
-    (letsencrypt/configure-renew-cron)))
+    (str "000-" vhost-name "-ssl") (vhost vhost-config) apache-version))
+
+(s/defn install
+  [config :- schema/HttpdConfig]
+  (let [vhost-configs (get-in config [:vhosts])]
+    (doseq [[vhost-name vhost-config] vhost-configs]
+      (install-vhost (name vhost-name) vhost-config (-> config :apache-version)))))
 
 (s/defn configure
   [config :- schema/HttpdConfig]
