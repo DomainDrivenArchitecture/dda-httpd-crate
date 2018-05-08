@@ -50,6 +50,7 @@
     (letsencrypt/install-letsencrypt)
     (gnutls/install-mod-gnutls)
     (rewrite/install-mod-rewrite)
+    (actions/package "ssl-cert")
     (when (contains? config :jk-configuration)
       (jk/install-mod-jk
         :workers-properties-file nil
