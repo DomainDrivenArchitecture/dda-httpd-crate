@@ -1,10 +1,10 @@
-(defproject dda/dda-httpd-crate "2.0.4-SNAPSHOT"
+(defproject dda/dda-httpd-crate "2.0.4"
   :description "new dda-httpd-crate"
   :url "https://www.domaindrivenarchitecture.org"
   :license {:name "Apache License, Version 2.0"
             :url "https://www.apache.org/licenses/LICENSE-2.0.html"}
   :dependencies [[org.clojure/clojure "1.7.0"]
-                 [dda/dda-pallet "2.1.1"]
+                 [dda/dda-pallet "2.1.2"]
                  [dda/httpd "0.2.7"]]
   :source-paths ["main/src"]
   :resource-paths ["main/resources"]
@@ -21,7 +21,7 @@
                    [
                     [org.domaindrivenarchitecture/pallet-aws "0.2.8.2"]
                     [com.palletops/pallet "0.8.12" :classifier "tests"]
-                    [org.clojure/tools.cli "0.3.5"]
+                    [org.clojure/tools.cli "0.3.7"]
                     [ch.qos.logback/logback-classic "1.3.0-alpha4"]
                     [org.slf4j/jcl-over-slf4j "1.8.0-beta2"]]
                    :plugins [[lein-sub "0.3.0"]
@@ -36,7 +36,7 @@
                        :resource-paths ["uberjar/resources"]
                        :aot :all
                        :main dda.pallet.dda-httpd-crate.main
-                       :dependencies [[org.clojure/tools.cli "0.3.5"]
+                       :dependencies [[org.clojure/tools.cli "0.3.7"]
                                       [ch.qos.logback/logback-classic "1.3.0-alpha4"]
                                       [org.slf4j/jcl-over-slf4j "1.8.0-beta2"]]}}
   :local-repo-classpath true)
