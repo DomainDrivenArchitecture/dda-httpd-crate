@@ -21,7 +21,6 @@
     [dda.pallet.dda-httpd-crate.infra.vhost :as sut]
     [httpd.crate.vhost :as vhost]))
 
-
 (def etc-apache2-sites-enabled-000-meissa-conf
   ["<VirtualHost *:80>"
    "  ServerName jira.meissa-gmbh.de"
@@ -56,6 +55,30 @@
   ["<VirtualHost *:443>"
    "  ServerName jira.meissa-gmbh.de"
    "  ServerAdmin admin@jira.meissa-gmbh.de"
+   "  "
+   "  ProxyPreserveHost On"
+   "  ProxyRequests     Off"
+   "  ProxyPass / http://localhost:8080/"
+   "  ProxyPassReverse / http://localhost:8080/"
+   "  ErrorLog \"/var/log/apache2/error.log\""
+   "  LogLevel warn"
+   "  CustomLog \"/var/log/apache2/ssl-access.log\" combined"
+   "  "
+   "  GnuTLSEnable on"
+   "  GnuTLSPriorities SECURE:!VERS-SSL3.0:!MD5:!DHE-RSA:!DHE-DSS:!AES-256-CBC:%COMPAT"
+   "  GnuTLSExportCertificates on"
+   "  "
+   "  GnuTLSCertificateFile /etc/letsencrypt/live/jira.meissa-gmbh.de/fullchain.pem"
+   "  GnuTLSKeyFile /etc/letsencrypt/live/jira.meissa-gmbh.de/privkey.pem"
+   "  "
+   "</VirtualHost>"])
+
+(def etc-apache2-sites-enabled-000-meissa-ssl-with-origin
+  ["<VirtualHost *:443>"
+   "  ServerName jira.meissa-gmbh.de"
+   "  ServerAdmin admin@jira.meissa-gmbh.de"
+   "  "
+   "  Header set Access-Control-Allow-Origin \"*.meissa-gmbh.de\""
    "  "
    "  ProxyPreserveHost On"
    "  ProxyRequests     Off"
@@ -132,6 +155,18 @@
    :cert-letsencrypt {:email "test.mail@m.de"
                       :domains ["jira.meissa-gmbh.de"]}})
 
+(def etc-apache2-meissa-config-with-origin
+  {:domain-name "jira.meissa-gmbh.de"
+   :listening-port "443"
+   :server-admin-email "admin@jira.meissa-gmbh.de"
+   :allow-origin "*.meissa-gmbh.de"
+   :proxy {:target-port "8080"
+           :additional-directives ["ProxyPreserveHost On"
+                                   "ProxyRequests     Off"]}
+   :cert-letsencrypt {:email "test.mail@m.de"
+                      :domains ["jira.meissa-gmbh.de"]}})
+
+
 (def etc-apache2-politaktiv-config
   {:domain-name "jira.politaktiv.org"
    :listening-port "443"
@@ -169,4 +204,6 @@
     (is (= etc-apache2-sites-enabled-000-politaktiv-ssl-conf
            (sut/vhost etc-apache2-politaktiv-config)))
     (is (= simple-with-directory-000-default-ssl-conf
-           (sut/vhost simple-with-directory)))))
+           (sut/vhost simple-with-directory)))
+    (is (= etc-apache2-sites-enabled-000-meissa-ssl-with-origin
+           (sut/vhost etc-apache2-meissa-config-with-origin)))))

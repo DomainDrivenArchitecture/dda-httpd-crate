@@ -33,6 +33,7 @@
    :listening-port s/Str
    :server-admin-email s/Str
    (s/optional-key :server-aliases) [s/Str]
+   (s/optional-key :allow-origin) s/Str
    (s/optional-key :access-control) [s/Str]
    (s/optional-key :document-root) s/Str
    (s/optional-key :rewrite-rules) [s/Str]

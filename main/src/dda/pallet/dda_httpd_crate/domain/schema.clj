@@ -19,6 +19,9 @@
 
 (def VhostConfig
   {(s/optional-key :google-id) s/Str
+   (s/optional-key :allow-origin) s/Str
+   (s/optional-key :alias) [{:url s/Str :path s/Str}]
+   (s/optional-key :alias-match) [{:regex s/Str :path s/Str}]
    (s/optional-key :settings)
    (hash-set (s/enum :test
                      :without-maintainance

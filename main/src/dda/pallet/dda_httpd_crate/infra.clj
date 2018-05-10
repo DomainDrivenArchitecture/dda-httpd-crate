@@ -46,7 +46,8 @@
 
 (defmethod core-infra/dda-install facility
   [core-infra config]
-  (install-httpd config))
+  (install-httpd config)
+  (vhost/install config))
 
 (defmethod core-infra/dda-configure facility
   [core-infra config]
