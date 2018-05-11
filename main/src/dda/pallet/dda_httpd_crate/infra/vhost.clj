@@ -275,5 +275,6 @@
 (s/defn configure
   [config :- schema/HttpdConfig]
   (let [vhost-configs (get-in config [:vhosts])]
+    (letsencrypt/configure-renew-cron)
     (doseq [[vhost-name vhost-config] vhost-configs]
       (configure-vhost (name vhost-name) vhost-config (-> config :apache-version)))))
