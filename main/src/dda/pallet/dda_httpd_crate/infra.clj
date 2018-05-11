@@ -19,6 +19,7 @@
    [pallet.actions :as actions]
    [dda.pallet.core.infra :as core-infra]
    [dda.pallet.dda-httpd-crate.infra.schema :as httpd-schema]
+   [dda.pallet.dda-httpd-crate.infra.letsencrypt :as letsencrypt]
    [dda.pallet.dda-httpd-crate.infra.server :as server]
    [dda.pallet.dda-httpd-crate.infra.vhost :as vhost]))
 
@@ -33,7 +34,9 @@
 
 (s/defn ^:always-validate install-httpd
   [config :- HttpdConfig]
-  (server/install config))
+  (letsencrypt/install-letsencrypt)
+  (server/install config)
+  (vhost/install config))
 
 (s/defn ^:always-validate configure-httpd
   [config :- HttpdConfig]
@@ -46,13 +49,11 @@
 
 (defmethod core-infra/dda-install facility
   [core-infra config]
-  (install-httpd config)
-  (vhost/install config))
+  (install-httpd config))
 
 (defmethod core-infra/dda-configure facility
   [core-infra config]
-  (server/configure config)
-  (vhost/configure config))
+  (configure-httpd config))
 
 (def httpd-crate
   (core-infra/make-dda-crate-infra
