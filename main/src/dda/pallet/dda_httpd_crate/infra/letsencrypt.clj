@@ -28,15 +28,17 @@
   "installs letsencrypt certificate."
   [domains :- [s/Str]
    email :- s/Str]
-  (let [domains-param (apply str (interpose " " (map (fn [d]
-                                                       (str "-w " "/var/www/html"
-                                                            " -d " d)) domains)))]
+  (let [domains-param (apply str (interpose " "
+                                   (map (fn
+                                          [d]
+                                          (str " -d " d) domains))))]
     (actions/exec-script
       ("/etc/init.d/apache2" "stop"))
     (actions/exec-script
         ("letsencrypt" "certonly" "--standalone"
-                       ~domains-param
+                       "-w " "/var/www/html"
                        "--agree-tos" "--non-interactive"
+                       ~domains-param
                        "--email" ~email))
     (actions/exec-script
       ("/etc/init.d/apache2" "start"))))

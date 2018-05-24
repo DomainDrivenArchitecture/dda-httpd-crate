@@ -19,7 +19,6 @@
     [schema.core :as s]
     [pallet.actions :as actions]
     [dda.pallet.dda-httpd-crate.infra.letsencrypt :as letsencrypt]
-    [dda.pallet.dda-httpd-crate.infra.schema :as schema]
     [httpd.crate.apache2 :as apache2]
     [httpd.crate.basic-auth :as auth]
     [httpd.crate.common :as httpd-common]
@@ -29,6 +28,57 @@
     [httpd.crate.mod-proxy-http :as proxy]
     [httpd.crate.vhost :as vhost]
     [httpd.crate.webserver-maintainance :as maintainance]))
+
+(def ModJkConfiguration
+  {:tomcat-forwarding-configuration
+   {:mount [{:path s/Str :worker s/Str}]
+    (s/optional-key :unmount) [{:path s/Str :worker s/Str}]}
+   :worker-properties [{:worker s/Str
+                        :host s/Str
+                        :port s/Str
+                        :maintain-timout-sec s/Int
+                        :socket-connect-timeout-ms s/Int}]})
+
+(def VhostConfig
+  "defines a schema for a httpdConfig"
+  {:domain-name s/Str
+   :listening-port s/Str
+   :server-admin-email s/Str
+   (s/optional-key :server-aliases) [s/Str]
+   (s/optional-key :allow-origin) s/Str
+   (s/optional-key :access-control) [s/Str]
+   (s/optional-key :document-root) s/Str
+   (s/optional-key :rewrite-rules) [s/Str]
+   (s/optional-key :user-credentials) [s/Str]
+   (s/optional-key :alias) [{:url s/Str :path s/Str}]
+   (s/optional-key :alias-match) [{:regex s/Str :path s/Str}]
+   (s/optional-key :location) {(s/optional-key :basic-auth) s/Bool
+                               (s/optional-key :locations-override) [s/Str]
+                               (s/optional-key :path) s/Str}
+   ; either letsencrypt or manual certificates
+   (s/optional-key :cert-letsencrypt) {:domains [s/Str]
+     ; TODO: apply rename refactoring:letsencrypt-mail -> email
+                                       :email s/Str}
+   (s/optional-key :cert-manual) {:domain-cert s/Str
+                                  :domain-key s/Str
+                                  (s/optional-key :ca-cert) s/Str}
+   (s/optional-key :cert-file) {:domain-cert s/Str
+                                :domain-key s/Str
+                                (s/optional-key :ca-cert) s/Str}
+   ; mod_jk
+   (s/optional-key :mod-jk) ModJkConfiguration
+   ;proxy
+   (s/optional-key :proxy) {:target-port s/Str
+                            :additional-directives [s/Str]}
+
+   ; other stuff
+   (s/optional-key :maintainance-page-content) [s/Str]
+   (s/optional-key :maintainance-page-worker) s/Str
+   (s/optional-key :google-id) s/Str
+   (s/optional-key :google-worker) s/Str})
+
+(def AllVhostConfig
+  {s/Keyword VhostConfig})
 
 (defn vhost-head
   "This is a wrapper for vhost/vhost-head."
@@ -41,13 +91,13 @@
 
 (s/defn rewrite-rules
   "Create the rewrite rules for the vhost-function."
-  [vhost-config :- schema/VhostConfig]
+  [vhost-config :- VhostConfig]
   (when (contains? vhost-config :rewrite-rules)
     (vec (concat (-> vhost-config :rewrite-rules) [""]))))
 
 (s/defn location
   "Creates the location config for the vhost-function."
-  [vhost-config :- schema/VhostConfig]
+  [vhost-config :- VhostConfig]
   (let [{:keys [location access-control domain-name]} vhost-config
         {:keys [basic-auth path locations-override]
          :or {path "/"}} location]
@@ -74,7 +124,7 @@
 
 (s/defn create-alias
   "Creates the alias for the vhost-function."
-  [vhost-config :- schema/VhostConfig]
+  [vhost-config :- VhostConfig]
   (when (contains? vhost-config :alias)
    (vec
     (for [x (-> vhost-config :alias)]
@@ -89,28 +139,28 @@
 
 (s/defn create-alias-match
   "Creates the alias match for regex for the vhost-function."
-  [vhost-config :- schema/VhostConfig]
+  [vhost-config :- VhostConfig]
   (vec
     (for [x (-> vhost-config :alias-match)]
       (str "AliasMatch " "\"" (-> x :regex) "\"" " " "\""(-> x :path)"\""))))
 
 (s/defn create-mount
   "Create mod-jk mounts for the vhost-function."
-  [vhost-config :- schema/VhostConfig]
+  [vhost-config :- VhostConfig]
   (when (contains? vhost-config :mod-jk)
     (for [x (-> vhost-config :mod-jk :tomcat-forwarding-configuration :mount)]
       (first (jk/vhost-jk-mount :worker (-> x :worker) :path (-> x :path))))))
 
 (s/defn create-unmount
   "Create mod-jk unmounts for vhost-function."
-  [vhost-config :- schema/VhostConfig]
+  [vhost-config :- VhostConfig]
   (when (contains? (-> vhost-config :mod-jk :tomcat-forwarding-configuration) :unmount)
     (for [x (-> vhost-config :mod-jk :tomcat-forwarding-configuration :unmount)]
       (first (jk/vhost-jk-unmount :worker (-> x :worker) :path (-> x :path))))))
 
 (s/defn create-google-id
   "Create google-id config for vhost-function"
-  [vhost-config :- schema/VhostConfig]
+  [vhost-config :- VhostConfig]
   (let [use-mod-jk?  (contains? vhost-config :mod-jk)]
     (when (contains? vhost-config :google-id)
       (if (contains? vhost-config :google-worker)
@@ -124,7 +174,7 @@
 
 (s/defn create-maintenance-page
   "Create maintanance-page for vhost."
-  [vhost-config :- schema/VhostConfig]
+  [vhost-config :- VhostConfig]
   (let [use-mod-jk?  (contains? vhost-config :mod-jk)]
     (when (contains? vhost-config :maintainance-page-content)
       (if (contains? vhost-config :maintainance-page-worker)
@@ -136,7 +186,7 @@
 
 (s/defn create-tomcat-forwarding-configuration
   "Creates the tomcat-forwarding-configuration for the vhosts."
-  [vhost-config :- schema/VhostConfig]
+  [vhost-config :- VhostConfig]
   (when (contains? vhost-config :mod-jk)
     (concat
      [" "]
@@ -154,7 +204,7 @@
 
 (s/defn create-proxy-configuration
   "Creates the proxy configuration for the vhosts."
-  [vhost-config :- schema/VhostConfig]
+  [vhost-config :- VhostConfig]
   (when (contains? vhost-config :proxy)
     (proxy/vhost-proxy
      :target-port (-> vhost-config :proxy :target-port)
@@ -162,17 +212,17 @@
 
 (s/defn create-gnutls-letsencrypt-configuration
   "Creates the letsencrpyt configuration for the vhosts."
-  [vhost-config :- schema/VhostConfig]
+  [vhost-config :- VhostConfig]
   (gnutls/vhost-gnutls-letsencrypt (-> vhost-config :domain-name)))
 
 (s/defn create-gnutls-cert-contents
   "Creates the vhost-gnutls for the vhosts."
-  [vhost-config :- schema/VhostConfig]
+  [vhost-config :- VhostConfig]
   (gnutls/vhost-gnutls (-> vhost-config :domain-name)))
 
 (s/defn create-gnutls-cert-file
   "Creates the vhost-gnutls for the vhosts."
-  [vhost-config :- schema/VhostConfig]
+  [vhost-config :- VhostConfig]
   (gnutls/vhost-gnutls-existing
     (get-in vhost-config [:cert-file :domain-cert])
     (get-in vhost-config [:cert-file :domain-key])))
@@ -187,7 +237,7 @@
 
 (s/defn vhost
   "Creates the vhost configuration from a VhostConfig."
-  [vhost-config :- schema/VhostConfig]
+  [vhost-config :- VhostConfig]
   (let [use-mod-jk (contains? vhost-config :mod-jk)
         domain-name (get-in vhost-config [:domain-name])]
     (vec
@@ -222,7 +272,7 @@
 (s/defn install-vhost
   "Takes a vhost-name and vhost-config and generates vhost-config files"
   [vhost-name :- s/Str
-   vhost-config :- schema/VhostConfig
+   vhost-config :- VhostConfig
    apache-version :- s/Str]
   (when (contains? vhost-config :cert-letsencrypt)
     (letsencrypt/install-letsencrypt-certs
@@ -233,7 +283,7 @@
 (s/defn configure-vhost
   "Takes a vhost-name and vhost-config and generates vhost-config files"
   [vhost-name :- s/Str
-   vhost-config :- schema/VhostConfig
+   vhost-config :- VhostConfig
    apache-version :- s/Str]
   (when (contains? vhost-config :document-root)
     (actions/directory
@@ -267,14 +317,14 @@
     (str "000-" vhost-name "-ssl") (vhost vhost-config) apache-version))
 
 (s/defn install
-  [config :- schema/HttpdConfig]
-  (let [vhost-configs (get-in config [:vhosts])]
-    (doseq [[vhost-name vhost-config] vhost-configs]
-      (install-vhost (name vhost-name) vhost-config (-> config :apache-version)))))
+  [apache-version :- s/Str
+   vhost-configs :- AllVhostConfig]
+  (doseq [[vhost-name vhost-config] vhost-configs]
+    (install-vhost (name vhost-name) vhost-config apache-version)))
 
 (s/defn configure
-  [config :- schema/HttpdConfig]
-  (let [vhost-configs (get-in config [:vhosts])]
-    (letsencrypt/configure-renew-cron)
-    (doseq [[vhost-name vhost-config] vhost-configs]
-      (configure-vhost (name vhost-name) vhost-config (-> config :apache-version)))))
+  [apache-version :- s/Str
+   vhost-configs :- AllVhostConfig]
+  (letsencrypt/configure-renew-cron)
+  (doseq [[vhost-name vhost-config] vhost-configs]
+    (configure-vhost (name vhost-name) vhost-config apache-version)))

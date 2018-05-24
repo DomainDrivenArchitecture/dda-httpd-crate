@@ -34,14 +34,16 @@
 
 (s/defn ^:always-validate install-httpd
   [config :- HttpdConfig]
-  (letsencrypt/install-letsencrypt)
-  (server/install config)
-  (vhost/install config))
+  (let [{:keys [vhosts apache-version]} config]
+    (letsencrypt/install-letsencrypt)
+    (server/install config)
+    (vhost/install apache-version vhosts)))
 
 (s/defn ^:always-validate configure-httpd
   [config :- HttpdConfig]
-  (server/configure config)
-  (vhost/configure config))
+  (let [{:keys [vhosts apache-version]} config]
+    (server/configure config)
+    (vhost/configure apache-version vhosts)))
 
 (defmethod core-infra/dda-init facility
   [core-infra config]
