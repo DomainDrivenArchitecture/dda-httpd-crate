@@ -1,4 +1,4 @@
-(defproject dda/dda-httpd-crate "2.0.6-SNAPSHOT"
+(defproject dda/dda-httpd-crate "2.0.6"
   :description "new dda-httpd-crate"
   :url "https://www.domaindrivenarchitecture.org"
   :license {:name "Apache License, Version 2.0"
@@ -43,8 +43,8 @@
                   ["change" "version" "leiningen.release/bump-version" "release"]
                   ["vcs" "commit"]
                   ["vcs" "tag"]
-                  ["uberjar"]
                   ["deploy"]
+                  ["uberjar"]
                   ["change" "version" "leiningen.release/bump-version"]
                   ["vcs" "commit"]
                   ["vcs" "push"]]
