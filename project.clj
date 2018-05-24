@@ -1,4 +1,4 @@
-(defproject dda/dda-httpd-crate "2.0.6"
+(defproject dda/dda-httpd-crate "2.0.7-SNAPSHOT"
   :description "new dda-httpd-crate"
   :url "https://www.domaindrivenarchitecture.org"
   :license {:name "Apache License, Version 2.0"
