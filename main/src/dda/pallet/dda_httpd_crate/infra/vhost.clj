@@ -26,7 +26,7 @@
     [httpd.crate.mod-gnutls :as gnutls]
     [httpd.crate.mod-jk :as jk]
     [httpd.crate.mod-proxy-http :as proxy]
-    [httpd.crate.vhost :as vhost]
+    [dda.pallet.dda-httpd-crate.infra.vhost.vhost :as vhost]
     [httpd.crate.webserver-maintainance :as maintainance]))
 
 (def ModJkConfiguration
@@ -311,6 +311,7 @@
     (str "000-" vhost-name)
     (vhost/vhost-conf-default-redirect-to-https-only
       :domain-name (get-in vhost-config [:domain-name])
+      :document-root-path "/var/www/html"
       :server-admin-email (get-in vhost-config [:server-admin-email]))
     apache-version)
   (apache2/configure-and-enable-vhost
