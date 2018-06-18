@@ -18,8 +18,8 @@
                                     "test/resources"]
                    :dependencies
                    [[org.clojure/tools.cli "0.3.7"]
-                    [ch.qos.logback/logback-classic "1.2.3"]
-                    [org.slf4j/jcl-over-slf4j "1.7.25"]
+                    [ch.qos.logback/logback-classic "1.3.0-alpha4"]
+                    [org.slf4j/jcl-over-slf4j "1.8.0-beta2"]
                     [org.domaindrivenarchitecture/pallet-aws "0.2.8.2"
                                                         :exclusions [com.palletops/pallet]]]
                    :plugins [[lein-sub "0.3.0"]
@@ -35,8 +35,8 @@
                        :aot :all
                        :main dda.pallet.dda-httpd-crate.main
                        :dependencies [[org.clojure/tools.cli "0.3.7"]
-                                      [ch.qos.logback/logback-classic "1.2.3"]
-                                      [org.slf4j/jcl-over-slf4j "1.7.25"]]}}
+                                      [ch.qos.logback/logback-classic "1.3.0-alpha4"]
+                                      [org.slf4j/jcl-over-slf4j "1.8.0-beta2"]]}}
   :release-tasks [["vcs" "assert-committed"]
                   ["change" "version" "leiningen.release/bump-version" "release"]
                   ["vcs" "commit"]
