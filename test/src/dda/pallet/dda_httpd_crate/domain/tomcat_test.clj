@@ -17,7 +17,9 @@
   (:require
    [clojure.test :refer :all]
    [schema.core :as s]
+   [dda.pallet.dda-httpd-crate.domain :as domain-space]
    [dda.pallet.dda-httpd-crate.domain.tomcat :as sut]))
+
 
 (def pair1
   {:input {:tomcat {:domain-name "test.domaindrivenarchitecture.org"}}
@@ -97,12 +99,17 @@
         {:jkStripSession "On"
          :jkWatchdogInterval 120}}})
 
-(def domain-test-config)
-
+(def domain-test-config {:tomcat {:domain-name "example.de"
+                                  :settings #{:test}
+                                  :alias [{:url "/quiz/"
+                                           :path "/var/www/static/quiz/"}]
+                                  :jk-unmount [{:path "/quiz/*" :worker "mod_jk_www"}]}})
 
 (deftest config-test
   (s/set-fn-validation! true)
   (testing
+    (is (s/validate domain-space/HttpdDomainConfig domain-test-config))
+    (is (s/validate domain-space/HttpdDomainConfig (:input pair2)))
     (is (=
          (:expected pair1)
          (sut/infra-configuration (:input pair1))))
