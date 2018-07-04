@@ -28,10 +28,12 @@
   "installs letsencrypt certificate."
   [domains :- [s/Str]
    email :- s/Str]
+  (println domains)
+  (println email)
   (let [domains-param (apply str (interpose " "
                                    (map (fn
                                           [d]
-                                          (str " -d " d) domains))))]
+                                          (str " -d " d)) domains)))]
     (actions/exec-script
       ("/etc/init.d/apache2" "stop"))
     (actions/exec-script
