@@ -28,8 +28,6 @@
   "installs letsencrypt certificate."
   [domains :- [s/Str]
    email :- s/Str]
-  (println domains)
-  (println email)
   (let [domains-param (apply str (interpose " "
                                    (map (fn
                                           [d]
