@@ -23,8 +23,8 @@
 (defn install
   [& options]
   (let [{:keys [domain targets summarize-session]
-         :or {domain "integration/resources/http-single.edn"
-              targets "targets.edn"
+         :or {domain "integration/resources/httpd-single.edn"
+              targets "integration/resources/targets.edn"
               summarize-session true}} options]
     (core-app/existing-install app/crate-app
                           {:domain domain
@@ -33,8 +33,8 @@
 (defn configure
  [& options]
  (let [{:keys [domain targets summarize-session]
-        :or {domain "integration/resources/http-single.edn"
-             targets "targets.edn"
+        :or {domain "integration/resources/httpd-single.edn"
+             targets "integration/resources/targets.edn"
              summarize-session true}} options]
   (core-app/existing-configure app/crate-app
                           {:domain domain
@@ -43,8 +43,8 @@
 (defn serverspec
   [& options]
   (let [{:keys [domain targets summarize-session]
-         :or {domain "integration/resources/http-single.edn"
-              targets "targets.edn"
+         :or {domain "integration/resources/httpd-single.edn"
+              targets "integration/resources/targets.edn"
               summarize-session true}} options]
     (core-app/existing-serverspec app/crate-app
                              {:domain domain

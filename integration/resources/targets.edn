@@ -1,0 +1,3 @@
+{:existing [{:node-name "node1"
+             :node-ip "159.69.44.72"}]
+ :provisioning-user {:login "root"}}

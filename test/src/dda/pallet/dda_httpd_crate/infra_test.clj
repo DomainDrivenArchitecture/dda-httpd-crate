@@ -20,10 +20,6 @@
     [schema.core :as s]
     [dda.pallet.dda-httpd-crate.infra :as sut]))
 
-
-(def partial-config
-  {})
-
 (deftest server-spec
   (testing
     "test the server spec"
