@@ -3,8 +3,8 @@
   :url "https://www.domaindrivenarchitecture.org"
   :license {:name "Apache License, Version 2.0"
             :url "https://www.apache.org/licenses/LICENSE-2.0.html"}
-  :dependencies [[dda/dda-pallet "2.2.0" :exclusions [org.clojure/tools.reader]]
-                 [dda/httpd "0.2.9" :exclusions [org.clojure/tools.reader]]]
+  :dependencies [[dda/dda-pallet "2.2.1"]
+                 [dda/httpd "0.2.10"]]
   :source-paths ["main/src"]
   :resource-paths ["main/resources"]
   :repositories [["snapshots" :clojars]
@@ -19,14 +19,12 @@
                    :dependencies
                    [[org.clojure/tools.cli "0.3.7"]
                     [ch.qos.logback/logback-classic "1.3.0-alpha4"]
-                    [org.slf4j/jcl-over-slf4j "1.8.0-beta2"]
-                    [org.domaindrivenarchitecture/pallet-aws "0.2.8.2"
-                                                        :exclusions [com.palletops/pallet]]]
+                    [org.slf4j/jcl-over-slf4j "1.8.0-beta2"]]
                    :plugins [[lein-sub "0.3.0"]
                              [lein-pprint "1.2.0"]]
                    :leiningen/reply {:dependencies [[org.slf4j/jcl-over-slf4j "1.8.0-beta0"]]
                                      :exclusions [commons-logging]}
-                   :repl-options {:init-ns dda.pallet.dda-git-crate.app.instantiate-aws}}
+                   :repl-options {:init-ns dda.pallet.dda-httpd-crate.app.instantiate-existing}}
              :test {:test-paths ["test/src"]
                     :resource-paths ["test/resources"]
                     :dependencies [[dda/pallet "0.9.0" :classifier "tests"]]}
