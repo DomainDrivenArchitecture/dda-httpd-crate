@@ -21,7 +21,6 @@ jobs:
         - lein uberjar
         - docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD"
         - docker build -t dda-httpd-crate --file integration/docker/image/Dockerfile-single .
-        - docker images
         - docker tag dda-httpd-crate $DOCKER_USERNAME/dda-httpd-crate:SNAPSHOT
         - docker push $DOCKER_USERNAME/dda-httpd-crate
     - stage: integrationtest
