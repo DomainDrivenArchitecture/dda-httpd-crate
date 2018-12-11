@@ -1,4 +1,4 @@
-FROM domaindrivenarchitecture/dda-httpd-crate
+FROM domaindrivenarchitecture/dda-httpd-crate:SNAPSHOT
 
 # workaround till new serverspec is available
 RUN apt-get install net-tools -y
