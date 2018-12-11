@@ -1,1 +1,28 @@
+dist: trusty
 language: clojure
+
+services:
+  - docker
+
+stages:
+  - build
+  - integrationtest
+
+env:
+  global:
+    - DOCKER_USERNAME: domaindrivenarchitecture
+    - secure: "6IgL6d4XB7lpZPK10HJFDfzwJ9NE642My1IWWKGUABbT8Zlme3QlMSC8vGLQcr0Um0lCwaNpGi1oy++h02libAEsdX/EfiL9u0MKBHs8CprAcxZrHI6fTSOSICXmQtlbJLMEzoX2WKrC+wZKEzeRhG0NywunHIv5P5Pf/FNppheUaor4LSGh5UfvYSidKOZzhNJnaSsKoBmYZ5qTFHrU2tJq3jRx+yoerSl7Vpn2El16V/t/5kxLgetNgx511vwWhopQgCy0bZmjQzgrMmrZ+Rwz+y/OFPZI+ndWmqLc1T9nBDqx1MmjSSA2cUULtIAoULYebo67C3NLhmdQ4brnC2DouujLbp+IY888fbZsprqSZLM02fRlYj2mFXhfcy14FHWIDCntrKY42EQIuSKNAEp2DdBKwkm/5lLIaQ7FQ1asVkfCIgUJPx01esKxyKgRdT5vhvvWz83ZyPRDwJQmkEC82VZGdXcZcuahiTiIwA85S+Nez4L+0IeEfeTVe3jk2BTGWi26bM8jn4cwFXYfJiVkMlun8UTytI8BYPmT5ozexOCcmaLYr/3CgBGWLEvHbmWQUUHZGPYzdgrahgZ+tDA721LCQW7UzvSGEHI5qomgl14N9JJHtOTc6+uaQYFGRdpS6VYiF3DvUmFdgBToZA65lFS5oEIBiLMaPX5n8GA="
+    
+jobs:
+  include:
+    - stage: build
+      script:
+        - lein test
+        - lein uberjar
+        - docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD"
+        - docker build -t dda-httpd-crate --file integration/docker/image/Dockerfile-single .
+        - docker tag dda-httpd-crate domaindrivenarchitecture/dda-httpd-crate:SNAPSHOT
+        - docker push $DOCKER_USERNAME/dda-httpd-crate
+    - stage: integrationtest
+      script:
+        - docker build -t dda-httpd-crate-test --file integration/docker/test/Dockerfile-single .
