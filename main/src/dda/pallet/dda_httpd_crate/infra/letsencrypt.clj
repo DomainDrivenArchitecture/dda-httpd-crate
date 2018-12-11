@@ -22,7 +22,7 @@
 (defn install-letsencrypt
   "installs letsencrypt package."
   []
-  (actions/package "python-letsencrypt-apache"))
+  (actions/package "letsencrypt"))
 
 (s/defn install-letsencrypt-certs
   "installs letsencrypt certificate."
