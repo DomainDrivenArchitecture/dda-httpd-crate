@@ -5,7 +5,10 @@
 
 [![Slack](https://img.shields.io/badge/chat-clojurians-green.svg?style=flat)](https://clojurians.slack.com/messages/#dda-pallet/) | [<img src="https://domaindrivenarchitecture.org/img/meetup.svg" width=50 alt="DevOps Hacking with Clojure Meetup"> DevOps Hacking with Clojure](https://www.meetup.com/de-DE/preview/dda-pallet-DevOps-Hacking-with-Clojure) | [Website & Blog](https://domaindrivenarchitecture.org)
 
+This crate is part of [dda-pallet](https://domaindrivenarchitecture.org/pages/dda-pallet/).
+
 ## Jump to
+[Compatibility](#compatibility)
 [Features](#features)
 [Usage](#usage)
 [Details](#details)
@@ -14,7 +17,12 @@
 [Dda-httpd-config-example](#Dda-httpd-config-example)
 [Targets](#targets)
 [Infra-API](#infra-api)
-[Compatibility](#compatibility)
+
+## compatability
+dda-pallet is compatible to the following versions
+* pallet 0.8.x
+* clojure 1.9
+* (x)ubunutu 18.04
 
 ## Features
 The dda-httpd-crate allows you to specify target-systems and a desired configuration to
@@ -25,7 +33,7 @@ The dda-httpd-crate allows you to specify target-systems and a desired configura
 * Forward http requests to https
 
 ## Usage
-1. **Download the jar-file** from the releases page of this repository (e.g. `curl -L -o httpd.jar https://github.com/DomainDrivenArchitecture/dda-httpd-crate/releases/download/2.0.7/dda-httpd-crate-2.0.7-standalone.jar`)
+1. **Download the jar-file** from the releases page of this repository (e.g. `curl -L -o dda-httpd-standalone.jar https://github.com/DomainDrivenArchitecture/dda-httpd-crate/releases/download/2.2.0/dda-httpd-standalone.jar`)
 1. **Create the ```httpd.edn``` configruration** file in the same folder where you saved the jar-file. The ```httpd.edn``` file specifies the configuration used to configure the apache2 server. You may use the following example as a starting point and adjust it according to your own needs:
 
 ```clojure
@@ -278,12 +286,8 @@ The schema is:
    (s/optional-key :settings) (hash-set (s/enum :name-based))})
 ```
 
-
-## Compatibility
-dda-pallet is compatible with the following versions
- * pallet 0.8
- * clojure 1.7
- * (x)ubunutu 16.0
-
 ## License
-Published under [apache2.0 license](LICENSE.md)
+
+Copyright © 2018 meissa GmbH
+Licensed under the [Apache License, Version 2.0](LICENSE) (the "License")
+Pls. find licenses of our subcomponents [here](doc/SUBCOMPONENT_LICENSE)
