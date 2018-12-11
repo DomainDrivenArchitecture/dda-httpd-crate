@@ -54,8 +54,6 @@
         :workers-properties-file nil
         :jkStripSession (-> jk-configuration :jkStripSession)
         :jkWatchdogInterval (-> jk-configuration :jkWatchdogInterval)))
-    (when (contains-proxy? config)
-      (proxy/install-mod-proxy-http))
     (when (contains? config :apache-modules)
       (when (contains? apache-modules :install)
         (doseq [module (-> apache-modules :install)]
