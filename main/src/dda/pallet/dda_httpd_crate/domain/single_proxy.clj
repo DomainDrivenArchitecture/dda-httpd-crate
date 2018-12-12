@@ -34,6 +34,7 @@
   {:apache-version "2.4"
    :limits {:server-limit 150
             :max-clients 150}
+   :apache-modules {:a2enmod ["proxy_http", "proxy_http2"]}
    :settings #{:name-based}})
 
 (s/defn

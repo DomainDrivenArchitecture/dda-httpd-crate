@@ -36,8 +36,8 @@
                         :additional-directives ["ProxyPreserveHost On"
                                                 "ProxyRequests     Off"]}
                 :cert-letsencrypt {:email "admin@domaindrivenarchitecture.org",
-                                   :domains ["test.domaindrivenarchitecture.org"]},}}}
-   :settings #{:name-based}})
+                                   :domains ["test.domaindrivenarchitecture.org"]},}}
+              :apache-modules {:a2enmod ["proxy_http", "proxy_http2"]}}})
 
 (def pair2
   {:input {:single-proxy {:domain-name "test.domaindrivenarchitecture.org"
@@ -55,6 +55,7 @@
                                                  "ProxyRequests     Off"]}
                  :cert-letsencrypt {:email "admin@domaindrivenarchitecture.org",
                                     :domains ["test.domaindrivenarchitecture.org"]},}}
+    :apache-modules {:a2enmod ["proxy_http", "proxy_http2"]}
     :settings #{:name-based}}})
 
 (deftest config-test
