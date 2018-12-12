@@ -20,7 +20,6 @@
     [pallet.api :as api]
     [dda.pallet.dda-httpd-crate.infra :as infra]
     [dda.pallet.dda-httpd-crate.domain.maintainance :as maintain]
-    [dda.pallet.dda-httpd-crate.domain.domain-name :as domain-name]
     [dda.pallet.dda-httpd-crate.domain.generic-vhost :as generic-vhost]))
 
 (def SingleStaticValueConfig
