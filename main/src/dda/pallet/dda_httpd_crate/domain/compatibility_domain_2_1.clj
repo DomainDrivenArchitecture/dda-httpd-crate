@@ -13,7 +13,9 @@
 ; WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 ; See the License for the specific language governing permissions and
 ; limitations under the License.
-(ns dda.pallet.dda-httpd-crate.domain.compatibility-domain
+
+(ns dda.pallet.dda-httpd-crate.domain.compatibility-domain-2-1
+  {:deprecated "2.1"}
   (:require
    [dda.pallet.dda-httpd-crate.infra :as infra]
    [dda.pallet.dda-httpd-crate.domain.schema :as domain-schema]

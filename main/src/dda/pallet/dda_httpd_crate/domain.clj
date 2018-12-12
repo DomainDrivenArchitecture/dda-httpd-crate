@@ -18,7 +18,7 @@
     [schema.core :as s]
     [dda.pallet.dda-httpd-crate.infra :as infra]
     [dda.pallet.dda-httpd-crate.domain.schema :as domain-schema]
-    [dda.pallet.dda-httpd-crate.domain.compatibility-domain :as compat]
+    [dda.pallet.dda-httpd-crate.domain.compatibility-domain-2-1 :as compat]
     [dda.pallet.dda-httpd-crate.domain.single-static :as single-static]
     [dda.pallet.dda-httpd-crate.domain.jk :as jk]
     [dda.pallet.dda-httpd-crate.domain.multi-static :as multi-static]

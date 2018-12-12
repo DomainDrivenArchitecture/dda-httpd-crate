@@ -13,11 +13,12 @@
 ; WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 ; See the License for the specific language governing permissions and
 ; limitations under the License.
-(ns dda.pallet.dda-httpd-crate.domain.compatibility-domain-test
+(ns dda.pallet.dda-httpd-crate.domain.compatibility-domain-test-2-1
+  {:deprecated "2.1"}
   (:require
    [clojure.test :refer :all]
    [schema.core :as s]
-   [dda.pallet.dda-httpd-crate.domain.compatibility-domain :as sut]))
+   [dda.pallet.dda-httpd-crate.domain.compatibility-domain-2-1 :as sut]))
 
 (def pair-vhost-test-convention-config-1
   {:input-config {:domain-name "domain.name"}
