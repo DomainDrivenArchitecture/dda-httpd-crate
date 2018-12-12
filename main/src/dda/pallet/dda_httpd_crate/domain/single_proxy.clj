@@ -33,13 +33,13 @@
 ;                                  "ProxyRequests     Off"]}
 ;  :cert-letsencrypt {:letsencrypt-mail "admin@meissa-gmbh.de"}}
 
-(def SingleStaticValueConfig
+(def SingleProxyValueConfig
   (merge
     {:domain-name s/Str}
     domain-schema/VhostConfig))
 
-(def SingleStaticConfig
-  {:single-static SingleStaticValueConfig})
+(def SingleProxyConfig
+  {:single-proxy SingleProxyValueConfig})
 
 (def server-config
   {:apache-version "2.4"
@@ -49,7 +49,7 @@
 
 (s/defn
   infra-vhost-configuration :- infra/VhostConfig
-  [domain-config :- SingleStaticValueConfig]
+  [domain-config :- SingleProxyValueConfig]
   (let [{:keys [domain-name google-id settings alias alias-match
                 allow-origin]} domain-config]
       (merge
@@ -86,8 +86,8 @@
 
 (s/defn
   infra-configuration :- infra/HttpdConfig
-  [single-config :- SingleStaticConfig]
-  (let [domain-config (:single-static single-config)
+  [single-config :- SingleProxyConfig]
+  (let [domain-config (:single-proxy single-config)
         {:keys [domain-name google-id settings]} domain-config]
     (merge
       server-config
