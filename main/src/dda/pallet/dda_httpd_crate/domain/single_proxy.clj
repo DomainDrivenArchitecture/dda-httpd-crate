@@ -24,7 +24,8 @@
 
 (def SingleProxyValueConfig
   (merge
-    {:domain-name s/Str}
+    {:domain-name s/Str
+     (s/optional-key :proxy-target-port) s/Str}
     generic-vhost/VhostConfig))
 
 (def SingleProxyConfig
@@ -39,13 +40,16 @@
 (s/defn
   infra-vhost-configuration :- infra/VhostConfig
   [domain-config :- SingleProxyValueConfig]
-  (let [{:keys [domain-name google-id settings alias alias-match
-                allow-origin]} domain-config]
+  (let [{:keys [domain-name proxy-target-port]} domain-config]
       (merge
         (generic-vhost/infra-vhost-configuration domain-name domain-config)
-        {:proxy {:target-port "8080"
-                 :additional-directives ["ProxyPreserveHost On"
-                                         "ProxyRequests     Off"]}})))
+        {:proxy
+         (merge
+           (if (contains? domain-config :proxy-target-port)
+             {:target-port proxy-target-port}
+             {:target-port "8080"})
+           {:additional-directives ["ProxyPreserveHost On"
+                                    "ProxyRequests     Off"]})})))
 
 (s/defn
   infra-configuration :- infra/HttpdConfig

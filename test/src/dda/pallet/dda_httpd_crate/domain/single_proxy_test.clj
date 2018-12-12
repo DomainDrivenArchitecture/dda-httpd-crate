@@ -21,6 +21,7 @@
 
 (def pair1
   {:input {:single-proxy {:domain-name "test.domaindrivenarchitecture.org"
+                          :proxy-target-port "1234"
                           :settings #{:without-maintainance}}}
    :expected {:apache-version "2.4",
               :limits {:server-limit 150, :max-clients 150},
@@ -31,7 +32,7 @@
                 :listening-port "443",
                 :server-admin-email "admin@domaindrivenarchitecture.org",
                 :document-root "/var/www/test.domaindrivenarchitecture.org",
-                :proxy {:target-port "8080"
+                :proxy {:target-port "1234"
                         :additional-directives ["ProxyPreserveHost On"
                                                 "ProxyRequests     Off"]}
                 :cert-letsencrypt {:email "admin@domaindrivenarchitecture.org",
