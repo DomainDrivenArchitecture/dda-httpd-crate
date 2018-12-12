@@ -19,7 +19,7 @@
     [pallet.api :as api]
     [dda.pallet.dda-httpd-crate.infra :as infra]
     [dda.pallet.dda-httpd-crate.domain.single-static :as single]
-    [dda.pallet.dda-httpd-crate.domain.schema :as domain-schema]))
+    [dda.pallet.dda-httpd-crate.domain.generic-vhost :as domain-schema]))
 
 (def MultiStaticConfig
   {:multi-static

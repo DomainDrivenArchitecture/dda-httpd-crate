@@ -13,39 +13,45 @@
 ; WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 ; See the License for the specific language governing permissions and
 ; limitations under the License.
-(ns dda.pallet.dda-httpd-crate.domain.jk
+(ns dda.pallet.dda-httpd-crate.domain.single-proxy
   (:require
     [clojure.string :as st]
     [schema.core :as s]
     [pallet.api :as api]
-    [dda.config.commons.map-utils :as mu]
     [dda.pallet.dda-httpd-crate.infra :as infra]
     [dda.pallet.dda-httpd-crate.domain.maintainance :as maintain]
     [dda.pallet.dda-httpd-crate.domain.domain-name :as domain-name]
     [dda.pallet.dda-httpd-crate.domain.generic-vhost :as domain-schema]))
 
-(def JkConfig
-  {:jk
-   (merge
-     domain-schema/VhostConfig
-     {:domain-name s/Str
-      (s/optional-key :settings)
-      (hash-set (s/enum :test
-                        :without-maintainance))})})
+; found a old proxy config
+; :vhost
+; {:domain-name "jira.meissa-gmbh.de"
+;  :server-admin-email "admin@meissa-gmbh.de"
+;  :listening-port "443"
+;  :proxy {:target-port "8080"
+;          :additional-directives ["ProxyPreserveHost On"
+;                                  "ProxyRequests     Off"]}
+;  :cert-letsencrypt {:letsencrypt-mail "admin@meissa-gmbh.de"}}
+
+(def SingleStaticValueConfig
+  (merge
+    {:domain-name s/Str}
+    domain-schema/VhostConfig))
+
+(def SingleStaticConfig
+  {:single-static SingleStaticValueConfig})
 
 (def server-config
   {:apache-version "2.4"
    :limits {:server-limit 150
             :max-clients 150}
-   :settings #{:name-based}
-   :jk-configuration {:jkStripSession "On",
-                      :jkWatchdogInterval 120}})
+   :settings #{:name-based}})
 
 (s/defn
   infra-vhost-configuration :- infra/VhostConfig
-  [jk-config :- JkConfig]
-  (let [domain-config (:jk jk-config)
-        {:keys [domain-name google-id settings]} domain-config]
+  [domain-config :- SingleStaticValueConfig]
+  (let [{:keys [domain-name google-id settings alias alias-match
+                allow-origin]} domain-config]
       (merge
         {:domain-name domain-name}
         (if (domain-name/root-domain? domain-name)
@@ -53,17 +59,24 @@
           {})
         {:listening-port "443"
          :document-root (str "/var/www/" domain-name)
-         :server-admin-email (str "admin@" (domain-name/calculate-root-domain domain-name))
-         :mod-jk {:tomcat-forwarding-configuration {:mount [{:path "/*" :worker "mod_jk_www"}]
-                                                    :unmount [{:path "/error/*" :worker "mod_jk_www"}]}
-                  :worker-properties [{:worker "mod_jk_www"
-                                       :host "localhost"
-                                       :port "8009"
-                                       :maintain-timout-sec 90
-                                       :socket-connect-timeout-ms 62000}]}}
+         :server-admin-email (str "admin@" (domain-name/calculate-root-domain domain-name))}
+        (if (contains? settings :with-php)
+           {:location
+             {:locations-override
+               ["Options FollowSymLinks" "AllowOverride All"]}}
+           {})
         (maintain/infra-maintainance-configuration settings domain-name)
         (if (contains? domain-config :google-id)
           {:google-id google-id}
+          {})
+        (if (contains? domain-config :alias)
+          {:alias alias}
+          {})
+        (if (contains? domain-config :alias-match)
+          {:alias-match alias-match}
+          {})
+        (if (contains? domain-config :allow-origin)
+          {:allow-origin allow-origin}
           {})
         (if (contains? settings :test)
           {:cert-file {:domain-cert "/etc/ssl/certs/ssl-cert-snakeoil.pem"
@@ -73,8 +86,14 @@
 
 (s/defn
   infra-configuration :- infra/HttpdConfig
-  [jk-config :- JkConfig]
-  (merge
-    server-config
-    {:vhosts
-      {:default (infra-vhost-configuration jk-config)}}))
+  [single-config :- SingleStaticConfig]
+  (let [domain-config (:single-static single-config)
+        {:keys [domain-name google-id settings]} domain-config]
+    (merge
+      server-config
+      (if (contains? settings :with-php)
+        {:apache-modules {:install ["libapache2-mod-php7.0"]
+                          :a2enmod ["php7.0"]}}
+        {})
+      {:vhosts
+       {:default (infra-vhost-configuration domain-config)}})))

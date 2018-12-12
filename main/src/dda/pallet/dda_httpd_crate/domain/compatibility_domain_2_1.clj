@@ -18,7 +18,7 @@
   {:deprecated "2.1"}
   (:require
    [dda.pallet.dda-httpd-crate.infra :as infra]
-   [dda.pallet.dda-httpd-crate.domain.schema :as domain-schema]
+   [dda.pallet.dda-httpd-crate.domain.generic-vhost :as domain-schema]
    [dda.pallet.dda-httpd-crate.infra.schema :as httpd-schema]
    [schema.core :as s]))
 

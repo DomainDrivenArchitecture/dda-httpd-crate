@@ -21,7 +21,7 @@
     [dda.pallet.dda-httpd-crate.infra :as infra]
     [dda.pallet.dda-httpd-crate.domain.maintainance :as maintain]
     [dda.pallet.dda-httpd-crate.domain.domain-name :as domain-name]
-    [dda.pallet.dda-httpd-crate.domain.schema :as domain-schema]))
+    [dda.pallet.dda-httpd-crate.domain.generic-vhost :as domain-schema]))
 
 (def SingleStaticValueConfig
   (merge

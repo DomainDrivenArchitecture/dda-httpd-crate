@@ -16,11 +16,7 @@
 (ns dda.pallet.dda-httpd-crate.domain.domain-name
   (:require
     [clojure.string :as st]
-    [schema.core :as s]
-    [pallet.api :as api]
-    [dda.pallet.dda-httpd-crate.infra :as infra]
-    [dda.pallet.dda-httpd-crate.domain.maintainance :as maintain]
-    [dda.pallet.dda-httpd-crate.domain.schema :as domain-schema]))
+    [schema.core :as s]))
 
 (defn root-domain? [domain-name]
   (<= (count (st/split domain-name #"\."))
