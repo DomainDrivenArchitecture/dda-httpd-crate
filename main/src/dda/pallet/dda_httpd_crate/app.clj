@@ -48,13 +48,22 @@
      (domain/multi-static-configuration domain-config) group-key)))
 
 (s/defn ^:always-validate
-  single-app-configuration :- HttpdAppConfig
+  single-static-app-configuration :- HttpdAppConfig
   [domain-config :- HttpdDomainConfig
    & options]
   (let [{:keys [group-key]
          :or  {group-key infra/facility}} options]
     (create-app-configuration
      (domain/single-static-configuration domain-config) group-key)))
+
+(s/defn ^:always-validate
+  single-proxy-app-configuration :- HttpdAppConfig
+  [domain-config :- HttpdDomainConfig
+   & options]
+  (let [{:keys [group-key]
+         :or  {group-key infra/facility}} options]
+    (create-app-configuration
+     (domain/single-proxy-configuration domain-config) group-key)))
 
 (s/defn ^:always-validate
   jk-app-configuration :- HttpdAppConfig
@@ -91,7 +100,9 @@
          :or  {group-key infra/facility}} options
         switch (first (keys domain-config))]
     (cond
-      (= switch :single-static) (single-app-configuration
+      (= switch :single-static) (single-static-app-configuration
+                                  domain-config :group-key group-key)
+      (= switch :single-proxy) (single-proxy-app-configuration
                                   domain-config :group-key group-key)
       (= switch :multi-static) (multi-app-configuration
                                   domain-config :group-key group-key)

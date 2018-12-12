@@ -57,6 +57,11 @@
   {infra/facility
     (single-static/infra-configuration domain-config)})
 
+(s/defn ^:always-validate single-proxy-configuration
+  [domain-config :- SingleProxyConfig]
+  {infra/facility
+    (single-proxy/infra-configuration domain-config)})
+
 (s/defn ^:always-validate multi-static-configuration
   [domain-config :- MultiStaticConfig]
   {infra/facility
