@@ -21,12 +21,16 @@
     [dda.pallet.dda-httpd-crate.infra :as infra]
     [dda.pallet.dda-httpd-crate.domain.maintainance :as maintain]
     [dda.pallet.dda-httpd-crate.domain.domain-name :as domain-name]
-    [dda.pallet.dda-httpd-crate.domain.generic-vhost :as domain-schema]))
+    [dda.pallet.dda-httpd-crate.domain.generic-vhost :as generic-vhost]))
 
 (def SingleStaticValueConfig
   (merge
     {:domain-name s/Str}
-    domain-schema/VhostConfig))
+    generic-vhost/VhostConfig
+    {(s/optional-key :settings)
+     (hash-set (s/enum :test
+                       :without-maintainance
+                       :with-php))}))
 
 (def SingleStaticConfig
   {:single-static SingleStaticValueConfig})
@@ -43,36 +47,11 @@
   (let [{:keys [domain-name google-id settings alias alias-match
                 allow-origin]} domain-config]
       (merge
-        {:domain-name domain-name}
-        (if (domain-name/root-domain? domain-name)
-          {:server-aliases [(str "www." domain-name)]}
-          {})
-        {:listening-port "443"
-         :document-root (str "/var/www/" domain-name)
-         :server-admin-email (str "admin@" (domain-name/calculate-root-domain domain-name))}
-        (if (contains? settings :with-php)
+        (generic-vhost/infra-vhost-configuration domain-name domain-config)
+        (when (contains? settings :with-php)
            {:location
              {:locations-override
-               ["Options FollowSymLinks" "AllowOverride All"]}}
-           {})
-        (maintain/infra-maintainance-configuration settings domain-name)
-        (if (contains? domain-config :google-id)
-          {:google-id google-id}
-          {})
-        (if (contains? domain-config :alias)
-          {:alias alias}
-          {})
-        (if (contains? domain-config :alias-match)
-          {:alias-match alias-match}
-          {})
-        (if (contains? domain-config :allow-origin)
-          {:allow-origin allow-origin}
-          {})
-        (if (contains? settings :test)
-          {:cert-file {:domain-cert "/etc/ssl/certs/ssl-cert-snakeoil.pem"
-                       :domain-key "/etc/ssl/private/ssl-cert-snakeoil.key"}}
-          {:cert-letsencrypt {:domains (domain-name/calculate-domains domain-name)
-                              :email (str "admin@" (domain-name/calculate-root-domain domain-name))}}))))
+               ["Options FollowSymLinks" "AllowOverride All"]}}))))
 
 (s/defn
   infra-configuration :- infra/HttpdConfig

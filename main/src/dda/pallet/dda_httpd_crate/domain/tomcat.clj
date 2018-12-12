@@ -20,21 +20,16 @@
     [schema.core :as s]
     [pallet.api :as api]
     [dda.pallet.dda-httpd-crate.infra :as infra]
-    [dda.pallet.dda-httpd-crate.domain.maintainance :as maintain]
-    [dda.pallet.dda-httpd-crate.domain.domain-name :as domain-name]
-    [dda.pallet.dda-httpd-crate.domain.generic-vhost :as domain-schema]))
+    [dda.pallet.dda-httpd-crate.domain.generic-vhost :as generic-vhost]))
 
+;; REVIEW jem 2018_12_12: Pls. merge with jk & deprecate either tomcat or jk.
 (def TomcatConfig
   {:tomcat
    (merge
-     domain-schema/VhostConfig
+     generic-vhost/VhostConfig
      {:domain-name s/Str
-      (s/optional-key :alias) [{:url s/Str :path s/Str}]
       (s/optional-key :jk-mount) [{:path s/Str :worker s/Str}]
-      (s/optional-key :jk-unmount) [{:path s/Str :worker s/Str}]
-      (s/optional-key :settings)
-      (hash-set (s/enum :test
-                        :without-maintainance))})})
+      (s/optional-key :jk-unmount) [{:path s/Str :worker s/Str}]})})
 
 (def server-config
   {:apache-version "2.4"
@@ -50,14 +45,8 @@
   (let [domain-config (:tomcat tomcat-config)
         {:keys [domain-name google-id alias jk-mount jk-unmount settings]} domain-config]
       (merge
-        {:domain-name domain-name}
-        (if (domain-name/root-domain? domain-name)
-          {:server-aliases [(str "www." domain-name)]}
-          {})
-        {:listening-port "443"
-         :document-root (str "/var/www/" domain-name)
-         :server-admin-email (str "admin@" (domain-name/calculate-root-domain domain-name))
-         :mod-jk {:tomcat-forwarding-configuration
+        (generic-vhost/infra-vhost-configuration domain-name domain-config)
+        {:mod-jk {:tomcat-forwarding-configuration
                   (merge
                     {:mount (conj (if (contains? domain-config :jk-mount)
                                       jk-mount
@@ -70,19 +59,7 @@
                                        :host "localhost"
                                        :port "8009"
                                        :maintain-timout-sec 90
-                                       :socket-connect-timeout-ms 62000}]}}
-        (maintain/infra-maintainance-configuration settings domain-name)
-        (if (contains? domain-config :google-id)
-          {:google-id google-id}
-          {})
-        (if (contains? domain-config :alias)
-          {:alias alias}
-          {})
-        (if (contains? settings :test)
-          {:cert-file {:domain-cert "/etc/ssl/certs/ssl-cert-snakeoil.pem"
-                       :domain-key "/etc/ssl/private/ssl-cert-snakeoil.key"}}
-          {:cert-letsencrypt {:domains (domain-name/calculate-domains domain-name)
-                              :email (str "admin@" (domain-name/calculate-root-domain domain-name))}}))))
+                                       :socket-connect-timeout-ms 62000}]}})))
 
 (s/defn
   infra-configuration :- infra/HttpdConfig

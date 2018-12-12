@@ -19,16 +19,16 @@
     [pallet.api :as api]
     [dda.pallet.dda-httpd-crate.infra :as infra]
     [dda.pallet.dda-httpd-crate.domain.single-static :as single]
-    [dda.pallet.dda-httpd-crate.domain.generic-vhost :as domain-schema]))
+    [dda.pallet.dda-httpd-crate.domain.generic-vhost :as generic-vhost]))
 
 (def MultiStaticConfig
   {:multi-static
-   {s/Keyword domain-schema/VhostConfig}})
+   {s/Keyword generic-vhost/VhostConfig}})
 
 (s/defn
   transform-static-vhost
   [element]
-  ;[element :- [s/Keyword domain-schema/VhostConfig]]
+  ;[element :- [s/Keyword generic-vhost/VhostConfig]]
   (let [[domain-key vhost-config] element
         domain-name (name domain-key)
         {:keys [google-id settings]} vhost-config]
