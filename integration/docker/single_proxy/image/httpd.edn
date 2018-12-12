@@ -1,0 +1,3 @@
+{:single-proxy
+ {:domain-name "test.domaindrivenarchitecture.org"
+  :settings #{:test}}}

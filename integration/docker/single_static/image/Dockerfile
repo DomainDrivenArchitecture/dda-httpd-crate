@@ -3,6 +3,6 @@ FROM ubuntu
 RUN apt-get update && apt-get upgrade -y && apt-get install openjdk-8-jre -y
 
 COPY target/dda-httpd-standalone.jar /app/dda-httpd-standalone.jar
-COPY integration/resources/* /app/
+COPY integration/docker/single_static/image/httpd.edn /app/
 
-RUN java -jar /app/dda-httpd-standalone.jar /app/httpd-multi.edn
+RUN java -jar /app/dda-httpd-standalone.jar /app/httpd.edn

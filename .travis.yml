@@ -20,9 +20,13 @@ jobs:
         - lein test
         - lein uberjar
         - docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD"
-        - docker build -t dda-httpd-crate --file integration/docker/image/Dockerfile-single .
-        - docker tag dda-httpd-crate $DOCKER_USERNAME/dda-httpd-crate:SNAPSHOT
+        - docker build -t dda-httpd-crate --file integration/docker/single_static/image/Dockerfile .
+        - docker tag dda-httpd-crate $DOCKER_USERNAME/dda-httpd-crate:single-static-SNAPSHOT
+        - docker push $DOCKER_USERNAME/dda-httpd-crate
+        - docker build -t dda-httpd-crate --file integration/docker/single_proxy/image/Dockerfile .
+        - docker tag dda-httpd-crate $DOCKER_USERNAME/dda-httpd-crate:single-proxy-SNAPSHOT
         - docker push $DOCKER_USERNAME/dda-httpd-crate
     - stage: integrationtest
       script:
-        - docker build -t dda-httpd-crate-test --file integration/docker/test/Dockerfile-single .
+        - docker build -t dda-httpd-crate-test --file integration/single_static/docker/test/Dockerfile .
+        - docker build -t dda-httpd-crate-test --file integration/single_proxy/docker/test/Dockerfile .

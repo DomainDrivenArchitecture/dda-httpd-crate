@@ -1,0 +1,10 @@
+{:package [{:name "apache2"}
+           {:name "letsencrypt"}]
+ :file [{:path "/etc/apache2/mods-enabled/gnutls.conf"}
+        {:path "/etc/apache2/mods-enabled/gnutls.load"}
+        {:path "/etc/apache2/conf-enabled/limits.conf"}
+        {:path "/etc/apache2/conf-enabled/security.conf"}
+        {:path "/etc/apache2/sites-enabled/000-default.conf"}
+        {:path "/etc/apache2/sites-enabled/000-default-ssl.conf"}]
+ :netstat [{:process-name "apache2" :port "80" :ip "0.0.0.0" :exp-proto "tcp"}
+           {:process-name "apache2" :port "443" :ip "0.0.0.0" :exp-proto "tcp"}]}
