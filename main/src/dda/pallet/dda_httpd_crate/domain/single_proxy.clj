@@ -19,24 +19,13 @@
     [schema.core :as s]
     [pallet.api :as api]
     [dda.pallet.dda-httpd-crate.infra :as infra]
-    [dda.pallet.dda-httpd-crate.domain.maintainance :as maintain]
-    [dda.pallet.dda-httpd-crate.domain.domain-name :as domain-name]
-    [dda.pallet.dda-httpd-crate.domain.generic-vhost :as domain-schema]))
-
-; found a old proxy config
-; :vhost
-; {:domain-name "jira.meissa-gmbh.de"
-;  :server-admin-email "admin@meissa-gmbh.de"
-;  :listening-port "443"
-;  :proxy {:target-port "8080"
-;          :additional-directives ["ProxyPreserveHost On"
-;                                  "ProxyRequests     Off"]}
-;  :cert-letsencrypt {:letsencrypt-mail "admin@meissa-gmbh.de"}}
+    [dda.pallet.dda-httpd-crate.domain.domain-name :as dn]
+    [dda.pallet.dda-httpd-crate.domain.generic-vhost :as generic-vhost]))
 
 (def SingleProxyValueConfig
   (merge
     {:domain-name s/Str}
-    domain-schema/VhostConfig))
+    generic-vhost/VhostConfig))
 
 (def SingleProxyConfig
   {:single-proxy SingleProxyValueConfig})
@@ -53,36 +42,10 @@
   (let [{:keys [domain-name google-id settings alias alias-match
                 allow-origin]} domain-config]
       (merge
-        {:domain-name domain-name}
-        (if (domain-name/root-domain? domain-name)
-          {:server-aliases [(str "www." domain-name)]}
-          {})
-        {:listening-port "443"
-         :document-root (str "/var/www/" domain-name)
-         :server-admin-email (str "admin@" (domain-name/calculate-root-domain domain-name))}
-        (if (contains? settings :with-php)
-           {:location
-             {:locations-override
-               ["Options FollowSymLinks" "AllowOverride All"]}}
-           {})
-        (maintain/infra-maintainance-configuration settings domain-name)
-        (if (contains? domain-config :google-id)
-          {:google-id google-id}
-          {})
-        (if (contains? domain-config :alias)
-          {:alias alias}
-          {})
-        (if (contains? domain-config :alias-match)
-          {:alias-match alias-match}
-          {})
-        (if (contains? domain-config :allow-origin)
-          {:allow-origin allow-origin}
-          {})
-        (if (contains? settings :test)
-          {:cert-file {:domain-cert "/etc/ssl/certs/ssl-cert-snakeoil.pem"
-                       :domain-key "/etc/ssl/private/ssl-cert-snakeoil.key"}}
-          {:cert-letsencrypt {:domains (domain-name/calculate-domains domain-name)
-                              :email (str "admin@" (domain-name/calculate-root-domain domain-name))}}))))
+        (generic-vhost/infra-vhost-configuration domain-name domain-config)
+        {:proxy {:target-port "8080"
+                 :additional-directives ["ProxyPreserveHost On"
+                                         "ProxyRequests     Off"]}})))
 
 (s/defn
   infra-configuration :- infra/HttpdConfig
@@ -91,9 +54,5 @@
         {:keys [domain-name google-id settings]} domain-config]
     (merge
       server-config
-      (if (contains? settings :with-php)
-        {:apache-modules {:install ["libapache2-mod-php7.0"]
-                          :a2enmod ["php7.0"]}}
-        {})
       {:vhosts
        {:default (infra-vhost-configuration domain-config)}})))
