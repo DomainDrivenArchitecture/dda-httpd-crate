@@ -2,6 +2,7 @@
            {:name "letsencrypt"}]
  :file [{:path "/etc/apache2/mods-enabled/gnutls.conf"}
         {:path "/etc/apache2/mods-enabled/gnutls.load"}
+        {:path "/etc/apache2/mods-enabled/proxy.load"}
         {:path "/etc/apache2/mods-enabled/proxy_http.load"}
         {:path "/etc/apache2/mods-enabled/proxy_http2.load"}
         {:path "/etc/apache2/conf-enabled/limits.conf"}
