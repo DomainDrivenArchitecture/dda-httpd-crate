@@ -1,3 +1,4 @@
 {:single-proxy
- {:domain-name "test.domaindrivenarchitecture.org"
+ {:domain-name "mydomain.org"
+  :proxy-target-port "1234"
   :settings #{:test}}}
