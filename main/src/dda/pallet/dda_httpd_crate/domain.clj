@@ -17,6 +17,7 @@
   (:require
     [schema.core :as s]
     [dda.pallet.dda-httpd-crate.infra :as infra]
+    [dda.pallet.dda-httpd-crate.domain.generic-vhost :as generic-vhost]
     [dda.pallet.dda-httpd-crate.domain.compatibility-domain-2-1 :as compat]
     [dda.pallet.dda-httpd-crate.domain.single-static :as single-static]
     [dda.pallet.dda-httpd-crate.domain.single-proxy :as single-proxy]
@@ -25,6 +26,8 @@
     [dda.pallet.dda-httpd-crate.domain.tomcat :as tomcat]))
 
 ; ----------------------- schemas --------------------------
+(def VhostSettings generic-vhost/VhostSettings)
+
 (def SingleStaticConfig single-static/SingleStaticConfig)
 
 (def SingleProxyConfig single-proxy/SingleProxyConfig)
