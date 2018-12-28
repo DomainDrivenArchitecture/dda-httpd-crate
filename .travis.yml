@@ -27,14 +27,14 @@ jobs:
         - # create docker image single static
         - docker build -t dda-httpd-crate --file integration/docker/single_proxy/image/Dockerfile .
         - # integration test on docker image level
-        - docker build -t dda-httpd-crate-test --file integration/docker/single_roxy/test/Dockerfile .
+        - docker build -t dda-httpd-crate-test --file integration/docker/single_proxy/test/Dockerfile .
       deploy:
         - provider: releases
           skip_cleanup: true
           on:
             tags: true
           api_key:
-            secure: "a9qwquUhb1e8mCCXAn8AD+j1gRMD0w0swsEpMQbCNnddVsENpIfhr353QEDNzqr7W5cIcm3N9+XSkJogRPzSanPF64TnjeE5vkk9NZ2Pv4fAfrI58L7n5fS+/oXoFluJ+3wjzLNpW/lCD46hjiFzvc+Ov+gFO1IwovCGgLni0pyyCki34wAyQoPV/2YRxFmIGOch7D6bczkPPqWutszUaGKmnfp2YfZJ8hFm1tIlzjJ66sGQz8t64AMC4g31cc2hMWNoi2dmmbWhIaAH01xq9qUnK/byyfkVwKxvjDi2i35/UZQMwes/AEMHtcQImeOHV7/ukrV1XtxGOUAk4sZN+hFxngl22MTvVNsMrjyhxp/WTtfSgMAiFfYFoz+meRUUEGbqYiXi57wg1Dw0JwlGJoZPCzTkVS5wRv3+sySWkrBIsinTQK69Ij2VNWy2rpVPUzBOf4zSssJQVaWn2f5JxgxT3OwLtTi7oKzpemybrdo6b1zLdCQDluysbtT3yilbB1tjvLP7nuOTPQS3DBaaRiq+3EBXKuwWr+k53b9KgovCpnJBc5iqMqXxS7haZ+yprflk1hY6WwkbcoUV1QWYt/mgg5C9HVwY3I9klhKdwXD4MWW6U1pUCY+zcBBhHggbMKZIan9yeFPVqGWuw6A0cVsKMlT0GeBcGwdKb9tnhxQ="
+            secure: "gsggPDqP7HcU4ZC7l+h5Gxzeb2PLipe5owgZAGxJgh5bg2Q5gJJXmzX5NiK7g7EUQWaOQaOV8HosHarmKoHm4CzwcpDHRbBDdumn09rgbI0J9miuy2W+CLX5zV9H+vvUYgPYdyDsNEHH6Y3MYywx/QLa/ZVyZdobvX3lWuNtF+awwtvTFuUjPFiktNsHulasXva1T1i5gou2zbo3NiXeKpv57kA8526kCk38YUNWuEHxKKpxWqzYXVXpIo3aijCHHjCU/yHh8bo3Q4v6hu3noZjOa9UTISRerCVpB7tKA4O8TkwBoYDpVbHJ20qb/C6HFJFOaLNXzxt8oskrwR4R5TPisqDsTukbJeGdc4lAhml1m6sR8huwg9oGCEqr6JcUZEwG8XPP7uZGQn5x/o0QaKhi+FHL2vWvPJTPSsLZ4/CK80qZ6DXzQ3hgH4TdejgR94xO0wiVhPsDDSHaz9kOJAZH435oO0FJokD0SslL8QEItoZ8Mce99t3qMn6fjTLpId2U+rge23D+AKFq0D6QByUYxgg8rL8Sc/YbJol1DYL005eD1286GKXQYZuREOutMqbNs4RvpgTEzrEBlqbMZgPBfLOardnMRfBVwnlMqWTqE2EtxTcOUsg+ajtDlJaXG58JVPCz6ovZuJr4yvtXwZlBQCDcQjDNw/I1i0S8OfI="
           file:
             - target/dda-httpd-standalone.jar
             - target/dda-httpd-standalone.jar.md5
