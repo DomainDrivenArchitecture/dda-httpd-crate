@@ -6,7 +6,6 @@ services:
 
 stages:
   - build
-  - integrationtest
 
 env:
   global:
@@ -17,16 +16,30 @@ jobs:
   include:
     - stage: build
       script:
+        - # build
         - lein test
         - lein uberjar
-        - docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD"
+        - md5sum target/dda-httpd-standalone.jar > target/dda-httpd-standalone.jar.md5
+        - # create docker image single static
         - docker build -t dda-httpd-crate --file integration/docker/single_static/image/Dockerfile .
-        - docker tag dda-httpd-crate $DOCKER_USERNAME/dda-httpd-crate:single-static-SNAPSHOT
-        - docker push $DOCKER_USERNAME/dda-httpd-crate
-        - docker build -t dda-httpd-crate --file integration/docker/single_proxy/image/Dockerfile .
-        - docker tag dda-httpd-crate $DOCKER_USERNAME/dda-httpd-crate:single-proxy-SNAPSHOT
-        - docker push $DOCKER_USERNAME/dda-httpd-crate
-    - stage: integrationtest
-      script:
+        - # integration test on docker image level
         - docker build -t dda-httpd-crate-test --file integration/docker/single_static/test/Dockerfile .
-        - docker build -t dda-httpd-crate-test --file integration/docker/single_proxy/test/Dockerfile .
+        - # create docker image single static
+        - docker build -t dda-httpd-crate --file integration/docker/single_proxy/image/Dockerfile .
+        - # integration test on docker image level
+        - docker build -t dda-httpd-crate-test --file integration/docker/single_roxy/test/Dockerfile .
+      deploy:
+        - provider: releases
+          skip_cleanup: true
+          on:
+            tags: true
+          api_key:
+            secure: "a9qwquUhb1e8mCCXAn8AD+j1gRMD0w0swsEpMQbCNnddVsENpIfhr353QEDNzqr7W5cIcm3N9+XSkJogRPzSanPF64TnjeE5vkk9NZ2Pv4fAfrI58L7n5fS+/oXoFluJ+3wjzLNpW/lCD46hjiFzvc+Ov+gFO1IwovCGgLni0pyyCki34wAyQoPV/2YRxFmIGOch7D6bczkPPqWutszUaGKmnfp2YfZJ8hFm1tIlzjJ66sGQz8t64AMC4g31cc2hMWNoi2dmmbWhIaAH01xq9qUnK/byyfkVwKxvjDi2i35/UZQMwes/AEMHtcQImeOHV7/ukrV1XtxGOUAk4sZN+hFxngl22MTvVNsMrjyhxp/WTtfSgMAiFfYFoz+meRUUEGbqYiXi57wg1Dw0JwlGJoZPCzTkVS5wRv3+sySWkrBIsinTQK69Ij2VNWy2rpVPUzBOf4zSssJQVaWn2f5JxgxT3OwLtTi7oKzpemybrdo6b1zLdCQDluysbtT3yilbB1tjvLP7nuOTPQS3DBaaRiq+3EBXKuwWr+k53b9KgovCpnJBc5iqMqXxS7haZ+yprflk1hY6WwkbcoUV1QWYt/mgg5C9HVwY3I9klhKdwXD4MWW6U1pUCY+zcBBhHggbMKZIan9yeFPVqGWuw6A0cVsKMlT0GeBcGwdKb9tnhxQ="
+          file:
+            - target/dda-httpd-standalone.jar
+            - target/dda-httpd-standalone.jar.md5
+        - provider: script
+          skip_cleanup: true
+          on:
+            tags: true
+          script: bash integration/docker/publish.sh dda-httpd-crate
