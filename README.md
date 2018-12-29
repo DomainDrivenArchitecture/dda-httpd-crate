@@ -13,9 +13,8 @@ This crate is part of [dda-pallet](https://domaindrivenarchitecture.org/pages/dd
 [Usage](#usage)
 [Details](#details)
 [Reference](#reference)
-[Targets-config-example](#targets-config-example)
 [Dda-httpd-config-example](#Dda-httpd-config-example)
-[Targets](#targets)
+[Domain API](#domain-api)
 [Infra-API](#infra-api)
 
 ## compatability
@@ -123,171 +122,24 @@ It should no longer be necessary to renew certifcates manually. Howerver, if thi
 * ./letsencrypt-auto --standalone renew
 * service apache2 start
 
+### Watch log for debug reasons
+In case any problems occur you may want to have a look at the log-file:
+'less logs/pallet.log'
 
 ## Reference
-We provide two levels of API - domain is a high level API with many built-in conventions. If these conventions don't fit your needs, you can use our low-level API (infra) and realize your own conventions.
+Some details about the architecture: We provide two levels of API. **Domain** is a high-level API with built-in conventions. If these conventions do not fit your needs you can use our low-level **infra** API and realize your own conventions.
+
+### Targets
+You can define provisioning targets using the [targets-schema](https://github.com/DomainDrivenArchitecture/dda-pallet-commons/blob/master/doc/existing_spec.md)
 
 ### Domain API
+You can use our conventions as a starting point:
+[see domain reference](doc/reference_domain.md)
 
-#### Targets
-The schema of the domain layer for the targets is:
-```clojure
-(def ExistingNode
-  "Represents a target node with ip and its name."
-  {:node-name s/Str   ; semantic name (keep the default or use a name that suits you)
-   :node-ip s/Str})   ; the ip4 address of the machine to be provisioned
-
-(def ExistingNodes
-  "A sequence of ExistingNodes."
-  {s/Keyword [ExistingNode]})
-
-(def ProvisioningUser
-  "User used for provisioning."
-  {:login s/Str                                ; user on the target machine, must have sudo rights
-   (s/optional-key :password) secret/Secret})  ; password can be ommited, if a ssh key is authorized
-
-(def Targets
-  "Targets to be used during provisioning."
-  {:existing [ExistingNode]                                ; one ore more target nodes.
-   (s/optional-key :provisioning-user) ProvisioningUser})  ; user can be ommited to execute on localhost with current user
-```
-The "targets.edn" file has to match this schema.
-
-#### Dda-httpd
-The schema for the httpd configuration is:
-```clojure
-(def HttpdDomainConfig
-  (s/either
-    SingleStaticConfig
-    MultiStaticConfig
-    JkConfig
-    CompatibilityConfig
-    TomcatConfig))
-
-(def SingleStaticValueConfig
-    (merge
-      {:domain-name s/Str
-       (s/optional-key :alias) [{:url s/Str :path s/Str}]
-       (s/optional-key :alias-match) [{:regex s/Str :path s/Str}]}
-      domain-schema/VhostConfig))
-
-(def MultiStaticConfig
-  {:multi-static
-   {s/Keyword domain-schema/VhostConfig}})
-
-(def TomcatConfig
- {:tomcat
-  (merge
-    domain-schema/VhostConfig
-    {:domain-name s/Str
-     (s/optional-key :alias) [{:url s/Str :path s/Str}]
-     (s/optional-key :jk-mount) [{:path s/Str :worker s/Str}]
-     (s/optional-key :jk-unmount) [{:path s/Str :worker s/Str}]
-     (s/optional-key :settings)
-     (hash-set (s/enum :test
-                       :without-maintainance))})})
-
-(def CompatibilityConfig
- {:compat
-  {(s/optional-key :apache-version) s/Str
-   (s/optional-key :jk-configuration) httpd-schema/jk-configuration
-   :vhosts {s/Keyword VhostDomainConfig}
-   (s/optional-key :limits) {(s/optional-key :server-limit) s/Int
-                             (s/optional-key :max-clients) s/Int}
-   (s/optional-key :apache-modules) {(s/optional-key :a2enmod)[s/Str]}}})
-
-(def JkConfig
-  {:jk
-  (merge
-    domain-schema/VhostConfig
-    {:domain-name s/Str
-     (s/optional-key :settings)
-     (hash-set (s/enum :test
-                       :without-maintainance))})})   
-
-(def SingleStaticConfig
-  {:single-static SingleStaticValueConfig})
-
-(def VhostConfig
-  {(s/optional-key :google-id) s/Str
-   (s/optional-key :settings)
-   (hash-set (s/enum :test
-                     :without-maintainance
-                     :with-php))})
-```
-The "httpd.edn" file has to match this schema. Please note, the either indicates that only one of the options has to be specified as a configuration. If the provided domain configuration options do not fit your needs feel free to use our low level API infra to create your own.
-
-### Infra-API
-The infra configuration is a configuration on the infrastructure level of a crate. It contains the complete configuration options that are possible with the crate functions.
-On an infra level the dda-http-crate provides all the functions for generating vhosts and other configurations.
-
-The schema is:
-```clojure
-(def mod-jk-configuration
-  {:tomcat-forwarding-configuration
-   {:mount [{:path s/Str :worker s/Str}]
-    (s/optional-key :unmount) [{:path s/Str :worker s/Str}]}
-   :worker-properties [{:worker s/Str
-                        :host s/Str
-                        :port s/Str
-                        :maintain-timout-sec s/Int
-                        :socket-connect-timeout-ms s/Int}]})
-
-(def VhostConfig
-  "defines a schema for a httpdConfig"
-  {:domain-name s/Str
-   :listening-port s/Str
-   :server-admin-email s/Str
-   (s/optional-key :server-aliases) [s/Str]
-   (s/optional-key :access-control) [s/Str]
-   (s/optional-key :document-root) s/Str
-   (s/optional-key :rewrite-rules) [s/Str]
-   (s/optional-key :user-credentials) [s/Str]
-   (s/optional-key :alias) [{:url s/Str :path s/Str}]
-   (s/optional-key :alias-match) [{:regex s/Str :path s/Str}]
-   (s/optional-key :location) {(s/optional-key :basic-auth) s/Bool
-                               (s/optional-key :locations-override) [s/Str]
-                               (s/optional-key :path) s/Str}
-   ; either letsencrypt or manual certificates
-   (s/optional-key :cert-letsencrypt) {:domains [s/Str]
-     ; TODO: apply rename refactoring:letsencrypt-mail -> email
-                                       :email s/Str}
-   (s/optional-key :cert-manual) {:domain-cert s/Str
-                                  :domain-key s/Str
-                                  (s/optional-key :ca-cert) s/Str}
-   (s/optional-key :cert-file) {:domain-cert s/Str
-                                :domain-key s/Str
-                                (s/optional-key :ca-cert) s/Str}
-   ; mod_jk
-   (s/optional-key :mod-jk) mod-jk-configuration
-   ;proxy
-   (s/optional-key :proxy) {:target-port s/Str
-                            :additional-directives [s/Str]}
-
-   ; other stuff
-   (s/optional-key :maintainance-page-content) [s/Str]
-   (s/optional-key :maintainance-page-worker) s/Str
-   (s/optional-key :google-id) s/Str
-   (s/optional-key :google-worker) s/Str})
-
-(def jk-configuration
- "Defines the schema for a jk-configuration, not mod-jk!"
- {:jkStripSession s/Str
-  :jkWatchdogInterval s/Int})
-
-(def HttpdConfig
-  {:apache-version (s/enum "2.2" "2.4")
-   :vhosts {s/Keyword VhostConfig}
-   (s/optional-key :jk-configuration) jk-configuration
-   (s/optional-key :limits) {(s/optional-key :server-limit) s/Int
-                             (s/optional-key :max-clients) s/Int}
-   (s/optional-key :apache-modules) {(s/optional-key :a2enmod) [s/Str]
-                                     (s/optional-key :install) [s/Str]}
-   (s/optional-key :settings) (hash-set (s/enum :name-based))})
-```
+### Infra API
+Or you can build your own conventions using our low level infra API. We will keep this API backward compatible whenever possible:
+[see infra reference](doc/reference_infra.md)
 
 ## License
-
-Copyright © 2018 meissa GmbH
-Licensed under the [Apache License, Version 2.0](LICENSE) (the "License")
-Pls. find licenses of our subcomponents [here](doc/SUBCOMPONENT_LICENSE)
+Copyright © 2015, 2016, 2017, 2018 meissa GmbH
+Published under [apache2.0 license](LICENSE)
